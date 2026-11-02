@@ -15,6 +15,7 @@ import TermsPage          from './pages/TermsPage.jsx'
 import ServicesPage       from './pages/ServicesPage.jsx'
 import LearningPage       from './pages/LearningPage.jsx'
 import RiskDisclosurePage from './pages/RiskDisclosurePage.jsx'
+import GenerateInvoicePage from './pages/GenerateInvoicePage.jsx'
 
 // Client flow
 import RegisterPage       from './pages/RegisterPage.jsx'
@@ -89,6 +90,9 @@ function AppRoutes() {
         </div>
       } />
 
+      {/* Invoice generator — standalone, no navbar */}
+      <Route path="/gen-invoice" element={<GenerateInvoicePage />} />
+
       {/* Admin login — no navbar */}
       <Route path="/admin/login" element={
         <div className="min-h-screen bg-gray-950 text-gray-100">
@@ -137,18 +141,13 @@ function PublicShell() {
 }
 
 // ── Company constants ─────────────────────────────────────────────────────────
-const OFFICE_1  = {
-  label:   'Surat Office',
-  address: 'B.134 YOGESHWAR NAGAR, SACHIN, SURAT, GUJARAT – 394230',
-  maps:    'https://maps.google.com/?q=B.134+YOGESHWAR+NAGAR+SACHIN+SURAT+Gujarat+394230',
-}
 const OFFICE_2  = {
-  label:   'Fatehpur Office',
+  label:   'Our Office',
   address: 'Main Bazar, Khakhreru, FATEHPUR, UTTAR PRADESH – 212656',
   maps:    'https://maps.google.com/?q=Main+Bazar+Khakhreru+Fatehpur+Uttar+Pradesh+212656',
 }
 const PHONE     = '+91 9022487800'
-const EMAIL     = 'javitritradingservice86@gmail.com'
+const EMAIL     = 'info@javitritrading.com'
 const WHATSAPP  = 'https://wa.me/919022487800'
 const SCHEDULE  = 'Monday to Friday'
 const CIN       = 'U66190GJ2026PTC183862'
@@ -254,14 +253,6 @@ function PublicFooter() {
             </p>
             <div className="space-y-4">
               <div>
-                <p className="text-xs font-bold mb-1" style={{ color: '#d4a843' }}>🏢 {t('contact_office1')}</p>
-                <p className="text-sm leading-relaxed" style={{ color: '#9aaabb' }}>{OFFICE_1.address}</p>
-                <a href={OFFICE_1.maps} target="_blank" rel="noopener noreferrer"
-                  className="text-xs mt-1.5 inline-block hover:underline" style={{ color: '#d4a843' }}>
-                  {t('get_directions')} →
-                </a>
-              </div>
-              <div>
                 <p className="text-xs font-bold mb-1" style={{ color: '#d4a843' }}>🏢 {t('contact_office2')}</p>
                 <p className="text-sm leading-relaxed" style={{ color: '#9aaabb' }}>{OFFICE_2.address}</p>
                 <a href={OFFICE_2.maps} target="_blank" rel="noopener noreferrer"
@@ -297,7 +288,7 @@ function PublicFooter() {
             © {year} JAVITRI TRADING SERVICE PRIVATE LIMITED. {t('footer_copyright')}
           </p>
           <p className="text-xs text-center" style={{ color: '#3d5060' }}>
-            Surat, Gujarat &amp; Fatehpur, Uttar Pradesh
+            Fatehpur, Uttar Pradesh
           </p>
         </div>
       </div>

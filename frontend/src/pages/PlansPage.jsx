@@ -8,15 +8,15 @@ import { api } from '../utils/api.js'
 /* ── Static plan data ── */
 const STATIC_PLANS = [
   { slug: 'plan-1',  name: 'Plan 1',  dealAmountINR: 10000,   proposedDailyINR: 200,    period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-2',  name: 'Plan 2',  dealAmountINR: 30000,   proposedDailyINR: 700 },
-  { slug: 'plan-3',  name: 'Plan 3',  dealAmountINR: 50000,   proposedDailyINR: 1200 },
-  { slug: 'plan-4',  name: 'Plan 4',  dealAmountINR: 100000,  proposedDailyINR: 2500 },
-  { slug: 'plan-5',  name: 'Plan 5',  dealAmountINR: 300000,  proposedDailyINR: 8000 },
-  { slug: 'plan-6',  name: 'Plan 6',  dealAmountINR: 500000,  proposedDailyINR: 13500 },
-  { slug: 'plan-7',  name: 'Plan 7',  dealAmountINR: 1000000, proposedDailyINR: 30000 },
-  { slug: 'plan-8',  name: 'Plan 8',  dealAmountINR: 1500000, proposedDailyINR: 40000 },
-  { slug: 'plan-9',  name: 'Plan 9',  dealAmountINR: 2000000, proposedDailyINR: 55000 },
-  { slug: 'plan-10', name: 'Plan 10', dealAmountINR: 5000000, proposedDailyINR: 130000 },
+  { slug: 'plan-2',  name: 'Plan 2',  dealAmountINR: 30000,   proposedDailyINR: 700, period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-3',  name: 'Plan 3',  dealAmountINR: 50000,   proposedDailyINR: 1200, period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-4',  name: 'Plan 4',  dealAmountINR: 100000,  proposedDailyINR: 2500,period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-5',  name: 'Plan 5',  dealAmountINR: 300000,  proposedDailyINR: 8000 ,period: '90 trading days (Mon–Fri)'},
+  { slug: 'plan-6',  name: 'Plan 6',  dealAmountINR: 500000,  proposedDailyINR: 13500,period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-7',  name: 'Plan 7',  dealAmountINR: 1000000, proposedDailyINR: 30000,period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-8',  name: 'Plan 8',  dealAmountINR: 1500000, proposedDailyINR: 40000,period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-9',  name: 'Plan 9',  dealAmountINR: 2000000, proposedDailyINR: 55000,period: '90 trading days (Mon–Fri)' },
+  { slug: 'plan-10', name: 'Plan 10', dealAmountINR: 5000000, proposedDailyINR: 130000,period: '90 trading days (Mon–Fri)' },
 ]
 
 function fmt(n) {

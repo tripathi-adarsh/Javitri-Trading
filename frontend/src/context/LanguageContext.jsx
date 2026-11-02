@@ -36,7 +36,7 @@ export const TRANSLATIONS = {
     // Plans
     plans_title:      'Investment Plans',
     plans_sub:        'Ten investment plans with proposed daily figures. Monday–Friday schedule.',
-    plans_illustrative: 'Illustrative only. Not a guaranteed return.',
+    plans_illustrative: 'Illustrative only.',
     plans_contact:    'Contact Us',
     plans_whatsapp:   'Enquire on WhatsApp',
     plans_proposed:   'Proposed Daily *',
@@ -64,14 +64,14 @@ export const TRANSLATIONS = {
     contact_privacy:  'By submitting this form, you consent to Javitri Trading Service Pvt. Ltd. storing your contact information to respond to your enquiry.',
     contact_whatsapp: 'Chat on WhatsApp',
     contact_directions: 'Get Google Maps Directions',
-    contact_office1:  'Surat Office',
-    contact_office2:  'Fatehpur Office',
+    contact_office1:  'Our Office',
+    contact_office2:  'Our Office',
     contact_schedule: 'Monday to Friday',
     contact_click_call: 'Click to call',
 
     // About
     about_title:      'About Javitri Trading Service',
-    about_sub:        'Stock market education and trading guidance based in Gujarat & Uttar Pradesh.',
+    about_sub:        'Stock market education and trading guidance based in Uttar Pradesh.',
 
     // Risk
     risk_title:       'Risk Disclosure Statement',
@@ -117,7 +117,7 @@ export const TRANSLATIONS = {
 
     plans_title:      'निवेश योजनाएं',
     plans_sub:        'प्रस्तावित दैनिक आंकड़ों के साथ दस निवेश योजनाएं। सोमवार–शुक्रवार कार्यक्रम।',
-    plans_illustrative: 'केवल उदाहरण। गारंटीकृत रिटर्न नहीं।',
+    plans_illustrative: 'केवल उदाहरण।',
     plans_contact:    'संपर्क करें',
     plans_whatsapp:   'व्हाट्सएप पर पूछें',
     plans_proposed:   'प्रस्तावित दैनिक *',
@@ -143,12 +143,12 @@ export const TRANSLATIONS = {
     contact_whatsapp: 'व्हाट्सएप पर चैट करें',
     contact_directions: 'गूगल मैप्स पर दिशा-निर्देश',
     contact_office1:  'सूरत कार्यालय',
-    contact_office2:  'फतेहपुर कार्यालय',
+    contact_office2:  'हमारा कार्यालय',
     contact_schedule: 'सोमवार से शुक्रवार',
     contact_click_call: 'कॉल करने के लिए क्लिक करें',
 
     about_title:      'जावित्री ट्रेडिंग सर्विस के बारे में',
-    about_sub:        'गुजरात और उत्तर प्रदेश में स्थित शेयर बाज़ार शिक्षा और ट्रेडिंग मार्गदर्शन।',
+    about_sub:        'उत्तर प्रदेश में स्थित शेयर बाज़ार शिक्षा और ट्रेडिंग मार्गदर्शन।',
 
     risk_title:       'जोखिम प्रकटीकरण विवरण',
     risk_notice:      'महत्वपूर्ण — आगे बढ़ने से पहले पढ़ें',
@@ -158,7 +158,7 @@ export const TRANSLATIONS = {
     footer_legal:     'कानूनी',
     footer_contact:   'संपर्क',
     footer_copyright: 'सर्वाधिकार सुरक्षित।',
-    footer_risk:      'जोखिम: शेयर बाज़ार निवेश में वित्तीय जोखिम शामिल है। रिटर्न की गारंटी नहीं।',
+    footer_risk:      'जोखिम: शेयर बाज़ार निवेश में वित्तीय जोखिम शामिल है।',
 
     read_more:        'अधिक पढ़ें',
     contact_us:       'संपर्क करें',
@@ -223,7 +223,7 @@ export const TRANSLATIONS = {
     contact_click_call: 'कॉल करण्यासाठी क्लिक करा',
 
     about_title:      'जावित्री ट्रेडिंग सर्विसबद्दल',
-    about_sub:        'गुजरात आणि उत्तर प्रदेशातून शेअर बाजार शिक्षण आणि ट्रेडिंग मार्गदर्शन।',
+    about_sub:        'उत्तर प्रदेशातून शेअर बाजार शिक्षण आणि ट्रेडिंग मार्गदर्शन।',
 
     risk_title:       'जोखीम प्रकटीकरण विधान',
     risk_notice:      'महत्त्वाचे — पुढे जाण्यापूर्वी वाचा',
@@ -233,7 +233,7 @@ export const TRANSLATIONS = {
     footer_legal:     'कायदेशीर',
     footer_contact:   'संपर्क',
     footer_copyright: 'सर्व हक्क राखीव।',
-    footer_risk:      'जोखीम: शेअर बाजार गुंतवणुकीत आर्थिक जोखीम असते. परताव्याची हमी नाही.',
+    footer_risk:      'जोखीम: शेअर बाजार गुंतवणुकीत आर्थिक जोखीम असते.',
 
     read_more:        'अधिक वाचा',
     contact_us:       'संपर्क करा',
