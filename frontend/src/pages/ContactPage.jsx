@@ -12,18 +12,16 @@ import { useLang } from '../context/LanguageContext.jsx'
 
 /* ── Company constants ───────────────────────────────────────────────────── */
 const CIN        = 'U66190GJ2026PTC183862'
+const GST        = '09AAHCJ6166E1ZD'
+const DPIIT      = 'DIPP291171'
 const PHONE      = '+91 9022487800'
-const EMAIL      = 'javitritradingservice86@gmail.com'
+const EMAIL_INFO = 'info@javitritrading.com'
+const EMAIL_SALES= 'sales@javitritrading.com'
 const WHATSAPP   = 'https://wa.me/919022487800'
+const TELEGRAM   = 'https://t.me/Javitritradingservice'
 const SCHEDULE   = 'Monday to Friday'
 
 const OFFICES = [
-  {
-    key:    'surat',
-    city:   'Surat, Gujarat',
-    address:'B.134 YOGESHWAR NAGAR, SACHIN, SURAT, GUJARAT – 394230',
-    maps:   'https://maps.google.com/?q=Javitri+Trading+Service+Sachin+Surat+Gujarat',
-  },
   {
     key:    'fatehpur',
     city:   'Fatehpur, Uttar Pradesh',
@@ -113,12 +111,30 @@ export default function ContactPage() {
                 </p>
               </div>
               {/* CIN */}
-              <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg"
+              <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg"
                 style={{ background: 'rgba(212,168,67,0.08)', border: '1px solid rgba(212,168,67,0.2)' }}>
                 <FileText className="h-3.5 w-3.5 shrink-0" style={{ color: '#d4a843' }} />
                 <div>
                   <p className="text-[10px] uppercase tracking-wider" style={{ color: '#8aa4ba' }}>CIN</p>
                   <p className="text-xs font-mono font-semibold" style={{ color: '#f0c060' }}>{CIN}</p>
+                </div>
+              </div>
+              {/* GST */}
+              <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg"
+                style={{ background: 'rgba(212,168,67,0.08)', border: '1px solid rgba(212,168,67,0.2)' }}>
+                <FileText className="h-3.5 w-3.5 shrink-0" style={{ color: '#d4a843' }} />
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: '#8aa4ba' }}>GST Number</p>
+                  <p className="text-xs font-mono font-semibold" style={{ color: '#f0c060' }}>{GST}</p>
+                </div>
+              </div>
+              {/* DPIIT */}
+              <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-lg"
+                style={{ background: 'rgba(212,168,67,0.08)', border: '1px solid rgba(212,168,67,0.2)' }}>
+                <FileText className="h-3.5 w-3.5 shrink-0" style={{ color: '#d4a843' }} />
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider" style={{ color: '#8aa4ba' }}>Startup India DPIIT</p>
+                  <p className="text-xs font-mono font-semibold" style={{ color: '#f0c060' }}>{DPIIT}</p>
                 </div>
               </div>
 
@@ -158,9 +174,14 @@ export default function ContactPage() {
               </div>
               <div className="flex gap-3">
                 <Mail className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#d4a843' }} />
-                <a href={`mailto:${EMAIL}`}
-                  className="text-xs hover:underline break-all leading-relaxed"
-                  style={{ color: '#d0e0ee' }}>{EMAIL}</a>
+                <div className="space-y-0.5">
+                  <a href={`mailto:${EMAIL_INFO}`}
+                    className="block text-xs hover:underline break-all leading-relaxed"
+                    style={{ color: '#d0e0ee' }}>{EMAIL_INFO}</a>
+                  <a href={`mailto:${EMAIL_SALES}`}
+                    className="block text-xs hover:underline break-all leading-relaxed"
+                    style={{ color: '#d0e0ee' }}>{EMAIL_SALES}</a>
+                </div>
               </div>
               <div className="flex gap-3">
                 <Clock className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#d4a843' }} />
@@ -170,12 +191,22 @@ export default function ContactPage() {
 
             {/* WhatsApp CTA */}
             <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
-              className="flex items-center justify-center gap-2.5 w-full py-3.5 rounded-2xl font-semibold text-sm transition-all"
+              className="flex items-center justify-center gap-2.5 w-full py-3 rounded-2xl font-semibold text-sm transition-all"
               style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.35)', color: '#25d366' }}
               onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,211,102,0.22)'}
               onMouseLeave={e => e.currentTarget.style.background = 'rgba(37,211,102,0.12)'}>
               <MessageSquare className="h-5 w-5" />
               Chat on WhatsApp
+            </a>
+
+            {/* Telegram CTA */}
+            <a href={TELEGRAM} target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2.5 w-full py-3 rounded-2xl font-semibold text-sm transition-all"
+              style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.35)', color: '#29a8e8' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,136,204,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,136,204,0.1)'}>
+              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+              Join on Telegram
             </a>
 
             {/* Security note */}
@@ -288,7 +319,7 @@ export default function ContactPage() {
               </p>
             </div>
             <a
-              href="https://maps.google.com/?q=Javitri+Trading+Service+Pvt+Ltd+Sachin+Surat"
+              href="https://maps.google.com/?q=Main+Bazar+Khakhreru+Fatehpur+Uttar+Pradesh+212656"
               target="_blank"
               rel="noopener noreferrer"
               className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap"
@@ -308,7 +339,7 @@ export default function ContactPage() {
             allowFullScreen
             loading="lazy"
             referrerPolicy="strict-origin-when-cross-origin"
-            title="Javitri Trading Service Pvt. Ltd. — Surat Office Location"
+            title="Javitri Trading Service Pvt. Ltd."
           />
         </div>
       </div>

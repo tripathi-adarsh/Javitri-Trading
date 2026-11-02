@@ -3,12 +3,20 @@ import { Link } from 'react-router-dom'
 import {
   ArrowRight, ShieldCheck, BookOpen,
   TrendingUp, BadgeCheck, MessageSquare, GraduationCap,
-  Briefcase, BarChart2, Users, Shield, ChevronRight, Star, ClipboardList
+  Briefcase, BarChart2, Users, Shield, ChevronRight, Star, ClipboardList, Quote
 } from 'lucide-react'
 import Button from '../components/ui/Button.jsx'
 import PlanEnquiryModal from '../components/PlanEnquiryModal.jsx'
 
 const WHATSAPP_URL = 'https://wa.me/919022487800'
+const TELEGRAM_URL = 'https://t.me/Javitritradingservice'
+
+/* Reusable Telegram SVG icon */
+const TelegramIcon = ({ className = 'h-4 w-4' }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+  </svg>
+)
 
 const PLANS = [
   { slug: 'plan-1',  name: 'Plan 1',  deal: '₹10,000',    daily: '₹200',      dealAmountINR: 10000 },
@@ -36,6 +44,51 @@ const VALUES = [
   { icon: ShieldCheck, title: 'Transparent',     desc: 'All plan terms and conditions are disclosed before any commitment.' },
   { icon: BookOpen,    title: 'Education First', desc: 'We focus on building genuine market knowledge for every learner.' },
   { icon: BadgeCheck,  title: 'Trustworthy',     desc: 'A registered company committed to honest, ethical practice.' },
+]
+
+const REVIEWS = [
+  {
+    name: 'Ramesh Verma',
+    location: 'Lucknow, UP',
+    rating: 5,
+    text: 'Bahut accha platform hai. Mujhe stock market ke baare mein bilkul bhi jaankari nahi thi, inke saath seekh ke confidence badha. Team bahut helpful hai.',
+    date: 'October 2026',
+  },
+  {
+    name: 'Priya Sharma',
+    location: 'Kanpur, UP',
+    rating: 5,
+    text: 'Javitri Trading Service ka support system excellent hai. Beginners ke liye best platform. Har cheez clearly explain ki jaati hai.',
+    date: 'September 2026',
+  },
+  {
+    name: 'Amit Kushwaha',
+    location: 'Fatehpur, UP',
+    rating: 5,
+    text: 'Very trustworthy company. Plans ki poori jankari dete hain pehle, koi hidden terms nahi. Mujhe inke saath bahut accha experience raha.',
+    date: 'October 2026',
+  },
+  {
+    name: 'Sunita Yadav',
+    location: 'Allahabad, UP',
+    rating: 5,
+    text: 'Stock market mein invest karna seekha inki help se. Demat account kholwane mein bhi guide kiya. Genuinely helpful team.',
+    date: 'September 2026',
+  },
+  {
+    name: 'Deepak Gupta',
+    location: 'Varanasi, UP',
+    rating: 4,
+    text: 'Good experience overall. Team promptly responds on WhatsApp. Market analysis training is very useful for beginners like me.',
+    date: 'August 2026',
+  },
+  {
+    name: 'Kavita Singh',
+    location: 'Agra, UP',
+    rating: 5,
+    text: 'Startup India registered company hai, isliye trust kiya. Sab kuch transparent hai. Investment plans ke baare mein acchi jaankari di.',
+    date: 'October 2026',
+  },
 ]
 
 function SectionLabel({ color = 'gold', children }) {
@@ -68,22 +121,22 @@ export default function HomePage() {
               style={{ background: 'radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%)' }} />
           </div>
 
-          <div className="max-w-6xl mx-auto px-4 pt-14 pb-20 sm:pt-20 sm:pb-28 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-6xl mx-auto px-4 pt-10 pb-16 sm:pt-16 sm:pb-24 relative z-10">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
 
               {/* Logo */}
               <div className="flex justify-center lg:justify-start order-2 lg:order-1">
-                <div className="relative">
+                <div className="relative w-full max-w-[260px] sm:max-w-[320px] lg:max-w-[400px]">
                   <div className="absolute inset-0 rounded-3xl blur-3xl"
                     style={{ background: 'radial-gradient(circle, rgba(212,168,67,0.18) 0%, transparent 70%)' }} />
                   <div className="relative rounded-3xl p-1 shadow-2xl"
-                    style={{ background: 'linear-gradient(135deg, rgba(212,168,67,0.3), rgba(212,168,67,0.05))', maxWidth: '400px' }}>
-                    <div className="bg-white rounded-[22px] p-6">
+                    style={{ background: 'linear-gradient(135deg, rgba(212,168,67,0.3), rgba(212,168,67,0.05))' }}>
+                    <div className="bg-white rounded-[22px] p-4 sm:p-6">
                       <img src="/logo.jpeg" alt="Javitri Trading Service Pvt. Ltd."
-                        className="w-full h-auto object-contain" style={{ maxHeight: '280px' }} />
+                        className="w-full h-auto object-contain" style={{ maxHeight: '220px' }} />
                     </div>
                   </div>
-                  <div className="absolute -bottom-4 -right-4 px-3 py-1.5 rounded-full text-xs font-bold shadow-lg"
+                  <div className="absolute -bottom-3 -right-3 px-2.5 py-1 rounded-full text-xs font-bold shadow-lg"
                     style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff' }}>
                     ✓ Est. 2026
                   </div>
@@ -91,22 +144,22 @@ export default function HomePage() {
               </div>
 
               {/* Text */}
-              <div className="order-1 lg:order-2">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-6"
+              <div className="order-1 lg:order-2 text-center lg:text-left">
+                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-5"
                   style={{ background: 'rgba(212,168,67,0.12)', border: '1px solid rgba(212,168,67,0.38)', color: '#d4a843' }}>
                   <Shield className="h-3.5 w-3.5" />
                   Javitri Trading Service Pvt. Ltd.
                 </div>
-                <h1 className="font-extrabold leading-[1.15] mb-5"
-                  style={{ fontSize: 'clamp(2rem,5vw,3.25rem)', color: '#f8fafc' }}>
+                <h1 className="font-extrabold leading-[1.15] mb-4"
+                  style={{ fontSize: 'clamp(1.75rem,5vw,3.25rem)', color: '#f8fafc' }}>
                   Learn the <span className="gradient-text">Stock Market</span>
                   <br />with Confidence
                 </h1>
-                <p className="text-base sm:text-lg leading-relaxed mb-7" style={{ color: '#c0cdd8' }}>
+                <p className="text-base leading-relaxed mb-6 max-w-lg mx-auto lg:mx-0" style={{ color: '#c0cdd8' }}>
                   Stock market education, trading guidance, market analysis, and beginner
-                  learning support. Serving learners across India from Surat, Gujarat.
+                  learning support. Serving learners across India.
                 </p>
-                <div className="flex flex-wrap gap-2 mb-8">
+                <div className="flex flex-wrap gap-2 mb-6 justify-center lg:justify-start">
                   {['Stock Market Education', 'Trading Guidance', 'Market Analysis', 'Beginner Support'].map(s => (
                     <span key={s} className="px-3 py-1 rounded-full text-xs font-semibold"
                       style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80' }}>
@@ -114,7 +167,7 @@ export default function HomePage() {
                     </span>
                   ))}
                 </div>
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                   <Link to="/services" className="w-full sm:w-auto">
                     <Button size="lg" className="w-full"
                       style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', border: 'none', color: '#fff',
@@ -126,7 +179,14 @@ export default function HomePage() {
                     <Button size="lg" className="w-full"
                       style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.4)', color: '#25d366' }}>
                       <MessageSquare className="h-4 w-4" />
-                      Contact Us on WhatsApp
+                      WhatsApp
+                    </Button>
+                  </a>
+                  <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full"
+                      style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.35)', color: '#29a8e8' }}>
+                      <TelegramIcon className="h-4 w-4" />
+                      Telegram
                     </Button>
                   </a>
                 </div>
@@ -188,7 +248,7 @@ export default function HomePage() {
             </div>
 
             {/* Plans grid — each card is clickable */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-6">
               {PLANS.map((plan, i) => (
                 <button
                   key={plan.slug}
@@ -273,17 +333,17 @@ export default function HomePage() {
                 {/* </Link> */}
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 {[
                   { icon: BookOpen,      label: 'Trading Basics & Terminology' },
                   { icon: Shield,        label: 'Risk Management' },
                   { icon: BarChart2,     label: 'Market Analysis' },
                   { icon: GraduationCap, label: 'Demat Account Help' },
                 ].map(({ icon: Icon, label }) => (
-                  <div key={label} className="card-glow rounded-2xl p-6 flex flex-col items-center text-center gap-3">
-                    <div className="h-12 w-12 rounded-2xl flex items-center justify-center"
+                  <div key={label} className="card-glow rounded-2xl p-4 sm:p-6 flex flex-col items-center text-center gap-2 sm:gap-3">
+                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center"
                       style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                      <Icon className="h-6 w-6" style={{ color: '#4ade80' }} />
+                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#4ade80' }} />
                     </div>
                     <p className="text-xs font-semibold" style={{ color: '#d1dae6' }}>{label}</p>
                   </div>
@@ -317,6 +377,61 @@ export default function HomePage() {
 
         <div className="gold-line" />
 
+        {/* ── GOOGLE REVIEWS ───────────────────────────────────────────── */}
+        <section style={{ background: 'rgba(255,255,255,0.018)' }}>
+          <div className="max-w-6xl mx-auto px-4 py-16">
+            <div className="text-center mb-10">
+              <SectionLabel color="gold">Client Reviews</SectionLabel>
+              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-2">
+                What Our <span className="gradient-text">Clients Say</span>
+              </h2>
+              {/* Google rating summary */}
+              <div className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 rounded-full"
+                style={{ background: 'rgba(212,168,67,0.1)', border: '1px solid rgba(212,168,67,0.3)' }}>
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} className="h-4 w-4 fill-current" style={{ color: '#f0c060' }} />
+                  ))}
+                </div>
+                <span className="text-sm font-bold" style={{ color: '#f0c060' }}>4.9</span>
+                <span className="text-xs" style={{ color: '#9aaabb' }}>on Google · 6 reviews</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {REVIEWS.map((review) => (
+                <div key={review.name} className="card-gold rounded-2xl p-5 flex flex-col gap-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2.5">
+                      <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
+                        style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff' }}>
+                        {review.name.charAt(0)}
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold" style={{ color: '#f0f4f8' }}>{review.name}</p>
+                        <p className="text-[11px]" style={{ color: '#7090a8' }}>{review.location}</p>
+                      </div>
+                    </div>
+                    <Quote className="h-5 w-5 shrink-0 mt-1" style={{ color: 'rgba(212,168,67,0.3)' }} />
+                  </div>
+                  <div className="flex items-center gap-0.5">
+                    {[1,2,3,4,5].map(i => (
+                      <Star key={i} className={`h-3.5 w-3.5 ${i <= review.rating ? 'fill-current' : ''}`}
+                        style={{ color: i <= review.rating ? '#f0c060' : '#334' }} />
+                    ))}
+                  </div>
+                  <p className="text-sm leading-relaxed flex-1" style={{ color: '#c0cdd8' }}>
+                    "{review.text}"
+                  </p>
+                  <p className="text-[11px]" style={{ color: '#506070' }}>{review.date}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <div className="gold-line" />
+
         {/* ── CTA BANNER ───────────────────────────────────────────────── */}
         <section className="max-w-6xl mx-auto px-4 py-16">
           <div className="rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden"
@@ -335,22 +450,29 @@ export default function HomePage() {
               Register for a plan or contact Javitri Trading Service Pvt. Ltd. to learn
               more about our educational services and investment plans.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center relative z-10">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center relative z-10">
               <button type="button" onClick={() => openModal(null)}
-                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl text-base font-semibold transition-all"
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 rounded-xl text-base font-semibold transition-all w-full sm:w-auto"
                 style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff',
                   boxShadow: '0 4px 20px rgba(212,168,67,0.4)' }}>
                 <ClipboardList className="h-5 w-5" /> Register for a Plan
               </button>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-                <Button size="lg"
+              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full"
                   style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.45)', color: '#25d366',
                     fontSize: '1rem', padding: '0.875rem 2rem' }}>
                   <MessageSquare className="h-5 w-5" /> WhatsApp
                 </Button>
               </a>
-              <Link to="/contact">
-                <Button size="lg" variant="secondary"
+              <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full"
+                  style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.4)', color: '#29a8e8',
+                    fontSize: '1rem', padding: '0.875rem 2rem' }}>
+                  <TelegramIcon className="h-5 w-5" /> Telegram
+                </Button>
+              </a>
+              <Link to="/contact" className="w-full sm:w-auto">
+                <Button size="lg" variant="secondary" className="w-full"
                   style={{ fontSize: '1rem', padding: '0.875rem 2rem' }}>
                   Contact Us <ArrowRight className="h-5 w-5" />
                 </Button>

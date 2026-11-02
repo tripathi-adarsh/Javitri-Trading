@@ -208,7 +208,7 @@ export default function ClientRegisterPage() {
                   />
                 </div>
                 <Input
-                  label="City" name="city" placeholder="Surat"
+                  label="City" name="city" placeholder="Your city"
                   required register={register} error={errors.city?.message}
                 />
                 <Select

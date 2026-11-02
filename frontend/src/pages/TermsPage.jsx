@@ -6,8 +6,8 @@ import Button from '../components/ui/Button.jsx'
 const COMPANY = {
   name:    'JAVITRI TRADING SERVICE PRIVATE LIMITED',
   cin:     'U66190GJ2026PTC183862',
-  address: 'B.134 YOGESHWAR NAGAR, SACHIN, SURAT, GUJARAT – 394230',
-  email:   'javitritradingservice86@gmail.com',
+  address: 'Main Bazar, Khakhreru, FATEHPUR, UTTAR PRADESH – 212656',
+  email:   'info@javitritrading.com',
   phone:   '+91 9022487800',
 }
 

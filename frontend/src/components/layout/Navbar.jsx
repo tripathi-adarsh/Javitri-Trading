@@ -1,20 +1,23 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Menu, X, Shield, MessageCircle, Globe, ChevronDown } from 'lucide-react'
 import { useLang, LANGUAGES } from '../../context/LanguageContext.jsx'
 
 const WHATSAPP_URL = 'https://wa.me/919022487800'
+const TELEGRAM_URL = 'https://t.me/Javitritradingservice'
 
 export default function Navbar() {
-  const [mobileOpen, setMobileOpen] = React.useState(false)
-  const [langOpen, setLangOpen]     = React.useState(false)
-  const langRef = useRef(null)
+  const [mobileOpen, setMobileOpen]         = useState(false)
+  const [langOpen, setLangOpen]             = useState(false)       // desktop
+  const [mobileLangOpen, setMobileLangOpen] = useState(false)       // mobile
+  const langRef       = useRef(null)
+  const mobileLangRef = useRef(null)
   const location = useLocation()
   const { lang, setLang, t } = useLang()
 
   const isActive = (to) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
-  // Close language dropdown on outside click
+  // Close desktop dropdown on outside click
   useEffect(() => {
     function handleClick(e) {
       if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false)
@@ -23,14 +26,21 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Close mobile dropdown on outside click
+  useEffect(() => {
+    function handleClick(e) {
+      if (mobileLangRef.current && !mobileLangRef.current.contains(e.target)) setMobileLangOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
   const navLinks = [
-    { to: '/',               labelKey: 'nav_home' },
-    { to: '/about',          labelKey: 'nav_about' },
-    { to: '/plans',          labelKey: 'nav_plans' },
-    { to: '/services',       labelKey: 'nav_services' },
-    // { to: '/learning',       labelKey: 'nav_learning' },
-    // { to: '/risk-disclosure',labelKey: 'nav_risk' },
-    { to: '/contact',        labelKey: 'nav_contact' },
+    { to: '/',         labelKey: 'nav_home' },
+    { to: '/about',    labelKey: 'nav_about' },
+    { to: '/plans',    labelKey: 'nav_plans' },
+    { to: '/services', labelKey: 'nav_services' },
+    { to: '/contact',  labelKey: 'nav_contact' },
   ]
 
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0]
@@ -76,13 +86,13 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* ── Right actions ── */}
+          {/* ── Desktop right actions ── */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
 
-            {/* Language switcher */}
+            {/* Desktop language switcher */}
             <div className="relative" ref={langRef}>
               <button
-                onClick={() => setLangOpen(!langOpen)}
+                onClick={() => setLangOpen(v => !v)}
                 className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
                 style={{ color: '#b0bec5', border: '1px solid rgba(200,152,58,0.2)', background: 'rgba(200,152,58,0.05)' }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,152,58,0.5)'; e.currentTarget.style.color = '#c8983a' }}
@@ -93,12 +103,13 @@ export default function Navbar() {
               >
                 <Globe className="h-3.5 w-3.5" />
                 <span>{currentLang.flag} {currentLang.nativeLabel}</span>
-                <ChevronDown className="h-3 w-3" style={{ transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+                <ChevronDown className="h-3 w-3"
+                  style={{ transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
 
               {langOpen && (
                 <div
-                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-50 min-w-[160px]"
+                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-[60] min-w-[160px]"
                   style={{ background: '#0d1629', border: '1px solid rgba(200,152,58,0.3)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
                   role="listbox"
                   aria-label="Available languages"
@@ -111,7 +122,7 @@ export default function Navbar() {
                       aria-selected={lang === l.code}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left transition-colors"
                       style={{
-                        color: lang === l.code ? '#c8983a' : '#b0bec5',
+                        color:      lang === l.code ? '#c8983a' : '#b0bec5',
                         background: lang === l.code ? 'rgba(200,152,58,0.1)' : 'transparent',
                         fontWeight: lang === l.code ? '600' : '400',
                       }}
@@ -145,6 +156,24 @@ export default function Navbar() {
               {t('nav_whatsapp')}
             </a>
 
+            {/* Telegram */}
+            <a
+              href={TELEGRAM_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+              style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.3)', color: '#29a8e8' }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,136,204,0.2)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,136,204,0.1)'}
+              aria-label="Telegram"
+            >
+              {/* Telegram icon (SVG) */}
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+              </svg>
+              Telegram
+            </a>
+
             {/* Admin */}
             <Link to="/admin/login"
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
@@ -158,46 +187,62 @@ export default function Navbar() {
 
           {/* ── Mobile right ── */}
           <div className="flex lg:hidden items-center gap-2">
-            {/* Mobile language compact */}
-            <div className="relative" ref={null}>
+
+            {/* Mobile language — own state + own ref */}
+            <div className="relative" ref={mobileLangRef}>
               <button
-                onClick={() => setLangOpen(!langOpen)}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-medium transition-all"
+                onClick={() => setMobileLangOpen(v => !v)}
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
                 style={{ color: '#b0bec5', border: '1px solid rgba(200,152,58,0.2)', background: 'rgba(200,152,58,0.05)' }}
                 aria-label="Select language"
+                aria-haspopup="listbox"
+                aria-expanded={mobileLangOpen}
               >
                 <Globe className="h-3.5 w-3.5" />
                 <span>{currentLang.flag}</span>
               </button>
-              {langOpen && (
+
+              {mobileLangOpen && (
                 <div
-                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-50 min-w-[160px]"
-                  style={{ background: '#0d1629', border: '1px solid rgba(200,152,58,0.3)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
+                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden min-w-[170px]"
+                  style={{
+                    background:  '#0d1629',
+                    border:      '1px solid rgba(200,152,58,0.3)',
+                    boxShadow:   '0 8px 32px rgba(0,0,0,0.7)',
+                    zIndex:      9999,           // very high so nothing overlaps
+                  }}
+                  role="listbox"
+                  aria-label="Available languages"
                 >
                   {LANGUAGES.map((l) => (
                     <button
                       key={l.code}
-                      onClick={() => { setLang(l.code); setLangOpen(false) }}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left transition-colors"
+                      onClick={() => { setLang(l.code); setMobileLangOpen(false) }}
+                      role="option"
+                      aria-selected={lang === l.code}
+                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left"
                       style={{
-                        color: lang === l.code ? '#c8983a' : '#b0bec5',
+                        color:      lang === l.code ? '#c8983a' : '#b0bec5',
                         background: lang === l.code ? 'rgba(200,152,58,0.1)' : 'transparent',
                         fontWeight: lang === l.code ? '600' : '400',
                       }}
                     >
                       <span className="text-base">{l.flag}</span>
                       <span>{l.nativeLabel}</span>
-                      {lang === l.code && <span className="ml-auto" style={{ color: '#c8983a' }}>✓</span>}
+                      {lang === l.code && (
+                        <span className="ml-auto text-xs" style={{ color: '#c8983a' }}>✓</span>
+                      )}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
+            {/* Hamburger */}
             <button
               className="p-2 rounded-lg transition-colors"
               style={{ color: '#b0bec5' }}
-              onClick={() => setMobileOpen(!mobileOpen)}
+              onClick={() => setMobileOpen(v => !v)}
               aria-label="Toggle navigation menu"
               aria-expanded={mobileOpen}>
               {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -230,6 +275,18 @@ export default function Navbar() {
                 style={{ color: '#25d366', background: 'rgba(37,211,102,0.08)' }}>
                 <MessageCircle className="h-4 w-4" />
                 {t('nav_whatsapp')}
+              </a>
+              <a
+                href={TELEGRAM_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMobileOpen(false)}
+                className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg"
+                style={{ color: '#29a8e8', background: 'rgba(0,136,204,0.08)' }}>
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                </svg>
+                Telegram
               </a>
               <Link to="/admin/login"
                 onClick={() => setMobileOpen(false)}
