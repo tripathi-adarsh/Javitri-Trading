@@ -151,6 +151,7 @@ const EMAIL     = 'info@javitritrading.com'
 const WHATSAPP  = 'https://wa.me/919022487800'
 const SCHEDULE  = 'Monday to Friday'
 const CIN       = 'U66190GJ2026PTC183862'
+const GST_NO    = '09AAHCJ6166E1ZD'
 
 // ── Footer ────────────────────────────────────────────────────────────────────
 function PublicFooter() {
@@ -197,7 +198,18 @@ function PublicFooter() {
             <p className="text-sm leading-relaxed mb-2" style={{ color: '#9aaabb' }}>
               {t('footer_tagline')}
             </p>
-            <p className="text-xs font-mono mb-4" style={{ color: '#4a5f72' }}>CIN: {CIN}</p>
+            <div className="flex flex-col gap-1.5 mb-4">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold"
+                style={{ background:'rgba(212,168,67,0.08)', border:'1px solid rgba(212,168,67,0.25)', color:'#d4a843', width:'fit-content' }}>
+                <span style={{ color:'#7090a8', fontSize:'9px', fontWeight:'700', textTransform:'uppercase', letterSpacing:'0.5px' }}>CIN</span>
+                <span style={{ color:'#f0c060' }}>{CIN}</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-mono font-semibold"
+                style={{ background:'rgba(212,168,67,0.08)', border:'1px solid rgba(212,168,67,0.25)', color:'#d4a843', width:'fit-content' }}>
+                <span style={{ color:'#7090a8', fontSize:'9px', fontWeight:'700', textTransform:'uppercase', letterSpacing:'0.5px' }}>GST</span>
+                <span style={{ color:'#f0c060' }}>{GST_NO}</span>
+              </div>
+            </div>
             <a href={WHATSAPP} target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all"
               style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.28)', color: '#25d366' }}
