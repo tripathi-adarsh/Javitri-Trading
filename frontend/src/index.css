@@ -144,52 +144,50 @@
    ADMIN PANEL — Theme override (navy + gold to match website)
 ═══════════════════════════════════════════════════════════════ */
 
-/* Admin wrapper backgrounds */
-.bg-gray-950  { background-color: #060c1a !important; }
-.bg-gray-900  { background-color: #080f22 !important; }
+/* Admin wrapper backgrounds — lighter navy for readability */
+.bg-gray-950  { background-color: #0e1a35 !important; }
+.bg-gray-900  { background-color: #111f3d !important; }
 .bg-gray-950\/60,
 .bg-gray-900\/60,
 .bg-gray-900\/40 {
-  background-color: rgba(15,36,96,0.35) !important;
+  background-color: rgba(22,46,110,0.45) !important;
 }
 .bg-gray-800\/40,
 .bg-gray-800\/30 {
-  background-color: rgba(15,36,96,0.25) !important;
+  background-color: rgba(22,46,110,0.3) !important;
 }
-.bg-gray-800  { background-color: rgba(15,36,96,0.55) !important; }
-.bg-gray-700  { background-color: rgba(15,36,96,0.7)  !important; }
+.bg-gray-800  { background-color: rgba(22,46,110,0.65) !important; }
+.bg-gray-700  { background-color: rgba(22,46,110,0.8)  !important; }
 
 /* Admin borders */
-.border-gray-800 { border-color: rgba(212,168,67,0.18) !important; }
-.border-gray-700 { border-color: rgba(212,168,67,0.28) !important; }
+.border-gray-800 { border-color: rgba(212,168,67,0.22) !important; }
+.border-gray-700 { border-color: rgba(212,168,67,0.35) !important; }
 
-/* Admin text */
-.text-gray-500 { color: #506070 !important; }
-.text-gray-400 { color: #7090a8 !important; }
-.text-gray-300 { color: #c8d8e8 !important; }
-.text-gray-200 { color: #dde6f0 !important; }
+/* Admin text — lighter for readability */
+.text-gray-500 { color: #7090a8 !important; }
+.text-gray-400 { color: #9ab8d0 !important; }
+.text-gray-300 { color: #dde8f5 !important; }
+.text-gray-200 { color: #eef4fb !important; }
 
-/* Admin inputs/selects in admin pages */
+/* Admin inputs/selects */
 select.text-gray-300,
 input.text-gray-300 {
-  background: rgba(8,15,34,0.65) !important;
-  border-color: rgba(212,168,67,0.28) !important;
-  color: #f0f4f8 !important;
+  background: rgba(14,26,53,0.8) !important;
+  border-color: rgba(212,168,67,0.3) !important;
+  color: #eef4fb !important;
 }
 select.text-gray-300:focus,
 input.text-gray-300:focus {
-  border-color: rgba(212,168,67,0.6) !important;
+  border-color: rgba(212,168,67,0.65) !important;
   outline: none;
 }
 
-/* Hover rows in tables */
+/* Hover rows */
 .hover\:bg-gray-800\/30:hover {
-  background-color: rgba(212,168,67,0.06) !important;
+  background-color: rgba(212,168,67,0.07) !important;
 }
 
-/* Animate pulse for skeleton loaders */
+/* Skeleton loaders */
 .animate-pulse {
   background: rgba(212,168,67,0.08) !important;
 }
-
-/* Emerald active states kept — they still look good on dark navy */

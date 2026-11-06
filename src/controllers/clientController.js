@@ -347,3 +347,41 @@ exports.updateKycStatus = async (req, res, next) => {
     next(err)
   }
 }
+
+// ── Assign client to employee (admin/super_admin only) ────────────────────────
+
+exports.assignClient = async (req, res, next) => {
+  try {
+    const { employeeId } = req.body
+    const client = await Client.findByPk(req.params.id)
+    if (!client) return res.status(404).json({ success: false, message: 'Client not found' })
+
+    let empRecord = null
+    if (employeeId) {
+      empRecord = await Employee.findByPk(employeeId, {
+        include: [{ model: User, as: 'user', attributes: ['first_name', 'last_name', 'is_active'] }],
+      })
+      if (!empRecord) return res.status(404).json({ success: false, message: 'Employee not found' })
+      if (!empRecord.user?.is_active) return res.status(422).json({ success: false, message: 'Employee is inactive' })
+    }
+
+    await client.update({ originating_employee_id: employeeId || null })
+
+    await audit({
+      actorUserId: req.userId,
+      action:      'CLIENT_ASSIGNED',
+      entityType:  'client',
+      entityId:    client.id,
+      metadata:    { employeeId: employeeId || null },
+      req,
+    })
+
+    res.json({
+      success: true,
+      message: employeeId ? `Client assigned to ${empRecord.user.first_name} ${empRecord.user.last_name}` : 'Client unassigned',
+      data: { employeeId: employeeId || null },
+    })
+  } catch (err) {
+    next(err)
+  }
+}

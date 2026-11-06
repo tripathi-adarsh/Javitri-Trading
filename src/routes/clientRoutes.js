@@ -44,4 +44,10 @@ router.patch('/:id/kyc-status', authenticate, requireAdmin, [
   body('rejectionReason').optional().trim().isLength({ max: 1000 }),
 ], validate, ctrl.updateKycStatus)
 
+// PATCH /api/v1/clients/:id/assign — admin/super_admin only
+router.patch('/:id/assign', authenticate, requireAdmin, [
+  param('id').isUUID().withMessage('Invalid client ID'),
+  body('employeeId').optional({ nullable: true }).isUUID().withMessage('Invalid employee ID'),
+], validate, ctrl.assignClient)
+
 module.exports = router

@@ -103,6 +103,7 @@ export const api = {
       list:      (token, qs = '') => request(`/clients?${qs}`,             { headers: authHeader(token) }),
       get:       (id, token)      => request(`/clients/${id}`,             { headers: authHeader(token) }),
       updateKyc: (id, body, token)=> request(`/clients/${id}/kyc-status`,  { method: 'PATCH', body, headers: authHeader(token) }),
+      assign:    (id, body, token)=> request(`/clients/${id}/assign`,      { method: 'PATCH', body, headers: authHeader(token) }),
     },
 
     plans: {

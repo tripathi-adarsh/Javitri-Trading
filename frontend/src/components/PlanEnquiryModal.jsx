@@ -39,7 +39,9 @@ const schema = z.object({
   accountHolderName: z.string().min(2, 'Account holder name required'),
   bankName:          z.string().min(2, 'Bank name required'),
   accountNumber:     z.string().min(8, 'Account number required').max(20),
-  ifscCode:          z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC (e.g. SBIN0001234)'),
+  ifscCode: z.string()
+    .transform(v => v.trim().toUpperCase())
+    .pipe(z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC — format: SBIN0001234 (4 letters + 0 + 6 chars)')),
   // Consent
   consent: z.literal(true, { errorMap: () => ({ message: 'You must agree to proceed' }) }),
 })
@@ -62,13 +64,13 @@ function Field({ label, required, error, children }) {
   )
 }
 
-function TextInput({ register, name, placeholder, type = 'text', error, ...rest }) {
+function TextInput({ register, name, placeholder, type = 'text', error, className = '', ...rest }) {
   return (
     <input
       type={type}
       placeholder={placeholder}
       {...register(name)}
-      className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all"
+      className={`w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all ${className}`}
       style={{
         background: 'rgba(15,36,96,0.5)',
         border: error ? '1px solid rgba(239,68,68,0.6)' : '1px solid rgba(212,168,67,0.2)',
@@ -403,8 +405,13 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
                   <TextInput register={register} name="bankName" placeholder="e.g. State Bank of India" error={errors.bankName} />
                 </Field>
                 <Field label="IFSC Code" required error={errors.ifscCode?.message}>
-                  <TextInput register={register} name="ifscCode" placeholder="e.g. SBIN0001234" error={errors.ifscCode}
-                    onChange={e => e.target.value = e.target.value.toUpperCase()} />
+                  <TextInput
+                    register={register}
+                    name="ifscCode"
+                    placeholder="e.g. SBIN0001234"
+                    error={errors.ifscCode}
+                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all uppercase"
+                  />
                 </Field>
               </div>
               <Field label="Account Number" required error={errors.accountNumber?.message}>

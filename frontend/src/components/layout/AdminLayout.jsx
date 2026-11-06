@@ -21,18 +21,18 @@ const NAV_ITEMS = [
   { to: '/admin/audit-logs',        icon: FileText,        label: 'Audit Logs',          roles: ['admin','super_admin'] },
 ]
 
-/* ── colours matching website theme ── */
+/* ── colours — lighter theme, better readability ── */
 const THEME = {
-  bg:          '#060c1a',
-  sidebar:     '#080f22',
-  border:      'rgba(212,168,67,0.18)',
+  bg:          '#0e1a35',
+  sidebar:     '#111f3d',
+  border:      'rgba(212,168,67,0.22)',
   gold:        '#d4a843',
-  goldMuted:   'rgba(212,168,67,0.55)',
-  activeB:     'rgba(212,168,67,0.12)',
-  activeBorder:'rgba(212,168,67,0.35)',
-  text:        '#c8d8e8',
-  textMuted:   '#506070',
-  hover:       'rgba(212,168,67,0.07)',
+  goldMuted:   'rgba(212,168,67,0.6)',
+  activeB:     'rgba(212,168,67,0.15)',
+  activeBorder:'rgba(212,168,67,0.45)',
+  text:        '#dde8f5',
+  textMuted:   '#7090a8',
+  hover:       'rgba(212,168,67,0.08)',
 }
 
 export default function AdminLayout({ children }) {

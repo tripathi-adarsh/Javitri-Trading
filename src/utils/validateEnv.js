@@ -11,7 +11,7 @@ function validateEnv () {
     'DB_HOST',
     'DB_NAME',
     'DB_USER',
-    'DB_PASSWORD',
+    // DB_PASSWORD can be empty (e.g. local XAMPP root with no password)
     'JWT_SECRET',
     'JWT_REFRESH_SECRET',
     'RAZORPAY_KEY_ID',
@@ -22,7 +22,7 @@ function validateEnv () {
     'ADMIN_SIGNUP_TOKEN',
   ]
 
-  const missing = required.filter(key => !process.env[key])
+  const missing = required.filter(key => process.env[key] === undefined || process.env[key] === null)
   if (missing.length > 0) {
     console.error('✗ Missing required environment variables:')
     missing.forEach(key => console.error(`  - ${key}`))

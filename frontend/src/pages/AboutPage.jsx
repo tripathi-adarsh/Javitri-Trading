@@ -56,7 +56,7 @@ const DIRECTORS = [
     name:           'Dinesh singh',
     designation:    'Director & Co-Founder',
     photo:          '/director2.jpeg',
-    qualifications: 'B.Sc, PGDM',
+    qualifications: 'B.A.',
     experience:     '10+ years in Trading & Business Development',
     message:        'We are committed to building a trustworthy platform where every learner grows with confidence. Transparency and education are at the core of everything we do.',
     badges: [
