@@ -17,10 +17,11 @@ const orderRoutes             = require('./routes/orderRoutes')
 const paymentRoutes           = require('./routes/paymentRoutes')
 const legalRoutes             = require('./routes/legalRoutes')
 const employeeRoutes          = require('./routes/employeeRoutes')
-const registrationLinkRoutes  = require('./routes/registrationLinkRoutes')
 const clientRoutes            = require('./routes/clientRoutes')
 const paymentReviewRoutes     = require('./routes/paymentReviewRoutes')
 const auditLogRoutes          = require('./routes/auditLogRoutes')
+const userRoutes              = require('./routes/userRoutes')
+const planRequestRoutes       = require('./routes/planRequestRoutes')
 
 const app = express()
 
@@ -72,6 +73,10 @@ app.use(express.json({ limit: '10kb' }))          // limit body size
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
+// ── Serve uploaded KYC documents (access controlled via API route, not direct URL) ──
+// Uploads directory is NOT exposed as static — files are served through the authenticated
+// /api/v1/clients/:id/kyc-documents/:docType route only.
+
 // ── HTTP Parameter Pollution protection ───────────────────────────────────────
 app.use(hpp())
 
@@ -106,15 +111,11 @@ app.use('/api/v1/orders',            orderRoutes)
 app.use('/api/v1/payments',          paymentRoutes)
 app.use('/api/v1/legal',             legalRoutes)
 app.use('/api/v1/employees',         employeeRoutes)
-app.use('/api/v1/registration-links', registrationLinkRoutes)
 app.use('/api/v1/clients',           clientRoutes)
 app.use('/api/v1/payment-reviews',   paymentReviewRoutes)
 app.use('/api/v1/audit-logs',        auditLogRoutes)
-
-// Public: validate registration link token
-app.get('/api/v1/public/registration-links/:token',
-  require('./controllers/registrationLinkController').validateToken
-)
+app.use('/api/v1/users',             userRoutes)
+app.use('/api/v1/plan-requests',     planRequestRoutes)
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

@@ -8,7 +8,8 @@
 
 const {
   sequelize,
-  User, Employee, RegistrationLink, Client, ClientKYC,
+  User, Employee, Client, ClientKYC,
+  ClientPlanRequest, DailyPayout,
   Plan, PromoCode, Order, Payment,
   LegalDocument, LegalConsent, AuditLog,
 } = require('../../models/index')

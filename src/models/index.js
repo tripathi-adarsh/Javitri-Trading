@@ -2,10 +2,11 @@
 const sequelize          = require('../db/sequelize')
 const User               = require('./User')
 const Employee           = require('./Employee')
-const RegistrationLink   = require('./RegistrationLink')
 const Client             = require('./Client')
 const ClientKYC          = require('./ClientKYC')
 const ClientBankAccount  = require('./ClientBankAccount')
+const ClientPlanRequest  = require('./ClientPlanRequest')
+const DailyPayout        = require('./DailyPayout')
 const Plan               = require('./Plan')
 const PromoCode          = require('./PromoCode')
 const Order              = require('./Order')
@@ -16,20 +17,10 @@ const LegalConsent       = require('./LegalConsent')
 const AuditLog           = require('./AuditLog')
 
 // ── User ↔ Employee ───────────────────────────────────────────────────────────
-User.hasOne(Employee,     { foreignKey: 'user_id',           as: 'employeeProfile' })
-Employee.belongsTo(User,  { foreignKey: 'user_id',           as: 'user' })
-
-// Employee created_by
+User.hasOne(Employee,     { foreignKey: 'user_id', as: 'employeeProfile' })
+Employee.belongsTo(User,  { foreignKey: 'user_id', as: 'user' })
 User.hasMany(Employee,    { foreignKey: 'created_by_user_id', as: 'createdEmployees' })
 Employee.belongsTo(User,  { foreignKey: 'created_by_user_id', as: 'createdBy' })
-
-// ── Employee ↔ RegistrationLink ────────────────────────────────────────────────
-Employee.hasMany(RegistrationLink,    { foreignKey: 'employee_id', as: 'registrationLinks' })
-RegistrationLink.belongsTo(Employee, { foreignKey: 'employee_id', as: 'employee' })
-
-// ── RegistrationLink ↔ Client ─────────────────────────────────────────────────
-RegistrationLink.hasMany(Client,       { foreignKey: 'registration_link_id', as: 'clients' })
-Client.belongsTo(RegistrationLink,     { foreignKey: 'registration_link_id', as: 'registrationLink' })
 
 // ── Employee ↔ Client ─────────────────────────────────────────────────────────
 Employee.hasMany(Client,   { foreignKey: 'originating_employee_id', as: 'clients' })
@@ -99,14 +90,31 @@ Order.belongsTo(LegalConsent, { foreignKey: 'privacy_consent_id', as: 'privacyCo
 User.hasMany(AuditLog,    { foreignKey: 'actor_user_id', as: 'auditLogs' })
 AuditLog.belongsTo(User,  { foreignKey: 'actor_user_id', as: 'actor' })
 
+// ── Client ↔ ClientPlanRequest ────────────────────────────────────────────────
+Client.hasMany(ClientPlanRequest,       { foreignKey: 'client_id', as: 'planRequests' })
+ClientPlanRequest.belongsTo(Client,     { foreignKey: 'client_id', as: 'client' })
+
+// ── Employee ↔ ClientPlanRequest ──────────────────────────────────────────────
+Employee.hasMany(ClientPlanRequest,     { foreignKey: 'assigned_employee_id', as: 'planRequests' })
+ClientPlanRequest.belongsTo(Employee,  { foreignKey: 'assigned_employee_id', as: 'assignedEmployee' })
+
+// ── ClientPlanRequest ↔ DailyPayout ───────────────────────────────────────────
+ClientPlanRequest.hasMany(DailyPayout,  { foreignKey: 'plan_request_id', as: 'dailyPayouts' })
+DailyPayout.belongsTo(ClientPlanRequest, { foreignKey: 'plan_request_id', as: 'planRequest' })
+
+// ── Client ↔ DailyPayout ─────────────────────────────────────────────────────
+Client.hasMany(DailyPayout,   { foreignKey: 'client_id', as: 'dailyPayouts' })
+DailyPayout.belongsTo(Client, { foreignKey: 'client_id', as: 'client' })
+
 module.exports = {
   sequelize,
   User,
   Employee,
-  RegistrationLink,
   Client,
   ClientKYC,
   ClientBankAccount,
+  ClientPlanRequest,
+  DailyPayout,
   Plan,
   PromoCode,
   Order,

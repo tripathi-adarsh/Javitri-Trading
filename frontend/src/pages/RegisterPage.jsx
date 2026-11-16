@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { User, Mail, Phone, Lock, Eye, EyeOff, MapPin, CreditCard, Calendar } from 'lucide-react'
+import { User, Mail, Phone, Lock, Eye, EyeOff, MapPin, CreditCard, Calendar, Upload, FileCheck } from 'lucide-react'
 import Input from '../components/ui/Input.jsx'
 import Select from '../components/ui/Select.jsx'
 import Button from '../components/ui/Button.jsx'
@@ -74,6 +74,12 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [apiError, setApiError] = useState('')
 
+  // ── KYC document files — stored in a plain object ref to avoid React re-render issues
+  const [aadhaarFile,  setAadhaarFile]  = useState(null)
+  const [panFile,      setPanFile]      = useState(null)
+  const [passbookFile, setPassbookFile] = useState(null)
+  const [uploadStatus, setUploadStatus] = useState('')
+
   const {
     register,
     handleSubmit,
@@ -104,9 +110,39 @@ export default function RegisterPage() {
     setApiError('')
     try {
       const res = await api.auth.register(data)
-      saveToken(res.data.accessToken)
+      const accessToken = res.data.accessToken
+
+      saveToken(accessToken)
       setUser(res.data.user)
       setClientData(data)
+
+      // ── Upload KYC documents immediately with the fresh token ──────────────
+      const hasFiles = aadhaarFile || panFile || passbookFile
+      if (hasFiles) {
+        setUploadStatus('uploading')
+        try {
+          const fd = new FormData()
+          if (aadhaarFile)  fd.append('aadhaarImage',  aadhaarFile)
+          if (panFile)      fd.append('panImage',      panFile)
+          if (passbookFile) fd.append('passbookImage', passbookFile)
+
+          const upRes = await fetch('/api/v1/users/kyc-documents', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${accessToken}` },
+            body: fd,
+          })
+          if (!upRes.ok) {
+            const j = await upRes.json().catch(() => ({}))
+            throw new Error(j.message || `Upload failed (${upRes.status})`)
+          }
+          setUploadStatus('done')
+        } catch (upErr) {
+          setUploadStatus('failed')
+          // Don't block navigation — user can retry later
+          console.warn('KYC upload failed:', upErr.message)
+        }
+      }
+
       navigate('/plans')
     } catch (err) {
       setApiError(err.message || 'Registration failed. Please try again.')
@@ -321,6 +357,84 @@ export default function RegisterPage() {
               </div>
             </section>
 
+            {/* KYC Documents */}
+            <section>
+              <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                KYC Documents
+              </h2>
+              <p className="text-xs text-gray-500 mb-4">Aadhaar, PAN Card, Bank Passbook. JPEG/PNG/PDF, max 5MB each.</p>
+              <div className="space-y-3">
+
+                {/* Aadhaar */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400 w-28 shrink-0">Aadhaar Card *</span>
+                  {aadhaarFile ? (
+                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                      <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-xs text-emerald-400 flex-1 truncate">{aadhaarFile.name}</span>
+                      <button type="button" onClick={() => setAadhaarFile(null)} className="text-red-400 text-xs ml-1">✕</button>
+                    </div>
+                  ) : (
+                    <label className="flex-1 cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 border border-dashed border-gray-700 hover:border-emerald-500/50 transition-colors">
+                        <Upload className="h-3.5 w-3.5 text-gray-500" />
+                        <span className="text-xs text-gray-500">Choose Aadhaar</span>
+                      </div>
+                      <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={e => { if (e.target.files?.[0]) setAadhaarFile(e.target.files[0]) }} />
+                    </label>
+                  )}
+                </div>
+
+                {/* PAN */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400 w-28 shrink-0">PAN Card *</span>
+                  {panFile ? (
+                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                      <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-xs text-emerald-400 flex-1 truncate">{panFile.name}</span>
+                      <button type="button" onClick={() => setPanFile(null)} className="text-red-400 text-xs ml-1">✕</button>
+                    </div>
+                  ) : (
+                    <label className="flex-1 cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 border border-dashed border-gray-700 hover:border-emerald-500/50 transition-colors">
+                        <Upload className="h-3.5 w-3.5 text-gray-500" />
+                        <span className="text-xs text-gray-500">Choose PAN Card</span>
+                      </div>
+                      <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={e => { if (e.target.files?.[0]) setPanFile(e.target.files[0]) }} />
+                    </label>
+                  )}
+                </div>
+
+                {/* Passbook */}
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-400 w-28 shrink-0">Bank Passbook</span>
+                  {passbookFile ? (
+                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
+                      <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                      <span className="text-xs text-emerald-400 flex-1 truncate">{passbookFile.name}</span>
+                      <button type="button" onClick={() => setPassbookFile(null)} className="text-red-400 text-xs ml-1">✕</button>
+                    </div>
+                  ) : (
+                    <label className="flex-1 cursor-pointer">
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 border border-dashed border-gray-700 hover:border-emerald-500/50 transition-colors">
+                        <Upload className="h-3.5 w-3.5 text-gray-500" />
+                        <span className="text-xs text-gray-500">Choose Passbook</span>
+                      </div>
+                      <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf"
+                        onChange={e => { if (e.target.files?.[0]) setPassbookFile(e.target.files[0]) }} />
+                    </label>
+                  )}
+                </div>
+
+              </div>
+              {uploadStatus === 'uploading' && <p className="text-xs text-blue-400 mt-2">⏳ Uploading documents...</p>}
+              {uploadStatus === 'done'      && <p className="text-xs text-emerald-400 mt-2">✓ Documents uploaded!</p>}
+              {uploadStatus === 'failed'    && <p className="text-xs text-amber-400 mt-2">⚠ Upload failed — aap baad mein upload kar sakte ho.</p>}
+            </section>
+
             {/* API Error */}
             {apiError && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
@@ -328,21 +442,13 @@ export default function RegisterPage() {
               </div>
             )}
 
-            {/* Disclaimer */}
-            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-              <p className="text-xs text-amber-300/80 leading-relaxed">
-                <span className="font-semibold">Sample Data Notice:</span> This is a demo form. 
-                No real account will be created. PAN and personal details entered here are not stored or verified.
-              </p>
-            </div>
-
             <Button
               type="submit"
               size="lg"
-              loading={isSubmitting}
+              loading={isSubmitting || uploadStatus === 'uploading'}
               className="w-full"
             >
-              Continue to Trading Plans →
+              {uploadStatus === 'uploading' ? 'Uploading Documents…' : 'Continue to Trading Plans →'}
             </Button>
           </div>
         </form>

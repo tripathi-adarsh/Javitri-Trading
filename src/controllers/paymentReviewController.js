@@ -170,28 +170,30 @@ exports.submitReviewDecision = async (req, res, next) => {
 
 exports.getDashboardStats = async (req, res, next) => {
   try {
+    const { ClientPlanRequest, DailyPayout } = require('../models/index')
+
     const [
       totalEmployees,
       activeEmployees,
       totalClients,
       pendingKyc,
-      activeLinks,
-      totalOrders,
-      awaitingReview,
-      approved,
-      rejected,
+      totalPlanRequests,
+      pendingPayments,
+      successPayments,
+      failedPayments,
+      totalDailyPayouts,
     ] = await Promise.all([
       require('../models/index').Employee.count(),
       require('../models/index').Employee.count({
         include: [{ model: User, as: 'user', where: { is_active: true }, required: true }],
       }),
       require('../models/index').Client.count(),
-      require('../models/index').Client.count({ where: { status: 'pending_kyc' } }),
-      require('../models/index').RegistrationLink.count({ where: { status: 'active' } }),
-      Order.count(),
-      PaymentReview.count({ where: { decision: 'AWAITING_REVIEW' } }),
-      PaymentReview.count({ where: { decision: 'APPROVED' } }),
-      PaymentReview.count({ where: { decision: 'REJECTED' } }),
+      require('../models/index').Client.count({ where: { status: { [Op.in]: ['pending_kyc', 'kyc_submitted'] } } }),
+      ClientPlanRequest.count(),
+      ClientPlanRequest.count({ where: { payment_status: 'pending' } }),
+      ClientPlanRequest.count({ where: { payment_status: 'success' } }),
+      ClientPlanRequest.count({ where: { payment_status: 'failed' } }),
+      DailyPayout.count(),
     ])
 
     res.json({
@@ -201,11 +203,11 @@ exports.getDashboardStats = async (req, res, next) => {
         activeEmployees,
         totalClients,
         pendingKyc,
-        activeLinks,
-        totalOrders,
-        awaitingReview,
-        approved,
-        rejected,
+        totalPlanRequests,
+        pendingPayments,
+        successPayments,
+        failedPayments,
+        totalDailyPayouts,
       },
     })
   } catch (err) {

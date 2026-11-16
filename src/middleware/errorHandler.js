@@ -1,7 +1,9 @@
 'use strict'
+const multer = require('multer')
 
 /**
  * Central Express error handler.
+ * - Multer errors → 422
  * - Sequelize validation errors → 422
  * - Sequelize unique constraint errors → 409
  * - JWT errors → 401
@@ -10,6 +12,24 @@
  */
 function errorHandler (err, req, res, _next) {
   const isDev = process.env.NODE_ENV === 'development'
+
+  // Multer file upload errors
+  if (err instanceof multer.MulterError) {
+    const msgMap = {
+      LIMIT_FILE_SIZE:        'File too large. Maximum size is 5 MB.',
+      LIMIT_FILE_COUNT:       'Too many files uploaded.',
+      LIMIT_UNEXPECTED_FILE:  `Unexpected field: "${err.field}". Allowed: aadhaarImage, panImage, passbookImage.`,
+    }
+    return res.status(422).json({
+      success: false,
+      message: msgMap[err.code] || `File upload error: ${err.message}`,
+    })
+  }
+
+  // Invalid file type (thrown by fileFilter)
+  if (err.message?.startsWith('Invalid file type')) {
+    return res.status(422).json({ success: false, message: err.message })
+  }
 
   // Sequelize validation error
   if (err.name === 'SequelizeValidationError') {

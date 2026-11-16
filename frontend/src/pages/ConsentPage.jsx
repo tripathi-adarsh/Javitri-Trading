@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldCheck, FileText, Lock, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2 } from 'lucide-react'
+import { ShieldCheck, FileText, Lock, ArrowRight, ArrowLeft, Check, AlertCircle, Loader2, Upload, FileCheck } from 'lucide-react'
 import Button from '../components/ui/Button.jsx'
 import StepIndicator from '../components/ui/StepIndicator.jsx'
 import { useTrading } from '../context/TradingContext.jsx'
@@ -20,7 +20,13 @@ export default function ConsentPage() {
   const [expandTerms,    setExpandTerms]    = useState(false)
   const [expandPrivacy,  setExpandPrivacy]  = useState(false)
 
-  // Fetch current published versions from server so version numbers are accurate
+  // ── Document upload state ──────────────────────────────────────────────────
+  const [aadhaarFile,  setAadhaarFile]  = useState(null)
+  const [panFile,      setPanFile]      = useState(null)
+  const [passbookFile, setPassbookFile] = useState(null)
+  const [uploading,    setUploading]    = useState(false)
+  const [uploadError,  setUploadError]  = useState('')
+
   useEffect(() => {
     if (!token) { navigate('/register'); return }
     if (!selectedPlan) { navigate('/plans'); return }
@@ -39,8 +45,35 @@ export default function ConsentPage() {
 
   const canProceed = termsChecked && privacyChecked && termsDoc && privacyDoc
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     if (!canProceed) return
+
+    // Upload documents if any selected
+    const hasFiles = aadhaarFile || panFile || passbookFile
+    if (hasFiles) {
+      setUploading(true)
+      setUploadError('')
+      try {
+        const fd = new FormData()
+        if (aadhaarFile)  fd.append('aadhaarImage',  aadhaarFile)
+        if (panFile)      fd.append('panImage',      panFile)
+        if (passbookFile) fd.append('passbookImage', passbookFile)
+
+        const res = await fetch('/api/v1/users/kyc-documents', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}` },
+          body: fd,
+        })
+        const json = await res.json().catch(() => ({}))
+        if (!res.ok) throw new Error(json.message || `Upload failed (${res.status})`)
+      } catch (e) {
+        setUploadError(e.message || 'Document upload failed. You can upload later from your profile.')
+        setUploading(false)
+        // Don't block payment flow — just warn and continue
+      }
+      setUploading(false)
+    }
+
     setConsentGiven(true)
     navigate('/payment')
   }
@@ -227,6 +260,64 @@ export default function ConsentPage() {
               </p>
             </div>
 
+            {/* ── KYC Document Upload ──────────────────────────────── */}
+            <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-1">
+                <Upload className="h-4 w-4 text-emerald-400" />
+                <h3 className="text-sm font-semibold text-white">Upload KYC Documents</h3>
+                <span className="text-xs text-gray-500 ml-auto">Optional — upload now or later</span>
+              </div>
+              <p className="text-xs text-gray-500 mb-4">Aadhaar, PAN Card, Bank Passbook. JPEG/PNG/PDF, max 5MB each.</p>
+
+              <div className="space-y-3">
+                {[
+                  { label: 'Aadhaar Card', file: aadhaarFile, setFile: setAadhaarFile },
+                  { label: 'PAN Card',     file: panFile,     setFile: setPanFile     },
+                  { label: 'Bank Passbook',file: passbookFile,setFile: setPassbookFile },
+                ].map(({ label, file, setFile }) => (
+                  <div key={label} className="flex items-center gap-3">
+                    <span className="text-xs text-gray-400 w-28 shrink-0">{label}</span>
+                    {file ? (
+                      <div className="flex flex-1 items-center gap-2 px-3 py-1.5 rounded-lg"
+                        style={{ background:'rgba(74,222,128,0.08)', border:'1px solid rgba(74,222,128,0.3)' }}>
+                        <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                        <span className="text-xs text-emerald-400 truncate flex-1">{file.name}</span>
+                        <button type="button" onClick={() => setFile(null)}
+                          className="text-xs text-red-400 shrink-0 ml-1">✕</button>
+                      </div>
+                    ) : (
+                      <label className="flex-1 cursor-pointer">
+                        <div className="flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg transition-colors"
+                          style={{ background:'rgba(255,255,255,0.03)', border:'1px dashed rgba(255,255,255,0.15)' }}
+                          onMouseEnter={e => e.currentTarget.style.borderColor='rgba(52,211,153,0.4)'}
+                          onMouseLeave={e => e.currentTarget.style.borderColor='rgba(255,255,255,0.15)'}>
+                          <Upload className="h-3.5 w-3.5 text-gray-500" />
+                          <span className="text-xs text-gray-500">Choose file</span>
+                        </div>
+                        <input type="file" className="hidden"
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          onChange={e => { const f = e.target.files?.[0]; if (f) { setFile(f); setUploadError('') } }} />
+                      </label>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {uploadError && (
+                <div className="mt-3 flex gap-2 rounded-lg p-2.5"
+                  style={{ background:'rgba(239,68,68,0.08)', border:'1px solid rgba(239,68,68,0.25)' }}>
+                  <AlertCircle className="h-3.5 w-3.5 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-red-400">{uploadError}</p>
+                </div>
+              )}
+
+              {(aadhaarFile || panFile || passbookFile) && (
+                <p className="text-xs text-emerald-400 mt-3">
+                  ✓ {[aadhaarFile, panFile, passbookFile].filter(Boolean).length} file{[aadhaarFile, panFile, passbookFile].filter(Boolean).length > 1 ? 's' : ''} ready — will upload when you click Accept below
+                </p>
+              )}
+            </div>
+
             {/* Actions */}
             <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button variant="ghost" size="lg" onClick={() => navigate('/deal-summary')}>
@@ -235,10 +326,13 @@ export default function ConsentPage() {
               <Button
                 size="lg"
                 onClick={handleProceed}
-                disabled={!canProceed}
+                disabled={!canProceed || uploading}
                 className="flex-1"
               >
-                Accept & Continue to Payment <ArrowRight className="h-4 w-4" />
+                {uploading
+                  ? <><Loader2 className="h-4 w-4 animate-spin" /> Uploading Documents…</>
+                  : <>Accept & Continue to Payment <ArrowRight className="h-4 w-4" /></>
+                }
               </Button>
             </div>
 

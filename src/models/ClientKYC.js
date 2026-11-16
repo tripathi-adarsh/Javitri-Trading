@@ -63,6 +63,23 @@ const ClientKYC = sequelize.define('ClientKYC', {
     type:      DataTypes.TEXT,
     allowNull: true,
   },
+  // ── Document image paths (stored server-side, not public) ────────────────
+  aadhaar_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
+  aadhaar_back_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
+  pan_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
+  passbook_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
   // Raw metadata from KYC provider (JSON, no sensitive fields)
   provider_metadata: {
     type:      DataTypes.JSON,

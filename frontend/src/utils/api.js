@@ -52,10 +52,29 @@ export const api = {
 
   // ── Public routes ─────────────────────────────────────────────────────────
   public: {
-    // Validate an employee registration link token
-    validateToken:  (token) => request(`/public/registration-links/${token}`),
-    // Register a new client via employee link
+    // Check if client already exists by mobile or email
+    checkClient: (body) => request('/clients/check', { method: 'POST', body }),
+    // Register a new client
     registerClient: (body)  => request('/clients', { method: 'POST', body }),
+    // Upload KYC documents for a client (called after registration, no auth needed)
+    uploadKycDocs: (clientId, formData) => {
+      if (!clientId) {
+        return Promise.reject({ message: 'clientId is missing — cannot upload documents' })
+      }
+      return fetch(`${BASE}/clients/${clientId}/kyc-documents`, {
+        method: 'POST',
+        body: formData,
+        // NO Content-Type header — browser sets multipart/form-data boundary automatically
+        // NO credentials — this is a public route, no auth cookie needed
+      }).then(async res => {
+        const contentType = res.headers.get('content-type') || ''
+        const data = contentType.includes('application/json')
+          ? await res.json().catch(() => ({}))
+          : {}
+        if (!res.ok) throw { status: res.status, message: data.message || `Upload failed (${res.status})`, ...data }
+        return data
+      })
+    },
     // Get current legal document
     legal:          (type)  => request(`/legal/${type}`),
     // Get active plans
@@ -93,17 +112,27 @@ export const api = {
       setStatus:  (id, isActive, token) => request(`/employees/${id}/status`, { method: 'PATCH', body: { isActive }, headers: authHeader(token) }),
     },
 
-    registrationLinks: {
-      list:   (token, qs = '')    => request(`/registration-links?${qs}`,          { headers: authHeader(token) }),
-      create: (body, token)       => request('/registration-links',                 { method: 'POST', body, headers: authHeader(token) }),
-      revoke: (id, token)         => request(`/registration-links/${id}/revoke`,    { method: 'POST', headers: authHeader(token) }),
-    },
-
     clients: {
-      list:      (token, qs = '') => request(`/clients?${qs}`,             { headers: authHeader(token) }),
-      get:       (id, token)      => request(`/clients/${id}`,             { headers: authHeader(token) }),
-      updateKyc: (id, body, token)=> request(`/clients/${id}/kyc-status`,  { method: 'PATCH', body, headers: authHeader(token) }),
-      assign:    (id, body, token)=> request(`/clients/${id}/assign`,      { method: 'PATCH', body, headers: authHeader(token) }),
+      list:          (token, qs = '') => request(`/clients?${qs}`,             { headers: authHeader(token) }),
+      get:           (id, token)      => request(`/clients/${id}`,             { headers: authHeader(token) }),
+      updateKyc:     (id, body, token)=> request(`/clients/${id}/kyc-status`,  { method: 'PATCH', body, headers: authHeader(token) }),
+      assign:        (id, body, token)=> request(`/clients/${id}/assign`,      { method: 'PATCH', body, headers: authHeader(token) }),
+      uploadDocuments: (id, formData, token) => {
+        // FormData — do NOT set Content-Type (browser sets multipart boundary)
+        return fetch(`${BASE}/clients/${id}/kyc-documents`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          body: formData,
+        }).then(async res => {
+          const data = await res.json().catch(() => ({}))
+          if (!res.ok) throw { status: res.status, ...(data || {}) }
+          return data
+        })
+      },
+      // Returns a URL to view an image (goes through authenticated API route)
+      documentUrl: (id, docType, token) =>
+        `${BASE}/clients/${id}/kyc-documents/${docType}?token=${encodeURIComponent(token || '')}`,
     },
 
     plans: {
@@ -124,6 +153,17 @@ export const api = {
 
     auditLogs: {
       list: (token, qs = '')      => request(`/audit-logs?${qs}`,         { headers: authHeader(token) }),
+    },
+
+    planRequests: {
+      create:       (body)              => request('/plan-requests', { method: 'POST', body }),
+      list:         (token, qs = '')    => request(`/plan-requests?${qs}`, { headers: authHeader(token) }),
+      get:          (id, token)         => request(`/plan-requests/${id}`,  { headers: authHeader(token) }),
+      markPayment:  (id, body, token)   => request(`/plan-requests/${id}/payment`, { method: 'PATCH', body, headers: authHeader(token) }),
+      assign:       (id, body, token)   => request(`/plan-requests/${id}/assign`,  { method: 'PATCH', body, headers: authHeader(token) }),
+      addPayout:    (id, body, token)   => request(`/plan-requests/${id}/daily-payouts`, { method: 'POST', body, headers: authHeader(token) }),
+      getPayouts:   (id, token)         => request(`/plan-requests/${id}/daily-payouts`, { headers: authHeader(token) }),
+      payoutReport: (token, qs = '')    => request(`/plan-requests/reports/payouts?${qs}`, { headers: authHeader(token) }),
     },
 
     legal: {

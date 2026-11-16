@@ -5,6 +5,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { api } from '../utils/api.js'
 
+const API_BASE = import.meta.env.VITE_API_URL || '/api/v1'
+
 /* ── Plan data ── */
 const ALL_PLANS = [
   { slug: 'plan-1',  name: 'Plan 1',  deal: '₹10,000',    daily: '₹200',      dealAmountINR: 10000 },
@@ -40,10 +42,14 @@ const schema = z.object({
   bankName:          z.string().min(2, 'Bank name required'),
   accountNumber:     z.string().min(8, 'Account number required').max(20),
   ifscCode: z.string()
-    .transform(v => v.trim().toUpperCase())
-    .pipe(z.string().regex(/^[A-Z]{4}0[A-Z0-9]{6}$/, 'Invalid IFSC — format: SBIN0001234 (4 letters + 0 + 6 chars)')),
-  // Consent
-  consent: z.literal(true, { errorMap: () => ({ message: 'You must agree to proceed' }) }),
+    .min(11, 'IFSC must be 11 characters')
+    .max(11, 'IFSC must be 11 characters')
+    .refine(
+      v => /^[A-Za-z]{4}0[A-Za-z0-9]{6}$/i.test(v.trim()),
+      'Invalid IFSC — format: SBIN0001234'
+    ),
+  // Consent handled separately via local state (not Zod)
+  // consent: z.boolean()
 })
 
 /* ── Field component ── */
@@ -84,16 +90,29 @@ function TextInput({ register, name, placeholder, type = 'text', error, classNam
 }
 
 /* ── Steps ── */
-const STEPS = ['Plan', 'Personal', 'Nominee', 'Bank', 'Submit']
+const STEPS = ['Plan', 'Personal', 'Nominee', 'Bank', 'Documents', 'Submit']
 
 export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }) {
   const [step, setStep]               = useState(0)
   const [selectedPlan, setSelectedPlan] = useState(initialPlan)
   const [submitting, setSubmitting]   = useState(false)
   const [submitted, setSubmitted]     = useState(false)
+  const [isExisting, setIsExisting]   = useState(false)
+  const [existingClientId, setExistingClientId] = useState(null)
+  const [checkingClient, setCheckingClient] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [regId, setRegId]             = useState('')
   const overlayRef = useRef(null)
+
+  /* Document upload state */
+  const [docs, setDocs] = useState({
+    aadhaarFront: null,
+    aadhaarBack:  null,
+    pan:          null,
+    bankProof:    null,
+  })
+
+  const [consentChecked, setConsentChecked] = useState(false)
 
   // Reset on open
   useEffect(() => {
@@ -102,8 +121,13 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
       setSelectedPlan(initialPlan)
       setSubmitting(false)
       setSubmitted(false)
+      setIsExisting(false)
+      setExistingClientId(null)
+      setCheckingClient(false)
       setSubmitError('')
       setRegId('')
+      setDocs({ aadhaarFront: null, aadhaarBack: null, pan: null, bankProof: null })
+      setConsentChecked(false)
       reset()
     }
   }, [isOpen, initialPlan])
@@ -115,9 +139,10 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     return () => window.removeEventListener('keydown', handler)
   }, [onClose])
 
-  const { register, handleSubmit, trigger, formState: { errors }, reset, watch } = useForm({
+  const { register, handleSubmit, trigger, formState: { errors }, reset, watch, setValue } = useForm({
     resolver: zodResolver(schema),
     mode: 'onBlur',
+    shouldUnregister: false,
   })
 
   if (!isOpen) return null
@@ -127,12 +152,47 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     1: ['fullName', 'mobile', 'email', 'city', 'state', 'postalCode'],
     2: ['nomineeName', 'nomineeRelation', 'nomineeMobile'],
     3: ['accountHolderName', 'bankName', 'accountNumber', 'ifscCode'],
-    4: ['consent'],
+    4: [],   // Documents — optional
+    5: [],   // Consent — handled via local state
   }
 
   const nextStep = async () => {
     if (step === 0) { if (!selectedPlan) return; setStep(1); return }
+
+    // Step 1 — Personal details: validate then check if client already exists
+    if (step === 1) {
+      const fields = stepFields[1]
+      const ok = await trigger(fields)
+      if (!ok) return
+      // Check existing client
+      setCheckingClient(true)
+      try {
+        const mobile = watch('mobile')
+        const email  = watch('email')
+        const res = await api.public.checkClient({ mobile, email })
+        if (res.exists) {
+          // Existing client — skip to Submit step directly
+          setIsExisting(true)
+          setExistingClientId(res.data.clientId)
+          setRegId(res.data.registrationId)
+          setStep(5)   // jump straight to Submit/Review
+          return
+        }
+      } catch { /* network error — continue normally */ }
+      finally { setCheckingClient(false) }
+      setStep(2)
+      return
+    }
+
+    // Step 4 — documents mandatory check
+    if (step === 4) {
+      if (!docs.aadhaarFront || !docs.aadhaarBack || !docs.pan || !docs.bankProof) return
+      setStep(5)
+      return
+    }
+
     const fields = stepFields[step] || []
+    if (fields.length === 0) { setStep(s => s + 1); return }
     const ok = await trigger(fields)
     if (ok) setStep(s => s + 1)
   }
@@ -141,9 +201,26 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
 
   const onSubmit = async (data) => {
     if (!selectedPlan) { setSubmitError('Please select a plan'); return }
+    if (!consentChecked) { setSubmitError('Please agree to the Terms & Conditions to proceed.'); return }
     setSubmitting(true)
     setSubmitError('')
     try {
+
+      // ── Existing client: just submit plan request ────────────────────────
+      if (isExisting && existingClientId) {
+        await api.planRequests.create({
+          clientId:    existingClientId,
+          planSlug:    selectedPlan.slug,
+          planName:    selectedPlan.name,
+          dealAmount:  selectedPlan.dealAmountINR * 100,
+          dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
+          nomineeInfo: `Existing client — new plan request (${data.nomineeName || 'N/A'}, ${data.nomineeRelation || 'N/A'})`,
+        })
+        setSubmitted(true)
+        return
+      }
+
+      // ── New client: full registration ─────────────────────────────────
       const payload = {
         fullName:           data.fullName,
         mobile:             data.mobile,
@@ -158,16 +235,62 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
         bankName:           data.bankName,
         accountNumber:      data.accountNumber,
         confirmAccountNumber: data.accountNumber,
-        ifscCode:           data.ifscCode,
+        ifscCode:           data.ifscCode.trim().toUpperCase(),
         selectedPlanSlug:   selectedPlan.slug,
+        selectedPlanName:   selectedPlan.name,
         intendedDealAmount: selectedPlan.dealAmountINR,
-        // Extra fields stored as metadata via nominee info in notes
+        intendedDailyAmount: selectedPlan.proposedDailyINR || null,
         nomineeInfo: `${data.nomineeName} (${data.nomineeRelation}, ${data.nomineeMobile})`,
         aadhaar:     data.aadhaar || undefined,
       }
 
       const res = await api.public.registerClient(payload)
+      const clientId = res.data?.clientId
+
+      // ── Upload documents if any were selected ────────────────────────────
+      const hasFiles = docs.aadhaarFront || docs.aadhaarBack || docs.pan || docs.bankProof
+      if (hasFiles && clientId) {
+        try {
+          const fd = new FormData()
+          if (docs.aadhaarFront) fd.append('aadhaarImage',     docs.aadhaarFront)
+          if (docs.aadhaarBack)  fd.append('aadhaarBackImage', docs.aadhaarBack)
+          if (docs.pan)          fd.append('panImage',         docs.pan)
+          if (docs.bankProof)    fd.append('passbookImage',    docs.bankProof)
+
+          const upRes = await fetch(`${API_BASE}/clients/${clientId}/kyc-documents`, {
+            method: 'POST',
+            body: fd,
+          })
+          if (!upRes.ok) {
+            const j = await upRes.json().catch(() => ({}))
+            console.warn('Document upload failed:', j.message || upRes.status)
+          }
+        } catch (upErr) {
+          console.warn('Document upload error:', upErr.message)
+        }
+      }
+
       setRegId(res.data?.registrationId || '')
+      setIsExisting(res.existing === true)
+
+      // Create plan request for new client too
+      if (res.data?.clientId) {
+        try {
+          await api.planRequests.create({
+            clientId:    res.data.clientId,
+            planSlug:    selectedPlan.slug,
+            planName:    selectedPlan.name,
+            dealAmount:  selectedPlan.dealAmountINR * 100,
+            dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
+            nomineeInfo: data.nomineeName
+              ? `${data.nomineeName} (${data.nomineeRelation}, ${data.nomineeMobile})`
+              : null,
+          })
+        } catch (e) {
+          console.warn('Plan request create failed:', e.message)
+        }
+      }
+
       setSubmitted(true)
     } catch (err) {
       setSubmitError(err.message || 'Submission failed. Please try again or contact us directly.')
@@ -201,11 +324,15 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
               <p className="text-base font-mono font-bold" style={{ color: GOLD }}>{regId}</p>
             </div>
           )}
-          <p className="text-sm mb-6" style={{ color: '#9ab0c4' }}>
-            Your plan enquiry has been submitted. Our team will contact you within 1–2 business days (Monday to Friday) to confirm your registration.
+          <p className="text-sm mb-3" style={{ color: '#f0f4f8', fontWeight: '600' }}>
+            🎉 हमारी टीम आपसे 24 घंटे के अंदर संपर्क करेगी।
           </p>
-          <p className="text-xs mb-6" style={{ color: '#7090a8' }}>
-            Please save your Registration ID for future reference.
+          <p className="text-sm mb-4" style={{ color: '#9ab0c4' }}>
+            Our team will contact you within 24 hours to confirm your registration and guide you through the next steps.
+          </p>
+          <p className="text-xs mb-6 px-3 py-2 rounded-xl"
+            style={{ color: '#7090a8', background: 'rgba(212,168,67,0.06)', border: '1px solid rgba(212,168,67,0.15)' }}>
+            📌 Please save your Registration ID for future reference.
           </p>
           <button
             onClick={onClose}
@@ -410,7 +537,9 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
                     name="ifscCode"
                     placeholder="e.g. SBIN0001234"
                     error={errors.ifscCode}
-                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all uppercase"
+                    className="w-full rounded-xl px-4 py-2.5 text-sm focus:outline-none transition-all"
+                    onInput={e => { e.target.value = e.target.value.toUpperCase() }}
+                    onBlur={e => setValue('ifscCode', e.target.value.trim().toUpperCase(), { shouldValidate: true })}
                   />
                 </Field>
               </div>
@@ -426,28 +555,142 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
             </div>
           )}
 
-          {/* ── STEP 4: Review & Submit ── */}
+          {/* ── STEP 4: Documents ── */}
           {step === 4 && (
             <div className="space-y-4">
-              <p className="text-sm font-semibold" style={{ color: '#f0f4f8' }}>Review & Submit</p>
+              <div className="flex items-center gap-2 mb-1">
+                <FileText className="h-4 w-4" style={{ color: GOLD }} />
+                <p className="text-sm font-semibold" style={{ color: '#f0f4f8' }}>KYC Documents</p>
+                <span className="text-[10px] px-2 py-0.5 rounded-full" style={{ background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.25)' }}>Required</span>
+              </div>
+              <p className="text-xs" style={{ color: '#7090a8' }}>
+                Clear photo ya scan upload karo. Max 5 MB each.
+              </p>
+
+              {[
+                { key: 'aadhaarFront', label: 'Aadhaar Card — Front Side',   icon: '🪪' },
+                { key: 'aadhaarBack',  label: 'Aadhaar Card — Back Side',    icon: '🪪' },
+                { key: 'pan',          label: 'PAN Card',                     icon: '📄' },
+                { key: 'bankProof',    label: 'Bank Passbook / Cheque Book (front page)', icon: '🏦' },
+              ].map(({ key, label, icon }) => (
+                <div key={key}>
+                  <label className="block text-xs font-semibold mb-1.5 uppercase tracking-wide" style={{ color: '#9ab0c4' }}>
+                    {icon} {label} *
+                  </label>
+                  <div
+                    className="relative rounded-xl overflow-hidden transition-all"
+                    style={{
+                      border: docs[key] ? '2px solid rgba(34,197,94,0.5)' : '1.5px dashed rgba(212,168,67,0.35)',
+                      background: docs[key] ? 'rgba(34,197,94,0.06)' : 'rgba(15,36,96,0.3)',
+                    }}>
+                    {docs[key] ? (
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4" style={{ color: '#4ade80' }} />
+                          <span className="text-xs font-medium" style={{ color: '#4ade80' }}>
+                            {docs[key].name} ({(docs[key].size / 1024).toFixed(0)} KB)
+                          </span>
+                        </div>
+                        <button type="button"
+                          onClick={() => setDocs(d => ({ ...d, [key]: null }))}
+                          className="text-xs px-2 py-1 rounded-lg"
+                          style={{ color: '#f87171', background: 'rgba(239,68,68,0.1)' }}>
+                          Remove
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center py-5 cursor-pointer" style={{ display: 'flex' }}>
+                        <Upload className="h-6 w-6 mb-1.5" style={{ color: 'rgba(212,168,67,0.5)' }} />
+                        <span className="text-xs" style={{ color: '#7090a8' }}>Click to upload (JPG, PNG, PDF)</span>
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,application/pdf"
+                          style={{ display: 'none' }}
+                          onChange={e => {
+                            const file = e.target.files?.[0]
+                            if (file && file.size <= 5 * 1024 * 1024) {
+                              setDocs(d => ({ ...d, [key]: file }))
+                            } else if (file) {
+                              alert('File size must be under 5 MB')
+                            }
+                            e.target.value = ''
+                          }}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {/* Show warning if not all docs selected */}
+              {!(docs.aadhaarFront && docs.aadhaarBack && docs.pan && docs.bankProof) && (
+                <p className="text-xs" style={{ color: '#f87171' }}>
+                  ⚠ All documents are mandatory. — {[
+                    !docs.aadhaarFront && 'Aadhaar Front',
+                    !docs.aadhaarBack  && 'Aadhaar Back',
+                    !docs.pan          && 'PAN Card',
+                    !docs.bankProof    && 'Bank Proof',
+                  ].filter(Boolean).join(', ')} are remains.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* ── STEP 5: Review & Submit ── */}
+          {step === 5 && (
+            <div className="space-y-4">
+              <p className="text-sm font-semibold" style={{ color: '#f0f4f8' }}>
+                Review & Submit
+              </p>
 
               {/* Summary */}
               <div className="rounded-xl p-4 space-y-3 text-xs"
                 style={{ background: CARD_BG, border: `1px solid ${CARD_BORDER}` }}>
-                {[
-                  { label: 'Selected Plan',    value: selectedPlan ? `${selectedPlan.name} — ${selectedPlan.deal}` : '—' },
-                  { label: 'Full Name',        value: watch('fullName') },
-                  { label: 'Mobile',           value: watch('mobile') },
-                  { label: 'Email',            value: watch('email') },
-                  { label: 'City / State',     value: `${watch('city')}, ${watch('state')} – ${watch('postalCode')}` },
-                  { label: 'Nominee',          value: `${watch('nomineeName')} (${watch('nomineeRelation')})` },
-                  { label: 'Bank',             value: watch('bankName') },
-                ].map(({ label, value }) => (
-                  <div key={label} className="flex justify-between gap-2">
-                    <span style={{ color: '#7090a8' }}>{label}</span>
-                    <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{value || '—'}</span>
+
+                {/* Existing client notice inside summary */}
+                {isExisting && (
+                  <div className="pb-2 mb-1" style={{ borderBottom: '1px solid rgba(212,168,67,0.1)' }}>
+                    <p className="text-xs" style={{ color: '#93c5fd' }}>
+                      ✓ Aap pehle se registered hain — yeh ek naya plan request hoga.
+                    </p>
+                    <p className="text-xs mt-0.5 font-mono" style={{ color: '#d4a843' }}>Reg. ID: {regId}</p>
                   </div>
-                ))}
+                )}
+
+                <div className="flex justify-between gap-2">
+                  <span style={{ color: '#7090a8' }}>Selected Plan</span>
+                  <span className="text-right font-semibold" style={{ color: '#d4a843' }}>
+                    {selectedPlan ? `${selectedPlan.name} — ${selectedPlan.deal}` : '—'}
+                  </span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span style={{ color: '#7090a8' }}>Name</span>
+                  <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{watch('fullName') || '—'}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span style={{ color: '#7090a8' }}>Mobile</span>
+                  <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{watch('mobile') || '—'}</span>
+                </div>
+                {!isExisting && (
+                  <>
+                    <div className="flex justify-between gap-2">
+                      <span style={{ color: '#7090a8' }}>Email</span>
+                      <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{watch('email') || '—'}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span style={{ color: '#7090a8' }}>City / State</span>
+                      <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{watch('city')}, {watch('state')} – {watch('postalCode')}</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span style={{ color: '#7090a8' }}>Nominee</span>
+                      <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{watch('nomineeName')} ({watch('nomineeRelation')})</span>
+                    </div>
+                    <div className="flex justify-between gap-2">
+                      <span style={{ color: '#7090a8' }}>Bank</span>
+                      <span className="text-right font-medium" style={{ color: '#d0e0ee' }}>{watch('bankName') || '—'}</span>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* Consent checkbox */}
@@ -455,17 +698,19 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
                 <input
                   type="checkbox"
                   id="consent"
-                  {...register('consent')}
-                  className="mt-0.5 h-4 w-4 rounded accent-yellow-500 cursor-pointer"
+                  checked={consentChecked}
+                  onChange={e => setConsentChecked(e.target.checked)}
+                  className="mt-0.5 h-4 w-4 rounded cursor-pointer shrink-0"
+                  style={{ accentColor: '#d4a843' }}
                 />
-                <label htmlFor="consent" className="text-xs cursor-pointer" style={{ color: '#9ab0c4' }}>
+                <label htmlFor="consent" className="text-xs cursor-pointer leading-relaxed" style={{ color: '#9ab0c4' }}>
                   I have read and understood the Risk Disclosure. I agree to the Terms & Conditions of Javitri Trading Service Pvt. Ltd.
                   (CIN: U66190GJ2026PTC183862) and consent to my information being processed for plan registration.
                 </label>
               </div>
-              {errors.consent && (
+              {!consentChecked && submitError?.includes('Terms') && (
                 <p className="text-xs" style={{ color: '#f87171' }}>
-                  <AlertCircle className="h-3 w-3 inline mr-1" />{errors.consent.message}
+                  <AlertCircle className="h-3 w-3 inline mr-1" />You must agree to proceed
                 </p>
               )}
 
@@ -502,16 +747,19 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
             ))}
           </div>
 
-          {step < 4 ? (
+          {step < 5 ? (
             <button
               type="button"
               onClick={nextStep}
-              disabled={step === 0 && !selectedPlan}
+              disabled={(step === 0 && !selectedPlan) || checkingClient}
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-40"
               style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff' }}
               onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-              Next <ChevronRight className="h-4 w-4" />
+              {checkingClient
+                ? <><Loader2 className="h-4 w-4 animate-spin" />Checking…</>
+                : <>Next <ChevronRight className="h-4 w-4" /></>
+              }
             </button>
           ) : (
             <button

@@ -15,6 +15,9 @@ async function authenticate (req, res, next) {
       token = authHeader.slice(7)
     } else if (req.cookies && req.cookies.accessToken) {
       token = req.cookies.accessToken
+    } else if (req.query && req.query.token) {
+      // Allow token via query param for image/file download endpoints (browser <img> tags)
+      token = req.query.token
     }
 
     if (!token) {

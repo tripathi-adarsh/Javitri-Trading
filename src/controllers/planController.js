@@ -5,9 +5,13 @@ const { Plan } = require('../models/index')
 
 exports.getPlans = async (req, res, next) => {
   try {
-    // Show all plans regardless of active/compliance status on public endpoint
-    // Admin must activate plans via admin panel before clients can place orders
+    // Only return plans that are active AND have compliance_status = 'approved'
+    // This prevents draft/non-compliant plans from being exposed to clients
     const plans = await Plan.findAll({
+      where: {
+        is_active: true,
+        compliance_status: 'approved',
+      },
       order:   [['sort_order', 'ASC']],
       attributes: { exclude: ['created_at', 'updated_at'] },
     })
@@ -44,7 +48,7 @@ exports.getPlans = async (req, res, next) => {
 
 exports.getPlanBySlug = async (req, res, next) => {
   try {
-    const plan = await Plan.findOne({ where: { slug: req.params.slug, is_active: true } })
+    const plan = await Plan.findOne({ where: { slug: req.params.slug, is_active: true, compliance_status: 'approved' } })
     if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' })
     res.json({ success: true, data: { plan } })
   } catch (err) {
