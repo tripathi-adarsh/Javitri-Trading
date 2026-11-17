@@ -15,6 +15,7 @@ const PaymentReview      = require('./PaymentReview')
 const LegalDocument      = require('./LegalDocument')
 const LegalConsent       = require('./LegalConsent')
 const AuditLog           = require('./AuditLog')
+const ContactMessage     = require('./ContactMessage')
 
 // ── User ↔ Employee ───────────────────────────────────────────────────────────
 User.hasOne(Employee,     { foreignKey: 'user_id', as: 'employeeProfile' })
@@ -123,4 +124,5 @@ module.exports = {
   LegalDocument,
   LegalConsent,
   AuditLog,
+  ContactMessage,
 }

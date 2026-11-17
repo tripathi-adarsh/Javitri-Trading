@@ -170,7 +170,7 @@ exports.submitReviewDecision = async (req, res, next) => {
 
 exports.getDashboardStats = async (req, res, next) => {
   try {
-    const { ClientPlanRequest, DailyPayout } = require('../models/index')
+    const { ClientPlanRequest, DailyPayout, ContactMessage } = require('../models/index')
 
     const [
       totalEmployees,
@@ -182,6 +182,7 @@ exports.getDashboardStats = async (req, res, next) => {
       successPayments,
       failedPayments,
       totalDailyPayouts,
+      newContactMessages,
     ] = await Promise.all([
       require('../models/index').Employee.count(),
       require('../models/index').Employee.count({
@@ -194,6 +195,7 @@ exports.getDashboardStats = async (req, res, next) => {
       ClientPlanRequest.count({ where: { payment_status: 'success' } }),
       ClientPlanRequest.count({ where: { payment_status: 'failed' } }),
       DailyPayout.count(),
+      ContactMessage.count({ where: { status: 'new' } }),
     ])
 
     res.json({
@@ -208,6 +210,7 @@ exports.getDashboardStats = async (req, res, next) => {
         successPayments,
         failedPayments,
         totalDailyPayouts,
+        newContactMessages,
       },
     })
   } catch (err) {

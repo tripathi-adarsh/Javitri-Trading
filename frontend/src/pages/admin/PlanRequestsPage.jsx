@@ -230,7 +230,7 @@ function RequestCard({ r, token, onUpdate, isAdmin }) {
                 <option value="">— Unassign —</option>
                 {employees.map(e => (
                   <option key={e.id} value={e.id} style={{ background: '#111f3d' }}>
-                    {e.employeeCode} — {e.firstName} {e.lastName}
+                    {e.employeeCode} — {e.fullName}
                   </option>
                 ))}
               </select>

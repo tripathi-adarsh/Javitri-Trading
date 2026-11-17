@@ -370,7 +370,7 @@ function ClientDrawer({ client, onClose, token, onKycUpdate, userRole }) {
                   <option value="">— Unassign —</option>
                   {employees.map(emp => (
                     <option key={emp.id} value={emp.id} style={{ background: '#111f3d' }}>
-                      {emp.employeeCode} — {emp.firstName} {emp.lastName}
+                      {emp.employeeCode} — {emp.fullName}
                     </option>
                   ))}
                 </select>

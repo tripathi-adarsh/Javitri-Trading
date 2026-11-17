@@ -171,5 +171,23 @@ export const api = {
       create:  (body, token)       => request('/legal',              { method: 'POST', body, headers: authHeader(token) }),
       publish: (id, token)         => request(`/legal/${id}/publish`,{ method: 'PATCH', headers: authHeader(token) }),
     },
+
+    contact: {
+      list:   (token, qs = '')     => request(`/contact?${qs}`,      { headers: authHeader(token) }),
+      get:    (id, token)          => request(`/contact/${id}`,       { headers: authHeader(token) }),
+      update: (id, body, token)    => request(`/contact/${id}`,       { method: 'PATCH', body, headers: authHeader(token) }),
+      delete: (id, token)          => request(`/contact/${id}`,       { method: 'DELETE', headers: authHeader(token) }),
+      stats:  (token)              => request('/contact/stats',       { headers: authHeader(token) }),
+    },
+  },
+
+  // ── Public plan request creation (no auth — called from public registration flow) ──
+  planRequests: {
+    create: (body) => request('/plan-requests', { method: 'POST', body }),
+  },
+
+  // ── Public contact form submission ────────────────────────────────────────
+  contact: {
+    submit: (body) => request('/contact', { method: 'POST', body }),
   },
 }

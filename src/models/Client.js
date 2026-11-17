@@ -92,7 +92,6 @@ const Client = sequelize.define('Client', {
   indexes: [
     { fields: ['registration_id'],         unique: true },
     { fields: ['originating_employee_id'] },
-    { fields: ['registration_link_id'] },
     { fields: ['email'] },
     { fields: ['mobile'] },
     { fields: ['status'] },

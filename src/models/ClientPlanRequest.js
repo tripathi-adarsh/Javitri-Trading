@@ -74,11 +74,6 @@ const ClientPlanRequest = sequelize.define('ClientPlanRequest', {
     type:      DataTypes.TEXT,
     allowNull: true,
   },
-  // Nominee info stored as text
-  nominee_info: {
-    type:      DataTypes.STRING(500),
-    allowNull: true,
-  },
   status: {
     type:         DataTypes.ENUM('pending', 'active', 'completed', 'cancelled'),
     defaultValue: 'pending',

@@ -22,6 +22,7 @@ const paymentReviewRoutes     = require('./routes/paymentReviewRoutes')
 const auditLogRoutes          = require('./routes/auditLogRoutes')
 const userRoutes              = require('./routes/userRoutes')
 const planRequestRoutes       = require('./routes/planRequestRoutes')
+const contactRoutes           = require('./routes/contactRoutes')
 
 const app = express()
 
@@ -116,6 +117,7 @@ app.use('/api/v1/payment-reviews',   paymentReviewRoutes)
 app.use('/api/v1/audit-logs',        auditLogRoutes)
 app.use('/api/v1/users',             userRoutes)
 app.use('/api/v1/plan-requests',     planRequestRoutes)
+app.use('/api/v1/contact',           contactRoutes)
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

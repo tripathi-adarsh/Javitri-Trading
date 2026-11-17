@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import { RefreshCw, AlertCircle, Eye } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { RefreshCw, Eye } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
 import Badge from '../../components/ui/Badge.jsx'
 import { api } from '../../utils/api.js'
@@ -56,18 +56,29 @@ export default function KycReviewPage() {
   const { token } = useTrading()
   const [clients,  setClients]  = useState([])
   const [loading,  setLoading]  = useState(true)
-  const [selected, setSelected] = useState(null)   // row data from list
-  const [detail,   setDetail]   = useState(null)   // full client from getClient
+  const [selected, setSelected] = useState(null)
+  const [detail,   setDetail]   = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
   const [decision, setDecision] = useState('')
   const [reason,   setReason]   = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [submitMsg, setSubmitMsg] = useState('')
+  const [submitErr, setSubmitErr] = useState('')
 
   const fetchPending = async () => {
     setLoading(true)
     try {
-      const res = await api.admin.clients.list(token, 'status=kyc_submitted&pageSize=50')
-      setClients(res.data.clients)
+      // Show both kyc_submitted AND in_review clients
+      const [submittedRes, inReviewRes] = await Promise.all([
+        api.admin.clients.list(token, 'status=kyc_submitted&pageSize=50'),
+        api.admin.clients.list(token, 'status=active&pageSize=50'),
+      ])
+      // Combine and deduplicate
+      const all = [
+        ...(submittedRes.data?.clients || []),
+        ...(inReviewRes.data?.clients || []).filter(c => c.kycStatus === 'in_review'),
+      ]
+      setClients(all)
     } catch { /* handled */ }
     finally { setLoading(false) }
   }
@@ -79,6 +90,8 @@ export default function KycReviewPage() {
     setDecision('')
     setReason('')
     setDetail(null)
+    setSubmitMsg('')
+    setSubmitErr('')
     setDetailLoading(true)
     try {
       const res = await api.admin.clients.get(c.id, token)
@@ -88,16 +101,21 @@ export default function KycReviewPage() {
   }
 
   const handleSubmit = async () => {
-    if (!decision) { alert('Please select a decision.'); return }
-    if (decision === 'rejected' && !reason.trim()) { alert('Rejection reason is required.'); return }
+    if (!decision) { setSubmitErr('Please select a decision.'); return }
+    if (decision === 'rejected' && !reason.trim()) { setSubmitErr('Rejection reason is required.'); return }
     setSubmitting(true)
+    setSubmitErr('')
+    setSubmitMsg('')
     try {
       await api.admin.clients.updateKyc(selected.id, { status: decision, rejectionReason: reason }, token)
-      setSelected(null)
-      setDetail(null)
-      fetchPending()
+      setSubmitMsg(`KYC ${decision === 'in_review' ? 'marked as In Review' : decision} successfully`)
+      setTimeout(() => {
+        setSelected(null)
+        setDetail(null)
+        fetchPending()
+      }, 1200)
     } catch (err) {
-      alert(err.message || 'Failed to submit decision.')
+      setSubmitErr(err.message || 'Failed to submit decision.')
     } finally { setSubmitting(false) }
   }
 
@@ -107,19 +125,13 @@ export default function KycReviewPage() {
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-xl font-bold text-white">KYC Review</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Review submitted KYC records and uploaded documents</p>
+          <p className="text-sm text-gray-500 mt-0.5">
+            Review submitted KYC records — verify, reject, or put in review
+          </p>
         </div>
         <Button variant="secondary" size="sm" onClick={fetchPending}>
           <RefreshCw className="h-4 w-4" />
         </Button>
-      </div>
-
-      <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-4 mb-6 flex gap-3">
-        <AlertCircle className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
-        <p className="text-xs text-blue-300/80 leading-relaxed">
-          KYC records contain sensitive identity information. Access is restricted to authorized personnel.
-          PAN numbers are masked. Click <strong>Review</strong> on any row to view uploaded documents.
-        </p>
       </div>
 
       {/* Clients table */}
@@ -153,7 +165,9 @@ export default function KycReviewPage() {
                   <td className="px-4 py-3 font-mono text-xs text-emerald-400">{c.registrationId}</td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-400">{c.panMasked || '—'}</td>
                   <td className="px-4 py-3">
-                    <Badge color="amber">{c.kycStatus?.replace(/_/g, ' ')}</Badge>
+                    <Badge color={c.kycStatus === 'submitted' ? 'amber' : c.kycStatus === 'in_review' ? 'blue' : 'gray'}>
+                      {c.kycStatus?.replace(/_/g, ' ')}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 text-gray-500 text-xs">
                     {c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-IN') : '—'}
@@ -184,6 +198,9 @@ export default function KycReviewPage() {
               <InfoRow label="Mobile"     value={selected.mobile} />
               <InfoRow label="City/State" value={`${selected.city}, ${selected.state}`} />
               <InfoRow label="PAN"        value={<span className="font-mono text-gray-400">{selected.panMasked || '—'}</span>} />
+              {detail?.kyc?.nominee_name && (
+                <InfoRow label="Nominee"  value={`${detail.kyc.nominee_name}${detail.kyc.nominee_relation ? ` (${detail.kyc.nominee_relation})` : ''}${detail.kyc.nominee_mobile ? ` · ${detail.kyc.nominee_mobile}` : ''}`} />
+              )}
             </div>
 
             {/* Documents section */}
@@ -244,11 +261,19 @@ export default function KycReviewPage() {
               </div>
             )}
 
+            {submitErr && (
+              <p className="text-xs text-red-400 mb-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">{submitErr}</p>
+            )}
+            {submitMsg && (
+              <p className="text-xs text-emerald-400 mb-3 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">✓ {submitMsg}</p>
+            )}
+
             <div className="flex gap-3">
               <Button variant="secondary" size="sm" onClick={() => { setSelected(null); setDetail(null) }} className="flex-1">
                 Cancel
               </Button>
-              <Button size="sm" loading={submitting} onClick={handleSubmit} className="flex-1">
+              <Button size="sm" loading={submitting} onClick={handleSubmit} className="flex-1"
+                disabled={!decision}>
                 Submit Decision
               </Button>
             </div>

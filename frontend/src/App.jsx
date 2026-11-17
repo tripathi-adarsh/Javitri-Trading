@@ -34,6 +34,7 @@ import AdminPlansPage        from './pages/admin/PlansPage.jsx'
 import AuditLogsPage         from './pages/admin/AuditLogsPage.jsx'
 import PlanRequestsPage      from './pages/admin/PlanRequestsPage.jsx'
 import PayoutReportsPage     from './pages/admin/PayoutReportsPage.jsx'
+import ContactMessagesPage   from './pages/admin/ContactMessagesPage.jsx'
 
 // ── Guards & stubs ────────────────────────────────────────────────────────────
 function AdminRoute({ children, allowedRoles = ['admin', 'super_admin', 'employee'] }) {
@@ -93,6 +94,7 @@ function AppRoutes() {
               <Route path="clients"            element={<ClientsPage />} />
               <Route path="plan-requests"      element={<PlanRequestsPage />} />
               <Route path="payout-reports"     element={<PayoutReportsPage />} />
+              <Route path="contact-messages"   element={<ContactMessagesPage />} />
               <Route path="kyc-review"         element={<KycReviewPage />} />
               <Route path="plans"              element={<AdminPlansPage />} />
               <Route path="audit-logs"         element={<AuditLogsPage />} />

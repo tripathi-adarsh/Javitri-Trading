@@ -21,35 +21,31 @@ const ALL_PLANS = [
   { slug: 'plan-10', name: 'Plan 10', deal: '₹50,00,000', daily: '₹1,30,000', dealAmountINR: 5000000 },
 ]
 
-/* ── Validation schema ── */
+/* ── Validation schema ──
+   All fields except the core personal ones are optional at schema level.
+   Step-by-step validation (trigger) enforces required fields per step.
+   This prevents Zod blocking submit for existing clients who skip Bank/Nominee steps.
+── */
 const schema = z.object({
-  // Personal
+  // Personal — always required
   fullName:  z.string().min(2, 'Full name required').max(200),
   mobile:    z.string().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile required'),
   email:     z.string().email('Valid email required'),
   aadhaar:   z.string().regex(/^\d{12}$/, 'Aadhaar must be 12 digits').optional().or(z.literal('')),
   pan:       z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN (e.g. ABCDE1234F)').optional().or(z.literal('')),
-  // Address (required by backend)
-  city:       z.string().min(2, 'City required'),
-  state:      z.string().min(2, 'State required'),
-  postalCode: z.string().regex(/^\d{6}$/, '6-digit PIN required'),
-  // Nominee
-  nomineeName:    z.string().min(2, 'Nominee name required').max(200),
-  nomineeRelation:z.string().min(2, 'Relationship required'),
-  nomineeMobile:  z.string().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile required'),
-  // Bank
-  accountHolderName: z.string().min(2, 'Account holder name required'),
-  bankName:          z.string().min(2, 'Bank name required'),
-  accountNumber:     z.string().min(8, 'Account number required').max(20),
-  ifscCode: z.string()
-    .min(11, 'IFSC must be 11 characters')
-    .max(11, 'IFSC must be 11 characters')
-    .refine(
-      v => /^[A-Za-z]{4}0[A-Za-z0-9]{6}$/i.test(v.trim()),
-      'Invalid IFSC — format: SBIN0001234'
-    ),
-  // Consent handled separately via local state (not Zod)
-  // consent: z.boolean()
+  // Address — required for new clients, optional for existing (skipped via trigger)
+  city:       z.string().min(2, 'City required').optional().or(z.literal('')),
+  state:      z.string().min(2, 'State required').optional().or(z.literal('')),
+  postalCode: z.string().regex(/^\d{6}$/, '6-digit PIN required').optional().or(z.literal('')),
+  // Nominee — only collected for new clients
+  nomineeName:     z.string().min(2, 'Nominee name required').max(200).optional().or(z.literal('')),
+  nomineeRelation: z.string().min(2, 'Relationship required').optional().or(z.literal('')),
+  nomineeMobile:   z.string().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile required').optional().or(z.literal('')),
+  // Bank — only collected for new clients
+  accountHolderName: z.string().min(2, 'Account holder name required').optional().or(z.literal('')),
+  bankName:          z.string().min(2, 'Bank name required').optional().or(z.literal('')),
+  accountNumber:     z.string().min(8, 'Account number required').max(20).optional().or(z.literal('')),
+  ifscCode:          z.string().optional().or(z.literal('')),
 })
 
 /* ── Field component ── */
@@ -171,16 +167,40 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
         const email  = watch('email')
         const res = await api.public.checkClient({ mobile, email })
         if (res.exists) {
-          // Existing client — skip to Submit step directly
+          // Existing client — skip Nominee/Bank/Docs, go straight to Submit
           setIsExisting(true)
           setExistingClientId(res.data.clientId)
           setRegId(res.data.registrationId)
-          setStep(5)   // jump straight to Submit/Review
+          setStep(5)   // jump directly to Review & Submit
           return
         }
       } catch { /* network error — continue normally */ }
       finally { setCheckingClient(false) }
       setStep(2)
+      return
+    }
+
+    // Step 2 — Nominee: only reached for new clients
+    if (step === 2) {
+      const fields = stepFields[2]
+      const ok = await trigger(fields)
+      if (!ok) return
+      setStep(3)
+      return
+    }
+
+    // Step 3 — Bank: validate fields + IFSC format
+    if (step === 3) {
+      const fields = stepFields[3]
+      const ok = await trigger(fields)
+      if (!ok) return
+      // Extra IFSC format check
+      const ifsc = watch('ifscCode')?.trim().toUpperCase()
+      if (!ifsc || ifsc.length !== 11 || !/^[A-Za-z]{4}0[A-Za-z0-9]{6}$/i.test(ifsc)) {
+        setValue('ifscCode', ifsc || '', { shouldValidate: true })
+        return
+      }
+      setStep(4)
       return
     }
 
@@ -197,7 +217,13 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     if (ok) setStep(s => s + 1)
   }
 
-  const prevStep = () => setStep(s => Math.max(0, s - 1))
+  const prevStep = () => {
+    if (step === 5 && isExisting) {
+      setStep(1)   // existing client: back from Submit goes to Personal
+      return
+    }
+    setStep(s => Math.max(0, s - 1))
+  }
 
   const onSubmit = async (data) => {
     if (!selectedPlan) { setSubmitError('Please select a plan'); return }
@@ -206,7 +232,7 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     setSubmitError('')
     try {
 
-      // ── Existing client: just submit plan request ────────────────────────
+      // ── Existing client: create only a new plan request ─────────────────
       if (isExisting && existingClientId) {
         await api.planRequests.create({
           clientId:    existingClientId,
@@ -214,40 +240,61 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
           planName:    selectedPlan.name,
           dealAmount:  selectedPlan.dealAmountINR * 100,
           dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
-          nomineeInfo: `Existing client — new plan request (${data.nomineeName || 'N/A'}, ${data.nomineeRelation || 'N/A'})`,
         })
         setSubmitted(true)
         return
       }
 
-      // ── New client: full registration ─────────────────────────────────
+      // ── New client: full registration ─────────────────────────────────────
+      // Validate required fields that are optional in schema
+      const missing = []
+      if (!data.city?.trim())               missing.push('City')
+      if (!data.state?.trim())              missing.push('State')
+      if (!data.postalCode?.trim())         missing.push('PIN Code')
+      if (!data.nomineeName?.trim())        missing.push('Nominee Name')
+      if (!data.nomineeRelation?.trim())    missing.push('Nominee Relationship')
+      if (!data.nomineeMobile?.trim())      missing.push('Nominee Mobile')
+      if (!data.bankName?.trim())           missing.push('Bank Name')
+      if (!data.accountNumber?.trim())      missing.push('Account Number')
+      if (!data.ifscCode?.trim())           missing.push('IFSC Code')
+      if (missing.length) {
+        setSubmitError(`Missing required fields: ${missing.join(', ')}`)
+        setSubmitting(false)
+        return
+      }
+
       const payload = {
-        fullName:           data.fullName,
-        mobile:             data.mobile,
-        email:              data.email,
-        pan:                data.pan || undefined,
-        city:               data.city,
-        state:              data.state,
-        postalCode:         data.postalCode,
-        country:            'India',
-        clientType:         'individual',
-        accountHolderName:  data.accountHolderName,
-        bankName:           data.bankName,
-        accountNumber:      data.accountNumber,
+        fullName:             data.fullName,
+        mobile:               data.mobile,
+        email:                data.email,
+        pan:                  data.pan || undefined,
+        city:                 data.city,
+        state:                data.state,
+        postalCode:           data.postalCode,
+        country:              'India',
+        clientType:           'individual',
+        accountHolderName:    data.accountHolderName,
+        bankName:             data.bankName,
+        accountNumber:        data.accountNumber,
         confirmAccountNumber: data.accountNumber,
-        ifscCode:           data.ifscCode.trim().toUpperCase(),
-        selectedPlanSlug:   selectedPlan.slug,
-        selectedPlanName:   selectedPlan.name,
-        intendedDealAmount: selectedPlan.dealAmountINR,
-        intendedDailyAmount: selectedPlan.proposedDailyINR || null,
-        nomineeInfo: `${data.nomineeName} (${data.nomineeRelation}, ${data.nomineeMobile})`,
-        aadhaar:     data.aadhaar || undefined,
+        ifscCode:             data.ifscCode.trim().toUpperCase(),
+        selectedPlanSlug:     selectedPlan.slug,
+        selectedPlanName:     selectedPlan.name,
+        intendedDealAmount:   selectedPlan.dealAmountINR,
+        intendedDailyAmount:  selectedPlan.proposedDailyINR || null,
+        // Nominee details as separate fields — backend saves to ClientKYC
+        nomineeName:          data.nomineeName || undefined,
+        nomineeRelation:      data.nomineeRelation || undefined,
+        nomineeMobile:        data.nomineeMobile || undefined,
+        aadhaar:              data.aadhaar || undefined,
       }
 
       const res = await api.public.registerClient(payload)
       const clientId = res.data?.clientId
 
-      // ── Upload documents if any were selected ────────────────────────────
+      setRegId(res.data?.registrationId || '')
+
+      // ── Upload documents ────────────────────────────────────────────────
       const hasFiles = docs.aadhaarFront || docs.aadhaarBack || docs.pan || docs.bankProof
       if (hasFiles && clientId) {
         try {
@@ -256,39 +303,27 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
           if (docs.aadhaarBack)  fd.append('aadhaarBackImage', docs.aadhaarBack)
           if (docs.pan)          fd.append('panImage',         docs.pan)
           if (docs.bankProof)    fd.append('passbookImage',    docs.bankProof)
-
           const upRes = await fetch(`${API_BASE}/clients/${clientId}/kyc-documents`, {
-            method: 'POST',
-            body: fd,
+            method: 'POST', body: fd,
           })
           if (!upRes.ok) {
             const j = await upRes.json().catch(() => ({}))
             console.warn('Document upload failed:', j.message || upRes.status)
           }
-        } catch (upErr) {
-          console.warn('Document upload error:', upErr.message)
-        }
+        } catch (upErr) { console.warn('Document upload error:', upErr.message) }
       }
 
-      setRegId(res.data?.registrationId || '')
-      setIsExisting(res.existing === true)
-
-      // Create plan request for new client too
-      if (res.data?.clientId) {
+      // ── Create plan request (nominee already saved during registerClient) ─
+      if (clientId) {
         try {
           await api.planRequests.create({
-            clientId:    res.data.clientId,
+            clientId,
             planSlug:    selectedPlan.slug,
             planName:    selectedPlan.name,
             dealAmount:  selectedPlan.dealAmountINR * 100,
             dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
-            nomineeInfo: data.nomineeName
-              ? `${data.nomineeName} (${data.nomineeRelation}, ${data.nomineeMobile})`
-              : null,
           })
-        } catch (e) {
-          console.warn('Plan request create failed:', e.message)
-        }
+        } catch (e) { console.warn('Plan request create failed:', e.message) }
       }
 
       setSubmitted(true)
@@ -496,6 +531,15 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
                 <Users className="h-4 w-4" style={{ color: GOLD }} />
                 <p className="text-sm font-semibold" style={{ color: '#f0f4f8' }}>Nominee Details</p>
               </div>
+              {isExisting && (
+                <div className="rounded-xl px-3 py-2.5 mb-2"
+                  style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.3)' }}>
+                  <p className="text-xs" style={{ color: '#93c5fd' }}>
+                    ✓ You are already registered (ID: <span className="font-mono font-bold">{regId}</span>).
+                    A new plan request will be created for your account.
+                  </p>
+                </div>
+              )}
               <Field label="Nominee Full Name" required error={errors.nomineeName?.message}>
                 <TextInput register={register} name="nomineeName" placeholder="Nominee's full name" error={errors.nomineeName} />
               </Field>
@@ -729,6 +773,7 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
         {/* Footer nav */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0"
           style={{ borderTop: '1px solid rgba(212,168,67,0.12)' }}>
+          {/* Back / Cancel */}
           <button
             type="button"
             onClick={step === 0 ? onClose : prevStep}
@@ -751,14 +796,15 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
             <button
               type="button"
               onClick={nextStep}
-              disabled={(step === 0 && !selectedPlan) || checkingClient}
+              disabled={(step === 0 && !selectedPlan) || checkingClient ||
+                (step === 4 && (!docs.aadhaarFront || !docs.aadhaarBack || !docs.pan || !docs.bankProof))}
               className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-40"
               style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff' }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
+              onMouseEnter={e => { if (!e.currentTarget.disabled) e.currentTarget.style.opacity = '0.9' }}
               onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
               {checkingClient
                 ? <><Loader2 className="h-4 w-4 animate-spin" />Checking…</>
-                : <>Next <ChevronRight className="h-4 w-4" /></>
+                : <>Continue <ChevronRight className="h-4 w-4" /></>
               }
             </button>
           ) : (

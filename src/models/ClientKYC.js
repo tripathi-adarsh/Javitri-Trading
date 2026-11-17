@@ -80,6 +80,19 @@ const ClientKYC = sequelize.define('ClientKYC', {
     type:      DataTypes.STRING(500),
     allowNull: true,
   },
+  // ── Nominee details (moved from client_plan_requests) ─────────────────────
+  nominee_name: {
+    type:      DataTypes.STRING(200),
+    allowNull: true,
+  },
+  nominee_relation: {
+    type:      DataTypes.STRING(100),
+    allowNull: true,
+  },
+  nominee_mobile: {
+    type:      DataTypes.STRING(15),
+    allowNull: true,
+  },
   // Raw metadata from KYC provider (JSON, no sensitive fields)
   provider_metadata: {
     type:      DataTypes.JSON,

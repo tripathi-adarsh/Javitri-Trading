@@ -1,7 +1,7 @@
 'use strict'
 const crypto  = require('crypto')
 const { Op }  = require('sequelize')
-const { sequelize, Client, ClientPlanRequest, DailyPayout, Employee, User } = require('../models/index')
+const { sequelize, Client, ClientKYC, ClientPlanRequest, DailyPayout, Employee, User } = require('../models/index')
 const { audit } = require('../utils/auditLogger')
 
 // ── Generate a unique request number (REQ-YYYYMMDD-XXXXXX) ───────────────────
@@ -46,7 +46,10 @@ exports.createPlanRequest = async (req, res, next) => {
       planName,
       dealAmount,    // in paise
       dailyAmount,   // in paise
-      nomineeInfo,
+      // Nominee details (for existing clients, stored to ClientKYC)
+      nomineeName,
+      nomineeRelation,
+      nomineeMobile,
     } = req.body
 
     if (!clientId || !planSlug || !planName) {
@@ -60,12 +63,24 @@ exports.createPlanRequest = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Client not found' })
     }
 
+    // Prevent duplicate: same client cannot request the same plan more than once
+    const duplicate = await ClientPlanRequest.findOne({
+      where: { client_id: clientId, plan_slug: planSlug },
+      transaction: t,
+    })
+    if (duplicate) {
+      await t.rollback()
+      return res.status(409).json({
+        success: false,
+        message: `You have already submitted a request for ${planName}. Each plan can only be requested once per client.`,
+      })
+    }
+
     // Auto assign employee via round-robin
     const employee = await getNextEmployee(t)
 
     // Generate unique request number
     let requestNumber = generateRequestNumber()
-    // Ensure uniqueness (extremely unlikely collision, but check anyway)
     let existing = await ClientPlanRequest.findOne({ where: { request_number: requestNumber }, transaction: t })
     while (existing) {
       requestNumber = generateRequestNumber()
@@ -80,10 +95,30 @@ exports.createPlanRequest = async (req, res, next) => {
       plan_name:            planName,
       deal_amount:          dealAmount || null,
       daily_amount:         dailyAmount || null,
-      nominee_info:         nomineeInfo || null,
       payment_status:       'pending',
       status:               'pending',
     }, { transaction: t })
+
+    // If nominee details provided, upsert into ClientKYC
+    if (nomineeName || nomineeRelation || nomineeMobile) {
+      const kyc = await ClientKYC.findOne({ where: { client_id: clientId }, transaction: t })
+      if (kyc) {
+        const kycUpdates = {}
+        if (nomineeName)     kycUpdates.nominee_name     = nomineeName
+        if (nomineeRelation) kycUpdates.nominee_relation = nomineeRelation
+        if (nomineeMobile)   kycUpdates.nominee_mobile   = nomineeMobile
+        await kyc.update(kycUpdates, { transaction: t })
+      } else {
+        // Create KYC record if none exists
+        await ClientKYC.create({
+          client_id:           clientId,
+          verification_status: 'not_started',
+          nominee_name:        nomineeName || null,
+          nominee_relation:    nomineeRelation || null,
+          nominee_mobile:      nomineeMobile || null,
+        }, { transaction: t })
+      }
+    }
 
     await t.commit()
 
@@ -137,6 +172,10 @@ exports.listPlanRequests = async (req, res, next) => {
         {
           model: Client, as: 'client',
           attributes: ['id', 'registration_id', 'full_name', 'mobile', 'email'],
+          include: [{
+            model: ClientKYC, as: 'kyc',
+            attributes: ['nominee_name', 'nominee_relation', 'nominee_mobile'],
+          }],
         },
         {
           model: Employee, as: 'assignedEmployee',
@@ -152,32 +191,44 @@ exports.listPlanRequests = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        requests: rows.map(r => ({
-          id:                r.id,
-          requestNumber:     r.request_number,
-          clientId:          r.client_id,
-          clientName:        r.client?.full_name,
-          clientMobile:      r.client?.mobile,
-          clientEmail:       r.client?.email,
-          registrationId:    r.client?.registration_id,
-          planSlug:          r.plan_slug,
-          planName:          r.plan_name,
-          dealAmount:        r.deal_amount,
-          dailyAmount:       r.daily_amount,
-          nomineeInfo:       r.nominee_info,
-          paymentStatus:     r.payment_status,
-          paymentAmount:     r.payment_amount,
-          transactionId:     r.transaction_id,
-          paymentMarkedAt:   r.payment_marked_at,
-          paymentNotes:      r.payment_notes,
-          status:            r.status,
-          assignedEmployeeId:   r.assigned_employee_id,
-          assignedEmployeeCode: r.assignedEmployee?.employee_code,
-          assignedEmployeeName: r.assignedEmployee?.user
-            ? `${r.assignedEmployee.user.first_name} ${r.assignedEmployee.user.last_name}`
-            : null,
-          createdAt: r.created_at,
-        })),
+        requests: rows.map(r => {
+          // Build nominee info string from KYC record
+          const kyc = r.client?.kyc
+          let nomineeInfo = null
+          if (kyc?.nominee_name) {
+            nomineeInfo = `${kyc.nominee_name}`
+            if (kyc.nominee_relation) nomineeInfo += ` (${kyc.nominee_relation}`
+            if (kyc.nominee_mobile) nomineeInfo += `, ${kyc.nominee_mobile}`
+            if (kyc.nominee_relation) nomineeInfo += `)`
+          }
+
+          return {
+            id:                r.id,
+            requestNumber:     r.request_number,
+            clientId:          r.client_id,
+            clientName:        r.client?.full_name,
+            clientMobile:      r.client?.mobile,
+            clientEmail:       r.client?.email,
+            registrationId:    r.client?.registration_id,
+            planSlug:          r.plan_slug,
+            planName:          r.plan_name,
+            dealAmount:        r.deal_amount,
+            dailyAmount:       r.daily_amount,
+            nomineeInfo,
+            paymentStatus:     r.payment_status,
+            paymentAmount:     r.payment_amount,
+            transactionId:     r.transaction_id,
+            paymentMarkedAt:   r.payment_marked_at,
+            paymentNotes:      r.payment_notes,
+            status:            r.status,
+            assignedEmployeeId:   r.assigned_employee_id,
+            assignedEmployeeCode: r.assignedEmployee?.employee_code,
+            assignedEmployeeName: r.assignedEmployee?.user
+              ? `${r.assignedEmployee.user.first_name} ${r.assignedEmployee.user.last_name}`
+              : null,
+            createdAt: r.created_at,
+          }
+        }),
         pagination: { page, pageSize, total: count, pages: Math.ceil(count / pageSize) },
       },
     })

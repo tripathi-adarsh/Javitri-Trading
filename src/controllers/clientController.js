@@ -139,19 +139,34 @@ exports.registerClient = async (req, res, next) => {
         } catch { /* will store null */ }
       }
 
+      // Build nominee fields from request body
+      const nomineeName     = req.body.nomineeName || null
+      const nomineeRelation = req.body.nomineeRelation || null
+      const nomineeMobile   = req.body.nomineeMobile || null
+
       await ClientKYC.create({
         client_id:           client.id,
         encrypted_pan:       encryptedPan,
         pan_masked:          panMasked,
         verification_status: 'submitted',
+        nominee_name:        nomineeName,
+        nominee_relation:    nomineeRelation,
+        nominee_mobile:      nomineeMobile,
       }, { transaction: t })
 
       await client.update({ status: 'kyc_submitted' }, { transaction: t })
     } else {
-      // Create empty KYC record placeholder
+      // Create empty KYC record placeholder (with nominee info if provided)
+      const nomineeName     = req.body.nomineeName || null
+      const nomineeRelation = req.body.nomineeRelation || null
+      const nomineeMobile   = req.body.nomineeMobile || null
+
       await ClientKYC.create({
         client_id:           client.id,
         verification_status: 'not_started',
+        nominee_name:        nomineeName,
+        nominee_relation:    nomineeRelation,
+        nominee_mobile:      nomineeMobile,
       }, { transaction: t })
     }
 
@@ -207,7 +222,6 @@ exports.registerClient = async (req, res, next) => {
         plan_name:            req.body.selectedPlanName || req.body.selectedPlanSlug,
         deal_amount:          req.body.intendedDealAmount ? req.body.intendedDealAmount * 100 : null,
         daily_amount:         req.body.intendedDailyAmount ? req.body.intendedDailyAmount * 100 : null,
-        nominee_info:          req.body.nomineeInfo || null,
         payment_status:       'pending',
         status:               'pending',
       }, { transaction: t })

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Users, UserCheck, FileSearch, TrendingUp, CheckCircle2, XCircle, Clock, Wallet } from 'lucide-react'
+import { Users, UserCheck, FileSearch, TrendingUp, CheckCircle2, XCircle, Clock, Wallet, MessageSquare } from 'lucide-react'
 import StatCard from '../../components/ui/StatCard.jsx'
 import { api } from '../../utils/api.js'
 import { useTrading } from '../../context/TradingContext.jsx'
@@ -47,6 +47,7 @@ export default function DashboardPage() {
         <StatCard icon={CheckCircle2} label="Payment Success"    value={stats?.successPayments}  color="emerald" loading={loading} />
         <StatCard icon={XCircle}      label="Payment Failed"     value={stats?.failedPayments}   color="red"     loading={loading} />
         <StatCard icon={Wallet}       label="Daily Payouts"      value={stats?.totalDailyPayouts} color="blue"    loading={loading} />
+        {!isEmployee && <StatCard icon={MessageSquare} label="New Messages" value={stats?.newContactMessages} color="amber" loading={loading} />}
       </div>
 
       {/* Quick actions */}
@@ -55,8 +56,9 @@ export default function DashboardPage() {
         <QuickAction to="/admin/payout-reports" title="Payout Reports"  desc="Daily payout tracking — by date, client, and plan request with summaries." color="blue" icon={Wallet} />
         <QuickAction to="/admin/clients"       title="Clients"          desc="Browse all clients, view KYC documents, verify/reject KYC status."        color="teal"    icon={UserCheck} />
         <QuickAction to="/admin/kyc-review"    title="KYC Review"       desc="Review submitted KYC documents and update verification status."            color="amber"   icon={FileSearch} />
-        {!isEmployee && <QuickAction to="/admin/employees"  title="Employees"       desc="Create and manage employee accounts."                                 color="blue"    icon={Users} />}
-        {!isEmployee && <QuickAction to="/admin/plans"      title="Plans"           desc="Configure deal plans, activate after compliance review."               color="violet"  icon={TrendingUp} />}
+        {!isEmployee && <QuickAction to="/admin/employees"       title="Employees"       desc="Create and manage employee accounts."                           color="blue"    icon={Users} />}
+        {!isEmployee && <QuickAction to="/admin/contact-messages" title="Contact Messages" desc="View and respond to public contact form submissions."         color="violet"  icon={MessageSquare} />}
+        {!isEmployee && <QuickAction to="/admin/plans"           title="Plans"           desc="Configure deal plans, activate after compliance review."       color="violet"  icon={TrendingUp} />}
       </div>
     </div>
   )
