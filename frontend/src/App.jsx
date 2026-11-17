@@ -19,7 +19,6 @@ import GenerateInvoicePage from './pages/GenerateInvoicePage.jsx'
 
 // Client flow
 import RegisterPage       from './pages/RegisterPage.jsx'
-import ClientRegisterPage from './pages/ClientRegisterPage.jsx'
 import PlansPage          from './pages/PlansPage.jsx'
 import DealSummaryPage    from './pages/DealSummaryPage.jsx'
 import ConsentPage        from './pages/ConsentPage.jsx'
@@ -29,13 +28,13 @@ import PaymentPage        from './pages/PaymentPage.jsx'
 import AdminLoginPage        from './pages/AdminLoginPage.jsx'
 import DashboardPage         from './pages/admin/DashboardPage.jsx'
 import EmployeesPage         from './pages/admin/EmployeesPage.jsx'
-import RegistrationLinksPage from './pages/admin/RegistrationLinksPage.jsx'
 import ClientsPage           from './pages/admin/ClientsPage.jsx'
 import KycReviewPage         from './pages/admin/KycReviewPage.jsx'
 import AdminPlansPage        from './pages/admin/PlansPage.jsx'
-import OrdersPage            from './pages/admin/OrdersPage.jsx'
-import PaymentsPage          from './pages/admin/PaymentsPage.jsx'
 import AuditLogsPage         from './pages/admin/AuditLogsPage.jsx'
+import PlanRequestsPage      from './pages/admin/PlanRequestsPage.jsx'
+import PayoutReportsPage     from './pages/admin/PayoutReportsPage.jsx'
+import ContactMessagesPage   from './pages/admin/ContactMessagesPage.jsx'
 
 // ── Guards & stubs ────────────────────────────────────────────────────────────
 function AdminRoute({ children, allowedRoles = ['admin', 'super_admin', 'employee'] }) {
@@ -75,21 +74,6 @@ function AppRoutes() {
         <Route path="/payment"         element={<PaymentPage />} />
       </Route>
 
-      {/* Employee registration link — no navbar */}
-      <Route path="/register/:token" element={
-        <div className="min-h-screen bg-gray-950 text-gray-100">
-          <header className="border-b border-gray-800 px-4 py-3 flex items-center gap-2">
-            <div className="h-7 w-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-              <svg className="h-4 w-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
-            </div>
-            <span className="text-sm font-semibold text-white">Javitri Trading Service Pvt. Ltd.</span>
-          </header>
-          <ClientRegisterPage />
-        </div>
-      } />
-
       {/* Invoice generator — standalone, no navbar */}
       <Route path="/gen-invoice" element={<GenerateInvoicePage />} />
 
@@ -107,17 +91,13 @@ function AppRoutes() {
             <Routes>
               <Route path="dashboard"          element={<DashboardPage />} />
               <Route path="employees"          element={<EmployeesPage />} />
-              <Route path="registration-links" element={<RegistrationLinksPage />} />
               <Route path="clients"            element={<ClientsPage />} />
+              <Route path="plan-requests"      element={<PlanRequestsPage />} />
+              <Route path="payout-reports"     element={<PayoutReportsPage />} />
+              <Route path="contact-messages"   element={<ContactMessagesPage />} />
               <Route path="kyc-review"         element={<KycReviewPage />} />
               <Route path="plans"              element={<AdminPlansPage />} />
-              <Route path="orders"             element={<OrdersPage />} />
-              <Route path="payments"           element={<PaymentsPage />} />
               <Route path="audit-logs"         element={<AuditLogsPage />} />
-              <Route path="terms"              element={<StubPage title="Terms & Policies" />} />
-              <Route path="reports"            element={<StubPage title="Reports" />} />
-              <Route path="settings"           element={<StubPage title="Settings" />} />
-              <Route path="employee-dashboard" element={<DashboardPage />} />
               <Route path="*"                  element={<Navigate to="/admin/dashboard" replace />} />
             </Routes>
           </AdminLayout>

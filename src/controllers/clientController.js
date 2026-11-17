@@ -1,7 +1,9 @@
 'use strict'
 const crypto  = require('crypto')
+const path    = require('path')
+const fs      = require('fs')
 const { Op }  = require('sequelize')
-const { sequelize, Client, ClientKYC, ClientBankAccount, Employee, RegistrationLink, User } = require('../models/index')
+const { sequelize, Client, ClientKYC, ClientBankAccount, Employee, User } = require('../models/index')
 const { encrypt, maskPan, maskAccountNumber } = require('../utils/encryption')
 const { audit } = require('../utils/auditLogger')
 
@@ -16,11 +18,39 @@ function generateRegistrationId () {
   return `JVT-${yyyymmdd}-${rand}`
 }
 
-/**
- * Hash a raw token (same function used in registrationLinkController).
- */
-function hashToken (raw) {
-  return crypto.createHash('sha256').update(raw).digest('hex')
+// ── Check if client already exists (public route) ────────────────────────────
+
+exports.checkExistingClient = async (req, res, next) => {
+  try {
+    const { mobile, email } = req.body
+    if (!mobile && !email) {
+      return res.status(422).json({ success: false, message: 'mobile or email required' })
+    }
+
+    const { Op } = require('sequelize')
+    const where = []
+    if (mobile) where.push({ mobile: mobile.trim() })
+    if (email)  where.push({ email: email.toLowerCase().trim() })
+
+    const client = await Client.findOne({ where: { [Op.or]: where } })
+
+    if (!client) {
+      return res.json({ success: true, exists: false })
+    }
+
+    return res.json({
+      success: true,
+      exists:  true,
+      data: {
+        clientId:       client.id,
+        registrationId: client.registration_id,
+        fullName:       client.full_name,
+        status:         client.status,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
 }
 
 // ── Register a new client via an employee link (public route) ─────────────────
@@ -29,59 +59,29 @@ exports.registerClient = async (req, res, next) => {
   const t = await sequelize.transaction()
   try {
     const {
-      // Step 1 — Personal info
       fullName, mobile, email, addressLine, city, state, postalCode, country,
-      // Step 2 — KYC (optional at registration stage)
       pan,
-      // Step 3 — Bank (optional at registration stage)
       accountHolderName, bankName, accountNumber, confirmAccountNumber, ifscCode,
-      // Step 4 — Deal info
-      clientType, selectedPlanId, selectedPlanSlug, intendedDealAmount,
-      // Registration link token (from URL)
-      registrationToken,
+      clientType,
     } = req.body
 
-    // ── 1. Validate registration link token ───────────────────────────────────
-    let linkId        = null
-    let employeeId    = null
-
-    if (registrationToken) {
-      const tokenHash = hashToken(registrationToken)
-      const link = await RegistrationLink.findOne({
-        where: { token_hash: tokenHash, status: 'active' },
-        transaction: t,
-        lock: t.LOCK.UPDATE,
-        include: [{ model: Employee, as: 'employee', include: [{ model: User, as: 'user' }] }],
-      })
-
-      if (!link) {
-        await t.rollback()
-        return res.status(400).json({ success: false, message: 'Invalid or expired registration link' })
-      }
-      if (link.expires_at < new Date()) {
-        await t.rollback()
-        return res.status(410).json({ success: false, message: 'Registration link has expired' })
-      }
-      if (link.usage_count >= link.max_uses) {
-        await t.rollback()
-        return res.status(410).json({ success: false, message: 'Registration link has reached its maximum usage' })
-      }
-      // Check employee is still active
-      const empUser = await User.findByPk(link.employee?.user_id, { transaction: t })
-      if (!empUser || !empUser.is_active) {
-        await t.rollback()
-        return res.status(410).json({ success: false, message: 'This registration link is no longer valid' })
-      }
-
-      linkId     = link.id
-      employeeId = link.employee_id
-
-      // Increment usage count
-      await link.increment('usage_count', { transaction: t })
-      // If max uses reached, mark expired
-      if (link.usage_count + 1 >= link.max_uses) {
-        await link.update({ status: 'expired' }, { transaction: t })
-      }
+    // ── 1. Auto-assign employee via round-robin ───────────────────────────────
+    let employeeId = null
+    const employees = await Employee.findAll({
+      include: [{ model: User, as: 'user', where: { is_active: true }, attributes: ['id'] }],
+      transaction: t,
+    })
+    if (employees.length > 0) {
+      const { ClientPlanRequest } = require('../models/index')
+      const counts = await Promise.all(employees.map(async emp => {
+        const count = await ClientPlanRequest.count({
+          where: { assigned_employee_id: emp.id },
+          transaction: t,
+        })
+        return { emp, count }
+      }))
+      counts.sort((a, b) => a.count - b.count)
+      employeeId = counts[0].emp.id
     }
 
     // ── 2. Check for duplicate client (email or mobile) ───────────────────────
@@ -89,8 +89,23 @@ exports.registerClient = async (req, res, next) => {
       Client.findOne({ where: { email: email.toLowerCase().trim() }, transaction: t }),
       Client.findOne({ where: { mobile: mobile.trim() },             transaction: t }),
     ])
-    if (byEmail)  { await t.rollback(); return res.status(409).json({ success: false, message: 'Email already registered' }) }
-    if (byMobile) { await t.rollback(); return res.status(409).json({ success: false, message: 'Mobile number already registered' }) }
+
+    // If client already exists (same mobile or email), skip creating new record
+    // and return existing clientId so documents/plans can still be added
+    const existingClient = byEmail || byMobile
+    if (existingClient) {
+      await t.rollback()
+      return res.status(200).json({
+        success:  true,
+        message:  'Client already registered — returning existing record',
+        existing: true,
+        data: {
+          registrationId: existingClient.registration_id,
+          clientId:       existingClient.id,
+          status:         existingClient.status,
+        },
+      })
+    }
 
     // ── 3. Create client record ───────────────────────────────────────────────
     const registrationId = generateRegistrationId()
@@ -98,7 +113,6 @@ exports.registerClient = async (req, res, next) => {
     const client = await Client.create({
       registration_id:         registrationId,
       originating_employee_id: employeeId,
-      registration_link_id:    linkId,
       full_name:               fullName.trim(),
       mobile:                  mobile.trim(),
       email:                   email.toLowerCase().trim(),
@@ -125,19 +139,34 @@ exports.registerClient = async (req, res, next) => {
         } catch { /* will store null */ }
       }
 
+      // Build nominee fields from request body
+      const nomineeName     = req.body.nomineeName || null
+      const nomineeRelation = req.body.nomineeRelation || null
+      const nomineeMobile   = req.body.nomineeMobile || null
+
       await ClientKYC.create({
         client_id:           client.id,
         encrypted_pan:       encryptedPan,
         pan_masked:          panMasked,
         verification_status: 'submitted',
+        nominee_name:        nomineeName,
+        nominee_relation:    nomineeRelation,
+        nominee_mobile:      nomineeMobile,
       }, { transaction: t })
 
       await client.update({ status: 'kyc_submitted' }, { transaction: t })
     } else {
-      // Create empty KYC record placeholder
+      // Create empty KYC record placeholder (with nominee info if provided)
+      const nomineeName     = req.body.nomineeName || null
+      const nomineeRelation = req.body.nomineeRelation || null
+      const nomineeMobile   = req.body.nomineeMobile || null
+
       await ClientKYC.create({
         client_id:           client.id,
         verification_status: 'not_started',
+        nominee_name:        nomineeName,
+        nominee_relation:    nomineeRelation,
+        nominee_mobile:      nomineeMobile,
       }, { transaction: t })
     }
 
@@ -172,14 +201,40 @@ exports.registerClient = async (req, res, next) => {
       }
     }
 
+    // ── 6. Auto-create plan request if plan slug is provided ───────────────
+    if (req.body.selectedPlanSlug) {
+      const { ClientPlanRequest } = require('../models/index')
+      const crypto = require('crypto')
+
+      // Generate unique request number
+      function genReqNum() {
+        const d = new Date()
+        const ymd = `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`
+        return `REQ-${ymd}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`
+      }
+
+      // Round-robin assignment is already done above — re-use same employee
+      await ClientPlanRequest.create({
+        request_number:       genReqNum(),
+        client_id:            client.id,
+        assigned_employee_id: employeeId,
+        plan_slug:            req.body.selectedPlanSlug,
+        plan_name:            req.body.selectedPlanName || req.body.selectedPlanSlug,
+        deal_amount:          req.body.intendedDealAmount ? req.body.intendedDealAmount * 100 : null,
+        daily_amount:         req.body.intendedDailyAmount ? req.body.intendedDailyAmount * 100 : null,
+        payment_status:       'pending',
+        status:               'pending',
+      }, { transaction: t })
+    }
+
     await t.commit()
 
     await audit({
-      actorUserId: null,   // public route — no logged-in actor
+      actorUserId: null,
       action:      'CLIENT_REGISTERED',
       entityType:  'client',
       entityId:    client.id,
-      metadata:    { registrationId, employeeId, linkId },
+      metadata:    { registrationId, employeeId },
       req,
     })
 
@@ -291,7 +346,22 @@ exports.getClient = async (req, res, next) => {
       }
     }
 
-    res.json({ success: true, data: { client } })
+    // Build safe client object — image paths are NOT included in the response;
+    // the admin fetches images via the dedicated /kyc-documents/:docType route.
+    const clientData = client.toJSON()
+    if (clientData.kyc) {
+      clientData.kyc.hasAadhaarImage     = !!client.kyc?.aadhaar_image_path
+      clientData.kyc.hasAadhaarBackImage = !!client.kyc?.aadhaar_back_image_path
+      clientData.kyc.hasPanImage         = !!client.kyc?.pan_image_path
+      clientData.kyc.hasPassbookImage    = !!client.kyc?.passbook_image_path
+      // Remove raw file paths from response
+      delete clientData.kyc.aadhaar_image_path
+      delete clientData.kyc.aadhaar_back_image_path
+      delete clientData.kyc.pan_image_path
+      delete clientData.kyc.passbook_image_path
+    }
+
+    res.json({ success: true, data: { client: clientData } })
   } catch (err) {
     next(err)
   }
@@ -381,6 +451,141 @@ exports.assignClient = async (req, res, next) => {
       message: employeeId ? `Client assigned to ${empRecord.user.first_name} ${empRecord.user.last_name}` : 'Client unassigned',
       data: { employeeId: employeeId || null },
     })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ── Upload KYC document images ─────────────────────────────────────────────────
+// Called AFTER a client registers (by the client themselves via their clientId,
+// or later by an admin). Files come via multipart/form-data processed by multer.
+
+exports.uploadKycDocuments = async (req, res, next) => {
+  try {
+    const { id } = req.params
+    const files  = req.files || {}
+
+    const client = await Client.findByPk(id)
+    if (!client) return res.status(404).json({ success: false, message: 'Client not found' })
+
+    const kyc = await ClientKYC.findOne({ where: { client_id: id } })
+    if (!kyc) return res.status(404).json({ success: false, message: 'KYC record not found' })
+
+    const updates = {}
+
+    if (files.aadhaarImage?.[0]) {
+      // Remove old file if exists
+      if (kyc.aadhaar_image_path) {
+        try { fs.unlinkSync(kyc.aadhaar_image_path) } catch {}
+      }
+      updates.aadhaar_image_path = files.aadhaarImage[0].path
+    }
+    if (files.aadhaarBackImage?.[0]) {
+      if (kyc.aadhaar_back_image_path) {
+        try { fs.unlinkSync(kyc.aadhaar_back_image_path) } catch {}
+      }
+      updates.aadhaar_back_image_path = files.aadhaarBackImage[0].path
+    }
+    if (files.panImage?.[0]) {
+      if (kyc.pan_image_path) {
+        try { fs.unlinkSync(kyc.pan_image_path) } catch {}
+      }
+      updates.pan_image_path = files.panImage[0].path
+    }
+    if (files.passbookImage?.[0]) {
+      if (kyc.passbook_image_path) {
+        try { fs.unlinkSync(kyc.passbook_image_path) } catch {}
+      }
+      updates.passbook_image_path = files.passbookImage[0].path
+    }
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(422).json({ success: false, message: 'No files uploaded' })
+    }
+
+    // If KYC was not_started and we now have documents, move it to submitted
+    if (kyc.verification_status === 'not_started') {
+      updates.verification_status = 'submitted'
+      await client.update({ status: 'kyc_submitted' })
+    }
+
+    await kyc.update(updates)
+
+    await audit({
+      actorUserId: req.userId || null,
+      action:      'KYC_DOCUMENTS_UPLOADED',
+      entityType:  'client',
+      entityId:    client.id,
+      metadata:    {
+        registrationId: client.registration_id,
+        uploadedFields: Object.keys(updates).filter(k => k.endsWith('_path')),
+      },
+      req,
+    })
+
+    res.json({
+      success: true,
+      message: 'KYC documents uploaded successfully',
+      data: {
+        hasAadhaar:     !!kyc.aadhaar_image_path      || !!files.aadhaarImage,
+        hasAadhaarBack: !!kyc.aadhaar_back_image_path || !!files.aadhaarBackImage,
+        hasPan:         !!kyc.pan_image_path           || !!files.panImage,
+        hasPassbook:    !!kyc.passbook_image_path      || !!files.passbookImage,
+      },
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ── Serve a KYC document image (admin only) ────────────────────────────────────
+
+exports.getKycDocumentImage = async (req, res, next) => {
+  try {
+    const { id, docType } = req.params
+    const allowed = ['aadhaar', 'aadhaar-back', 'pan', 'passbook']
+    if (!allowed.includes(docType)) {
+      return res.status(400).json({ success: false, message: 'Invalid document type' })
+    }
+
+    const client = await Client.findByPk(id)
+    if (!client) return res.status(404).json({ success: false, message: 'Client not found' })
+
+    // Employees can only see their own clients
+    if (req.user.role === 'employee') {
+      const emp = await Employee.findOne({ where: { user_id: req.userId } })
+      if (!emp || client.originating_employee_id !== emp.id) {
+        return res.status(403).json({ success: false, message: 'Access denied' })
+      }
+    }
+
+    const kyc = await ClientKYC.findOne({ where: { client_id: id } })
+    if (!kyc) return res.status(404).json({ success: false, message: 'KYC record not found' })
+
+    const fieldMap = {
+      aadhaar:      kyc.aadhaar_image_path,
+      'aadhaar-back': kyc.aadhaar_back_image_path,
+      pan:          kyc.pan_image_path,
+      passbook:     kyc.passbook_image_path,
+    }
+    const filePath = fieldMap[docType]
+    if (!filePath) {
+      return res.status(404).json({ success: false, message: `No ${docType} document uploaded` })
+    }
+
+    // Security: ensure the path is inside the uploads/kyc directory
+    const { KYC_UPLOAD_DIR } = require('../middleware/upload')
+    const resolvedPath = path.resolve(filePath)
+    const resolvedDir  = path.resolve(KYC_UPLOAD_DIR)
+    if (!resolvedPath.startsWith(resolvedDir)) {
+      return res.status(403).json({ success: false, message: 'Access denied' })
+    }
+
+    if (!fs.existsSync(resolvedPath)) {
+      return res.status(404).json({ success: false, message: 'File not found on server' })
+    }
+
+    res.sendFile(resolvedPath)
   } catch (err) {
     next(err)
   }

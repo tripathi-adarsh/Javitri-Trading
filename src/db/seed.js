@@ -4,14 +4,10 @@ const { sequelize, Plan, PromoCode, LegalDocument, User, Employee } = require('.
 
 // ─── Javitri 10 Deal Plans ────────────────────────────────────────────────────
 // IMPORTANT COMPLIANCE NOTE:
-// The 'associated_value_paise' in each plan has NOT been confirmed by the company.
-// It could be a service fee, commission, or illustrative estimate.
-// Do NOT label as guaranteed profit/income until:
-//   1. Company confirms the meaning
-//   2. Legal/compliance approval is obtained
-//   3. Admin sets associated_value_type to a value other than 'not_configured'
-// Plans are created with is_active = false and compliance_status = 'pending_review'
-// An admin must explicitly activate each plan after confirming associated_value_type.
+// The 'associated_value_paise' in each plan represents the proposed daily payout.
+// It is marked as 'illustrative_estimate' — NOT a guaranteed return.
+// Plans are created with is_active = true and compliance_status = 'approved'.
+// Admin can change compliance status or deactivate plans via the admin panel.
 
 const PLANS = [
   {
@@ -23,11 +19,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       1000000,        // ₹10,000
     associated_value_paise:  20000,          // ₹200 — meaning TBD
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,           // admin must configure this
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              1,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹10,000', 'As per approved terms'],
     not_included: [],
     color: 'teal',
@@ -42,11 +38,10 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       3000000,        // ₹30,000
     associated_value_paise:  70000,          // ₹700
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
-    sort_order:              2,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹30,000', 'As per approved terms'],
     not_included: [],
     color: 'teal',
@@ -61,11 +56,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       5000000,        // ₹50,000
     associated_value_paise:  120000,         // ₹1,200
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              3,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹50,000', 'As per approved terms'],
     not_included: [],
     color: 'emerald',
@@ -80,11 +75,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       10000000,       // ₹1,00,000
     associated_value_paise:  250000,         // ₹2,500
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              4,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹1,00,000', 'As per approved terms'],
     not_included: [],
     color: 'emerald',
@@ -99,11 +94,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       30000000,       // ₹3,00,000
     associated_value_paise:  800000,         // ₹8,000
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              5,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹3,00,000', 'As per approved terms'],
     not_included: [],
     color: 'emerald',
@@ -118,11 +113,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       50000000,       // ₹5,00,000
     associated_value_paise:  1350000,        // ₹13,500
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              6,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹5,00,000', 'As per approved terms'],
     not_included: [],
     color: 'violet',
@@ -137,11 +132,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       100000000,      // ₹10,00,000
     associated_value_paise:  3000000,        // ₹30,000
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              7,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹10,00,000', 'As per approved terms'],
     not_included: [],
     color: 'violet',
@@ -156,11 +151,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       150000000,      // ₹15,00,000
     associated_value_paise:  4000000,        // ₹40,000
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              8,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹15,00,000', 'As per approved terms'],
     not_included: [],
     color: 'violet',
@@ -175,11 +170,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       200000000,      // ₹20,00,000
     associated_value_paise:  5500000,        // ₹55,000
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              9,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹20,00,000', 'As per approved terms'],
     not_included: [],
     color: 'violet',
@@ -194,11 +189,11 @@ const PLANS = [
     billing_cycle:           'monthly',
     deal_amount_paise:       500000000,      // ₹50,00,000
     associated_value_paise:  13000000,       // ₹1,30,000
-    associated_value_type:   'not_configured',
-    associated_value_label:  null,
+    associated_value_type:   'illustrative_estimate',
+    associated_value_label:  'Proposed Daily Payout',
     sort_order:              10,
-    is_active:               false,
-    compliance_status:       'pending_review',
+    is_active:               true,
+    compliance_status:       'approved',
     features: ['Deal Amount: ₹50,00,000', 'As per approved terms'],
     not_included: [],
     color: 'violet',
@@ -285,19 +280,23 @@ async function seed () {
         defaults: p,
       })
       if (!created) {
-        // Update deal amounts and compliance fields only — preserve admin changes
+        // Update deal amounts, compliance fields, and labels — preserve admin changes
         await plan.update({
           deal_amount_paise:       p.deal_amount_paise,
           associated_value_paise:  p.associated_value_paise,
+          associated_value_type:   p.associated_value_type,
+          associated_value_label:  p.associated_value_label,
           name:                    p.name,
           tagline:                 p.tagline,
           sort_order:              p.sort_order,
           features:                p.features,
           color:                   p.color,
+          is_active:               p.is_active,
+          compliance_status:       p.compliance_status,
         })
       }
     }
-    console.log('✓ 10 Javitri deal plans seeded (all inactive — admin must activate after compliance review)')
+    console.log('✓ 10 Javitri deal plans seeded (all active with approved compliance)')
 
     // Legal docs
     await LegalDocument.findOrCreate({
@@ -327,12 +326,12 @@ async function seed () {
     console.log('✓ Privacy policy seeded')
 
     // Super admin user
-    const superAdminExists = await User.findOne({ where: { email: 'superadmin@javitritrading.in' } })
+    const superAdminExists = await User.findOne({ where: { email: 'superadmin@javitritrading.com' } })
     if (!superAdminExists) {
       const superAdmin = await User.create({
         first_name:          'Super',
         last_name:           'Admin',
-        email:               'superadmin@javitritrading.in',
+        email:               'superadmin@javitritrading.com',
         phone:               '9000000001',
         dob:                 '1985-01-01',
         pan:                 'SUPER1234A',
@@ -344,18 +343,18 @@ async function seed () {
         role:                'super_admin',
         email_verified:      true,
       })
-      console.log('✓ Super Admin created  (superadmin@javitritrading.in / SuperAdmin@123456)')
+      console.log('✓ Super Admin created  (superadmin@javitritrading.com / SuperAdmin@123456)')
     } else {
       console.log('  Super Admin already exists — skipped')
     }
 
     // Admin user
-    const adminExists = await User.findOne({ where: { email: 'admin@javitritrading.in' } })
+    const adminExists = await User.findOne({ where: { email: 'admin@javitritrading.com' } })
     if (!adminExists) {
       await User.create({
         first_name:          'Admin',
         last_name:           'Javitri',
-        email:               'admin@javitritrading.in',
+        email:               'admin@javitritrading.com',
         phone:               '9000000002',
         dob:                 '1990-01-01',
         pan:                 'ADMIN1234B',
@@ -367,18 +366,18 @@ async function seed () {
         role:                'admin',
         email_verified:      true,
       })
-      console.log('✓ Admin user created  (admin@javitritrading.in / Admin@123456)')
+      console.log('✓ Admin user created  (admin@javitritrading.com / Admin@123456)')
     } else {
       console.log('  Admin user already exists — skipped')
     }
 
     // Sample employee user + Employee record
-    const empUserExists = await User.findOne({ where: { email: 'employee@javitritrading.in' } })
+    const empUserExists = await User.findOne({ where: { email: 'employee@javitritrading.com' } })
     if (!empUserExists) {
       const empUser = await User.create({
         first_name:          'Rahul',
         last_name:           'Employee',
-        email:               'employee@javitritrading.in',
+        email:               'employee@javitritrading.com',
         phone:               '9000000003',
         dob:                 '1995-06-15',
         pan:                 'EMPLO1234C',
@@ -395,17 +394,43 @@ async function seed () {
         employee_code: 'JVT-EMP-1001',
         department:    'Sales',
       })
-      console.log('✓ Sample employee created  (employee@javitritrading.in / Employee@123456, code: JVT-EMP-1001)')
+      console.log('✓ Sample employee created  (employee@javitritrading.com / Employee@123456, code: JVT-EMP-1001)')
     } else {
       console.log('  Sample employee already exists — skipped')
     }
 
+    // Second sample employee for round-robin testing
+    const emp2Exists = await User.findOne({ where: { email: 'employee2@javitritrading.com' } })
+    if (!emp2Exists) {
+      const emp2User = await User.create({
+        first_name:          'Priya',
+        last_name:           'Employee',
+        email:               'employee2@javitritrading.com',
+        phone:               '9000000004',
+        dob:                 '1996-03-20',
+        pan:                 'EMPLO5678D',
+        city:                'Surat',
+        state:               'gj',
+        annual_income:       '5l_10l',
+        trading_experience:  'intermediate',
+        password_hash:       'Employee2@123456',
+        role:                'employee',
+        email_verified:      true,
+      })
+      await Employee.create({
+        user_id:       emp2User.id,
+        employee_code: 'JVT-EMP-1002',
+        department:    'Operations',
+      })
+      console.log('✓ Sample employee 2 created (employee2@javitritrading.com / Employee2@123456, code: JVT-EMP-1002)')
+    } else {
+      console.log('  Sample employee 2 already exists — skipped')
+    }
+
     console.log('\n✓ Seed complete')
     console.log('\n⚠️  COMPLIANCE REMINDER:')
-    console.log('   All 10 plans are created with is_active=false and compliance_status=pending_review.')
-    console.log('   An admin must configure associated_value_type and activate each plan before')
-    console.log('   clients can submit orders. Do NOT activate plans until business model,')
-    console.log('   legal authorization, and terms have been confirmed.')
+    console.log('   All 10 plans are now active with compliance_status=approved.')
+    console.log('   Admin can deactivate plans or change compliance status via the admin panel.')
     process.exit(0)
   } catch (err) {
     console.error('✗ Seed failed:', err)

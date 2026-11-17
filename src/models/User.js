@@ -74,6 +74,19 @@ const User = sequelize.define('User', {
     type:      DataTypes.STRING(255),
     allowNull: true,
   },
+  // ── KYC Document paths ────────────────────────────────────────────────────
+  aadhaar_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
+  pan_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
+  passbook_image_path: {
+    type:      DataTypes.STRING(500),
+    allowNull: true,
+  },
 }, {
   tableName: 'users',
   indexes: [

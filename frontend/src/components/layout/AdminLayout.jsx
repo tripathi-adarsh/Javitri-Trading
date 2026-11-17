@@ -4,21 +4,21 @@ import {
   LayoutDashboard, Users, Link2, UserCheck, FileSearch,
   BarChart3, ShoppingCart, CreditCard, Scale, FileText,
   ClipboardList, Settings, LogOut, TrendingUp, ChevronLeft,
-  ChevronRight, Shield, Menu, X
+  ChevronRight, Shield, Menu, X, Wallet, MessageSquare
 } from 'lucide-react'
 import { useTrading } from '../../context/TradingContext.jsx'
 import { api } from '../../utils/api.js'
 
 const NAV_ITEMS = [
-  { to: '/admin/dashboard',         icon: LayoutDashboard, label: 'Dashboard',          roles: ['admin','super_admin','employee'] },
-  { to: '/admin/employees',         icon: Users,           label: 'Employees',           roles: ['admin','super_admin'] },
-  { to: '/admin/registration-links',icon: Link2,           label: 'Registration Links',  roles: ['admin','super_admin','employee'] },
-  { to: '/admin/clients',           icon: UserCheck,       label: 'Clients',             roles: ['admin','super_admin','employee'] },
-  { to: '/admin/kyc-review',        icon: FileSearch,      label: 'KYC Review',          roles: ['admin','super_admin'] },
-  { to: '/admin/plans',             icon: BarChart3,       label: 'Plans',               roles: ['admin','super_admin'] },
-  { to: '/admin/orders',            icon: ShoppingCart,    label: 'Orders',              roles: ['admin','super_admin'] },
-  { to: '/admin/payments',          icon: CreditCard,      label: 'Payments',            roles: ['admin','super_admin'] },
-  { to: '/admin/audit-logs',        icon: FileText,        label: 'Audit Logs',          roles: ['admin','super_admin'] },
+  { to: '/admin/dashboard',        icon: LayoutDashboard, label: 'Dashboard',          roles: ['admin','super_admin','employee'] },
+  { to: '/admin/employees',        icon: Users,           label: 'Employees',           roles: ['admin','super_admin'] },
+  { to: '/admin/clients',          icon: UserCheck,       label: 'Clients',             roles: ['admin','super_admin','employee'] },
+  { to: '/admin/kyc-review',       icon: FileSearch,      label: 'KYC Review',          roles: ['admin','super_admin'] },
+  { to: '/admin/plan-requests',    icon: TrendingUp,      label: 'Plan Requests',       roles: ['admin','super_admin','employee'] },
+  { to: '/admin/payout-reports',   icon: Wallet,          label: 'Payout Reports',      roles: ['admin','super_admin','employee'] },
+  { to: '/admin/contact-messages', icon: MessageSquare,   label: 'Contact Messages',    roles: ['admin','super_admin'] },
+  { to: '/admin/plans',            icon: BarChart3,       label: 'Plans Configurations',roles: ['admin','super_admin'] },
+  { to: '/admin/audit-logs',       icon: FileText,        label: 'Audit Logs',          roles: ['admin','super_admin'] },
 ]
 
 /* ── colours — lighter theme, better readability ── */

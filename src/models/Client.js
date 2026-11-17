@@ -23,13 +23,8 @@ const Client = sequelize.define('Client', {
     allowNull: false,
     unique:    true,
   },
-  // The employee who generated the registration link
+  // The employee who registered this client
   originating_employee_id: {
-    type:      DataTypes.UUID,
-    allowNull: true,   // may be null if registered through public form
-  },
-  // The registration link used (for audit)
-  registration_link_id: {
     type:      DataTypes.UUID,
     allowNull: true,
   },
@@ -97,7 +92,6 @@ const Client = sequelize.define('Client', {
   indexes: [
     { fields: ['registration_id'],         unique: true },
     { fields: ['originating_employee_id'] },
-    { fields: ['registration_link_id'] },
     { fields: ['email'] },
     { fields: ['mobile'] },
     { fields: ['status'] },

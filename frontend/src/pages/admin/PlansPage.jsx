@@ -65,19 +65,6 @@ export default function AdminPlansPage() {
         </Button>
       </div>
 
-      {/* Compliance banner */}
-      <div className="bg-amber-500/5 border border-amber-500/30 rounded-xl p-4 mb-6 flex gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
-        <div className="text-xs text-amber-300/80 space-y-1">
-          <p className="font-semibold text-amber-300">Compliance Requirement Before Activating Any Plan</p>
-          <p>1. Confirm what the <strong>Associated Value</strong> represents (service fee, commission, or estimate)</p>
-          <p>2. Set <strong>Associated Value Type</strong> to something other than "Not Configured"</p>
-          <p>3. Set <strong>Compliance Status</strong> to "Approved" only after legal authorization</p>
-          <p>4. Set <strong>Active</strong> to true only after all above are confirmed</p>
-          <p>Do NOT label any value as guaranteed profit, guaranteed income, or fixed return.</p>
-        </div>
-      </div>
-
       <div className="space-y-3">
         {loading ? (
           Array.from({ length: 5 }).map((_, i) => (

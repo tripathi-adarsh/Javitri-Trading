@@ -9,6 +9,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useLang } from '../context/LanguageContext.jsx'
+import { api } from '../utils/api.js'
 
 /* ── Company constants ───────────────────────────────────────────────────── */
 const CIN        = 'U66190GJ2026PTC183862'
@@ -45,6 +46,7 @@ const contactSchema = z.object({
 /* ── Component ───────────────────────────────────────────────────────────── */
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const { t } = useLang()
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
@@ -52,9 +54,19 @@ export default function ContactPage() {
     mode: 'onBlur',
   })
 
-  const onSubmit = async () => {
-    await new Promise(r => setTimeout(r, 800))
-    setSubmitted(true)
+  const onSubmit = async (data) => {
+    setSubmitError('')
+    try {
+      await api.contact.submit({
+        name:    data.name,
+        email:   data.email,
+        phone:   data.phone,
+        message: data.message,
+      })
+      setSubmitted(true)
+    } catch (err) {
+      setSubmitError(err.message || 'Failed to send message. Please try again.')
+    }
   }
 
   /* Success state */
@@ -291,6 +303,14 @@ export default function ContactPage() {
                   your contact information solely to respond to your enquiry, in accordance with our
                   Privacy Policy. We do not sell your personal data.
                 </div>
+
+                {submitError && (
+                  <div className="rounded-xl p-3 flex gap-2"
+                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)' }}>
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#f87171' }} />
+                    <p className="text-sm" style={{ color: '#f87171' }}>{submitError}</p>
+                  </div>
+                )}
 
                 <Button type="submit" size="lg" loading={isSubmitting} className="w-full"
                   style={{ background: 'linear-gradient(135deg,#c8983a,#a07020)', border: 'none', color: '#fff' }}>
