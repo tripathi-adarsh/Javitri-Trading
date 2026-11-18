@@ -7,6 +7,7 @@ const hpp          = require('hpp')
 const cookieParser = require('cookie-parser')
 const morgan       = require('morgan')
 const rateLimit    = require('express-rate-limit')
+const path         = require('path')
 
 const sanitize     = require('./middleware/sanitize')
 const errorHandler = require('./middleware/errorHandler')
@@ -124,10 +125,21 @@ app.get('/api/health', (_req, res) => {
   res.json({ success: true, message: 'Javitri Trading Service API is running', timestamp: new Date() })
 })
 
-// ── 404 ───────────────────────────────────────────────────────────────────────
-app.use((_req, res) => {
-  res.status(404).json({ success: false, message: 'Route not found' })
-})
+// ── Serve React frontend in production ───────────────────────────────────────
+if (process.env.NODE_ENV === 'production') {
+  const frontendDist = path.join(__dirname, '..', 'frontend', 'dist')
+  app.use(express.static(frontendDist))
+
+  // All non-API routes → React app (client-side routing)
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(frontendDist, 'index.html'))
+  })
+} else {
+  // ── 404 (development only — in production React handles unknown routes) ────
+  app.use((_req, res) => {
+    res.status(404).json({ success: false, message: 'Route not found' })
+  })
+}
 
 // ── Global error handler ──────────────────────────────────────────────────────
 app.use(errorHandler)
