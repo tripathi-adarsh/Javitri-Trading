@@ -1,36 +1,38 @@
-'use strict'
-require('dotenv').config()
-const validateEnv   = require('./utils/validateEnv')
-const app           = require('./app')
-const { sequelize } = require('./models/index')
 
-// Validate all required env vars before anything else
-validateEnv()
+'use strict';
 
-const PORT = parseInt(process.env.PORT) || 5000
+require('dotenv').config();
 
-async function start () {
+const validateEnv = require('./utils/validateEnv');
+const app = require('./app');
+const { sequelize } = require('./models/index');
+
+// Validate required environment variables
+validateEnv();
+
+const PORT = process.env.PORT || 3000;
+
+async function start() {
   try {
-    await sequelize.authenticate()
-    console.log('✓ MySQL connected')
+    // Connect to MySQL before starting the server
+    await sequelize.authenticate();
+    console.log('✓ MySQL connected');
 
-    // In development only: auto-sync table structure.
-    // In production: run migrations manually with `npm run migrate`.
     if (process.env.NODE_ENV === 'development') {
-      // Only create tables that don't exist yet — don't alter existing or create indexes
-      // This prevents "Too many keys" error from duplicate index creation
-      await sequelize.query('SELECT 1')  // just verify connection
-      console.log('✓ Database connected (development mode)')
+      await sequelize.query('SELECT 1');
+      console.log('✓ Database connected (development mode)');
     }
 
-    app.listen(PORT, () => {
-      console.log(`✓ Server running on port ${PORT}`)
-      console.log(`  Environment: ${process.env.NODE_ENV}`)
-    })
+    // Start server only once
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`✓ Server running on port ${PORT}`);
+      console.log(`Environment: ${process.env.NODE_ENV}`);
+    });
+
   } catch (err) {
-    console.error('✗ Server startup failed:', err.message)
-    process.exit(1)
+    console.error('✗ Server startup failed:', err);
+    process.exit(1);
   }
 }
 
-start()
+start();
