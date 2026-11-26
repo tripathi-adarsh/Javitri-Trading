@@ -1,171 +1,270 @@
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { RefreshCw, ArrowRight, ShieldAlert, ClipboardList } from 'lucide-react'
-import Button from '../components/ui/Button.jsx'
+import {
+  RefreshCw, ArrowRight, ClipboardList, CheckCircle2,
+  Calculator, ShieldCheck, Calendar, Info, TrendingUp, Sparkles, Building2
+} from 'lucide-react'
 import PlanEnquiryModal from '../components/PlanEnquiryModal.jsx'
 import { api } from '../utils/api.js'
+import { useLang } from '../context/LanguageContext.jsx'
+import {
+  TRADING_PLANS,
+  TENURE_OPTIONS,
+  TRADING_DAYS_PER_WEEK,
+  TRADING_DAYS_PER_MONTH,
+  formatINR,
+  calculateTradingProjections,
+  parseFeatures
+} from '../utils/tradingCalculations.js'
 
-/* ── Static plan data ── */
-const STATIC_PLANS = [
-  { slug: 'plan-1',  name: 'Plan 1',  dealAmountINR: 10000,   proposedDailyINR: 200,    period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-2',  name: 'Plan 2',  dealAmountINR: 30000,   proposedDailyINR: 700, period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-3',  name: 'Plan 3',  dealAmountINR: 50000,   proposedDailyINR: 1200, period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-4',  name: 'Plan 4',  dealAmountINR: 100000,  proposedDailyINR: 2500,period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-5',  name: 'Plan 5',  dealAmountINR: 300000,  proposedDailyINR: 8000 ,period: '90 trading days (Mon–Fri)'},
-  { slug: 'plan-6',  name: 'Plan 6',  dealAmountINR: 500000,  proposedDailyINR: 13500,period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-7',  name: 'Plan 7',  dealAmountINR: 1000000, proposedDailyINR: 30000,period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-8',  name: 'Plan 8',  dealAmountINR: 1500000, proposedDailyINR: 40000,period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-9',  name: 'Plan 9',  dealAmountINR: 2000000, proposedDailyINR: 55000,period: '90 trading days (Mon–Fri)' },
-  { slug: 'plan-10', name: 'Plan 10', dealAmountINR: 5000000, proposedDailyINR: 130000,period: '90 trading days (Mon–Fri)' },
-]
-
-function fmt(n) {
-  if (n == null) return '—'
-  return `₹${Number(n).toLocaleString('en-IN')}`
-}
-
-/* enrich plan with modal-compatible fields */
 function enrichPlan(plan) {
+  const daily = Number(plan.proposedDailyINR || plan.associatedValueINR || 0)
   return {
     ...plan,
-    deal:  fmt(plan.dealAmountINR),
-    daily: fmt(plan.proposedDailyINR || plan.associatedValueINR),
+    deal: formatINR(plan.dealAmountINR),
+    daily: formatINR(daily),
+    features: parseFeatures(plan.features),
   }
 }
 
-function PlanCard({ plan, onEnquire }) {
-  return (
-    <div
-      className="rounded-2xl overflow-hidden flex flex-col transition-all duration-200 cursor-pointer group"
-      style={{
-        background: 'linear-gradient(145deg, rgba(15,36,96,0.6) 0%, rgba(8,15,32,0.8) 100%)',
-        border: '1px solid rgba(212,168,67,0.18)',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-      }}
-      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(212,168,67,0.5)'; e.currentTarget.style.transform = 'translateY(-3px)' }}
-      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(212,168,67,0.18)'; e.currentTarget.style.transform = 'none' }}
-      onClick={() => onEnquire(plan)}
-    >
-      {/* Top line */}
-      <div className="h-0.5" style={{ background: 'linear-gradient(90deg, transparent, rgba(212,168,67,0.5), transparent)' }} />
-
-      {/* Header */}
-      <div className="px-5 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(212,168,67,0.1)' }}>
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(212,168,67,0.15)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.3)' }}>
-            {plan.name}
-          </span>
-          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)' }}>
-            Active
-          </span>
-        </div>
-      </div>
-
-      {/* Body */}
-      <div className="px-5 py-4 flex-1 space-y-3">
-        <div>
-          <p className="text-xs uppercase tracking-wider mb-1" style={{ color: '#8099b0' }}>Investment</p>
-          <p className="text-2xl font-extrabold" style={{ color: '#f5f8fc' }}>{fmt(plan.dealAmountINR)}</p>
-        </div>
-        <div className="gold-line" />
-        <div>
-          <p className="text-xs uppercase tracking-wider mb-1" style={{ color: '#8099b0' }}>Proposed Daily *</p>
-          <p className="text-xl font-bold" style={{ color: '#4ade80' }}>
-            {fmt(plan.proposedDailyINR || plan.associatedValueINR)}
-          </p>
-          {plan.period && <p className="text-[10px] mt-0.5" style={{ color: '#5e7285' }}>{plan.period}</p>}
-        </div>
-      </div>
-
-      {/* CTA */}
-      <div className="px-5 pb-5">
-        <button
-          type="button"
-          onClick={e => { e.stopPropagation(); onEnquire(plan) }}
-          className="w-full flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-semibold transition-all"
-          style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff', border: 'none',
-            boxShadow: '0 3px 12px rgba(212,168,67,0.25)' }}
-          onMouseEnter={e => e.currentTarget.style.opacity = '0.92'}
-          onMouseLeave={e => e.currentTarget.style.opacity = '1'}>
-          <ClipboardList className="h-4 w-4" />
-          Register for This Plan
-        </button>
-      </div>
-    </div>
-  )
-}
-
 export default function PlansPage() {
-  const [plans, setPlans]       = useState(STATIC_PLANS)
-  const [loading, setLoading]   = useState(true)
+  const { t, lang } = useLang()
+  const [plans, setPlans] = useState([])
+  const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedPlan, setSelectedPlan] = useState(null)
 
   useEffect(() => {
+    setLoading(true)
     api.plans.list()
       .then(res => {
         const apiPlans = res.data?.plans || []
-        if (apiPlans.length > 0) setPlans(apiPlans)
+        if (Array.isArray(apiPlans) && apiPlans.length > 0) {
+          // Format plans directly from database
+          const formatted = apiPlans.map((ap, i) => {
+            const dealAmount = Number(ap.dealAmountINR || (ap.deal_amount_paise ? ap.deal_amount_paise / 100 : 0)) || 10000
+            const daily = Number(ap.proposedDailyINR || ap.associatedValueINR || (ap.associated_value_paise ? ap.associated_value_paise / 100 : 0)) || 200
+            const features = parseFeatures(ap.features)
+
+            return {
+              id: ap.id,
+              slug: ap.slug || `plan-${i + 1}`,
+              name: ap.name || `Plan ${i + 1}`,
+              dealAmountINR: dealAmount,
+              deal: formatINR(dealAmount),
+              proposedDailyINR: daily,
+              daily: formatINR(daily),
+              tagline: ap.tagline || 'Structured Investment Plan',
+              category: ap.badge || 'Standard',
+              features: features.length > 0 ? features : [
+                'Monday to Friday daily payout',
+                'Comprehensive market insights',
+                'Dedicated compliance documentation'
+              ],
+            }
+          })
+
+          // Sort plans by deal amount ascending
+          formatted.sort((a, b) => a.dealAmountINR - b.dealAmountINR)
+          setPlans(formatted)
+        } else {
+          // Fallback if DB empty
+          setPlans(TRADING_PLANS)
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        // Fallback gracefully on network error
+        setPlans(TRADING_PLANS)
+      })
       .finally(() => setLoading(false))
   }, [])
 
   const handleEnquire = (plan) => {
+    if (!plan) return
     setSelectedPlan(enrichPlan(plan))
     setModalOpen(true)
   }
 
+  const activePlanList = plans.length > 0 ? plans : TRADING_PLANS
+
   return (
     <>
-      <div className="min-h-screen py-12 px-4" style={{ background: '#080f22' }}>
-        <div className="max-w-6xl mx-auto">
+      <div className="min-h-screen bg-white">
 
-          {/* Header */}
-          <div className="text-center mb-10">
-            <span className="text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full"
-              style={{ background: 'rgba(212,168,67,0.12)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.25)' }}>
-              Investment Plans
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-extrabold mt-4 mb-3" style={{ color: '#f5f8fc' }}>
-              Our <span className="gradient-text">Investment Plans</span>
+        {/* ── Page Header ── */}
+        <section className="bg-gradient-to-b from-blue-50/70 via-[#f8fafc] to-white border-b border-[#e2e8f0] py-14 sm:py-18 text-center relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="max-w-4xl mx-auto px-4 relative z-10">
+            <h1 className="text-3xl sm:text-5xl font-black text-[#0b1e3f] tracking-tight mb-4">
+              {t('plans_heading')}
             </h1>
-            <p className="text-sm max-w-xl mx-auto leading-relaxed" style={{ color: '#9ab0c4' }}>
-              Ten investment plans with proposed daily figures — Monday to Friday schedule.
-              Click any plan card to register your interest.
+            <p className="text-base sm:text-lg text-[#334155] max-w-2xl mx-auto leading-relaxed">
+              {t('plans_subheading')}
+            </p>
+
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
+              <div className="px-4 py-2 rounded-xl bg-white border border-[#cbd5e1] text-xs font-bold text-[#0b1e3f] shadow-xs flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full bg-[#1d4ed8] animate-pulse" />
+                <span>5 {lang === 'hi' ? 'सत्र प्रति सप्ताह (सोम–शुक्र)' : 'Sessions / Week (Mon–Fri)'}</span>
+              </div>
+              <div className="px-4 py-2 rounded-xl bg-white border border-[#cbd5e1] text-xs font-bold text-[#0b1e3f] shadow-xs">
+                <span>~22 {lang === 'hi' ? 'ट्रेडिंग दिन प्रति माह' : 'Trading Days / Month'}</span>
+              </div>
+              <div className="px-4 py-2 rounded-xl bg-white border border-[#cbd5e1] text-xs font-bold text-[#0b1e3f] shadow-xs">
+                <span>{lang === 'hi' ? 'शनि एवं रवि बाजार अवकाश' : 'Weekends: Sat & Sun Closed'}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── All Active Investment Plans from Database (Luxury Card Design) ── */}
+        <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-black text-[#0b1e3f] tracking-tight mb-2">Available Investment Plans</h2>
+            <p className="text-sm text-[#475569] max-w-xl mx-auto">
+              Choose from all active plans configured in our database. Every plan operates on our transparent Monday to Friday framework.
             </p>
           </div>
 
-          {/* Plans grid */}
           {loading ? (
-            <div className="flex justify-center py-16" style={{ color: '#9ab0c4' }}>
-              <RefreshCw className="h-5 w-5 animate-spin mr-2" /> Loading plans…
+            <div className="flex flex-col items-center justify-center py-20 text-[#64748b]">
+              <RefreshCw className="h-8 w-8 animate-spin text-[#1d4ed8] mb-3" />
+              <p className="text-sm font-bold text-[#0b1e3f]">Loading plans from database…</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-              {plans.map((plan, i) => (
-                <PlanCard key={plan.slug || plan.name} plan={plan} onEnquire={handleEnquire} />
-              ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+              {activePlanList.map((plan) => {
+                const daily = Number(plan.proposedDailyINR || plan.associatedValueINR || 0)
+                const weekly = daily * TRADING_DAYS_PER_WEEK
+                const monthly = daily * TRADING_DAYS_PER_MONTH
+                const featuresList = parseFeatures(plan.features)
+
+                return (
+                  <div
+                    key={plan.slug || plan.name}
+                    onClick={() => handleEnquire(plan)}
+                    className="plan-card bg-white rounded-3xl border border-[#e2e8f0] p-6 shadow-sm hover:border-[#1d4ed8] hover:shadow-xl transition-all duration-300 flex flex-col justify-between cursor-pointer group relative overflow-hidden"
+                  >
+                    {/* Top gradient accent */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
+
+                    <div>
+                      {/* Card Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-xs font-black px-3 py-1 rounded-full gold-badge">
+                          {plan.name}
+                        </span>
+                      </div>
+
+                      {/* Principal Amount */}
+                      <div className="mb-4">
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#64748b]">Investment Amount</p>
+                        <p className="text-2xl font-black text-[#0b1e3f] mt-0.5">{formatINR(plan.dealAmountINR)}</p>
+                        {plan.tagline && (
+                          <p className="text-xs text-[#b45309] font-bold mt-1">{plan.tagline}</p>
+                        )}
+                      </div>
+
+                      {/* Highlighted Return Box */}
+                      <div className="bg-gradient-to-br from-blue-50/70 via-white to-amber-50/40 rounded-2xl p-4 border border-blue-100 my-4 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[#475569] font-medium">Daily:</span>
+                          <span className="font-black text-[#1d4ed8] text-sm">{formatINR(daily)} / day</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[#475569] font-medium">Weekly:</span>
+                          <span className="font-bold text-[#0b1e3f]">{formatINR(weekly)}</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1.5 border-t border-slate-200/80">
+                          <span className="text-[#475569] font-medium">Monthly:</span>
+                          <span className="font-black text-[#b45309]">{formatINR(monthly)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); handleEnquire(plan) }}
+                      className="w-full py-3.5 rounded-2xl font-black text-xs bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] !text-white shadow-[0_4px_14px_rgba(29,78,216,0.3)] transition-all flex items-center justify-center gap-2 cursor-pointer mt-4"
+                    >
+                      <ClipboardList className="h-4 w-4 !text-white" />
+                      <span className="!text-white">Register for {plan.name}</span>
+                    </button>
+                  </div>
+                )
+              })}
             </div>
           )}
 
-          <div className="text-center mt-8">
-            <Link to="/contact">
-              <Button size="lg"
-                style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', border: 'none', color: '#fff' }}>
-                Contact Us for More Information <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+          {/* ── Schedule Comparison Matrix ── */}
+          <div className="mt-16 bg-white rounded-3xl border border-[#e2e8f0] overflow-hidden shadow-xs">
+            <div className="p-6 sm:p-8 bg-[#f8fafc] border-b border-[#e2e8f0]">
+              <h3 className="text-lg font-black text-[#0b1e3f]">Complete Schedule Comparison Matrix</h3>
+              <p className="text-xs text-[#64748b] mt-0.5">Quick reference table across all database investment plans</p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr className="border-b border-[#e2e8f0] bg-white text-[#0b1e3f] uppercase font-black text-[10px] tracking-wider">
+                    <th className="py-4 px-6">Plan Name</th>
+                    <th className="py-4 px-6">Principal Amount</th>
+                    <th className="py-4 px-6">Daily</th>
+                    <th className="py-4 px-6">Weekly</th>
+                    <th className="py-4 px-6">Monthly</th>
+                    <th className="py-4 px-6">Schedule</th>
+                    <th className="py-4 px-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#e2e8f0]">
+                  {activePlanList.map((p) => {
+                    const d = Number(p.proposedDailyINR || p.associatedValueINR || 0)
+                    const w = d * TRADING_DAYS_PER_WEEK
+                    const m = d * TRADING_DAYS_PER_MONTH
+
+                    return (
+                      <tr key={p.slug || p.name} className="hover:bg-blue-50/40 transition-colors">
+                        <td className="py-4 px-6 font-bold text-[#0b1e3f]">{p.name}</td>
+                        <td className="py-4 px-6 font-black text-[#0b1e3f]">{formatINR(p.dealAmountINR)}</td>
+                        <td className="py-4 px-6 font-black text-[#1d4ed8]">{formatINR(d)}</td>
+                        <td className="py-4 px-6 font-bold text-[#0b1e3f]">{formatINR(w)}</td>
+                        <td className="py-4 px-6 font-bold text-[#b45309]">{formatINR(m)}</td>
+                        <td className="py-4 px-6 text-[#64748b]">Mon–Fri (5 days)</td>
+                        <td className="py-4 px-6 text-right">
+                          <button
+                            type="button"
+                            onClick={() => handleEnquire(p)}
+                            className="px-3.5 py-1.5 rounded-xl text-xs font-bold text-[#1d4ed8] hover:bg-blue-50 border border-blue-200 transition-colors cursor-pointer"
+                          >
+                            Register
+                          </button>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Simple Clean Notice (No Terms/Policy links as requested) */}
+          <div className="mt-14 p-6 sm:p-7 rounded-3xl bg-[#f8fafc] border border-[#e2e8f0] text-xs text-[#475569] leading-relaxed max-w-4xl mx-auto space-y-2 text-center">
+            <p className="font-extrabold text-[#0f172a]">
+              Javitri Trading Service Pvt. Ltd. · Operating Schedule
+            </p>
+            <p>
+              All calculations displayed are illustrative figures based strictly on the standard Monday to Friday stock exchange trading cycle (5 sessions per week, ~22 sessions per month).
+            </p>
+          </div>
+        </section>
+
       </div>
 
-      {/* Plan Enquiry Modal */}
       <PlanEnquiryModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setSelectedPlan(null) }}
         initialPlan={selectedPlan}
       />
     </>

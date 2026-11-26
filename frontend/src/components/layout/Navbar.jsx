@@ -1,23 +1,31 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Shield, MessageCircle, Globe, ChevronDown } from 'lucide-react'
+import { Menu, X, Shield, MessageCircle, Globe, ChevronDown, PhoneCall, Send, Activity } from 'lucide-react'
 import { useLang, LANGUAGES } from '../../context/LanguageContext.jsx'
+import { useMarket } from '../../context/MarketContext.jsx'
 
 const WHATSAPP_URL = 'https://wa.me/919022487800'
 const TELEGRAM_URL = 'https://t.me/Javitritradingservice'
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen]         = useState(false)
-  const [langOpen, setLangOpen]             = useState(false)       // desktop
-  const [mobileLangOpen, setMobileLangOpen] = useState(false)       // mobile
+  const [langOpen, setLangOpen]             = useState(false)
+  const [mobileLangOpen, setMobileLangOpen] = useState(false)
+  const [scrolled, setScrolled]             = useState(false)
   const langRef       = useRef(null)
   const mobileLangRef = useRef(null)
   const location = useLocation()
   const { lang, setLang, t } = useLang()
+  const { marketStatus, nifty, bankNifty } = useMarket()
 
   const isActive = (to) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
-  // Close desktop dropdown on outside click
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   useEffect(() => {
     function handleClick(e) {
       if (langRef.current && !langRef.current.contains(e.target)) setLangOpen(false)
@@ -26,7 +34,6 @@ export default function Navbar() {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
-  // Close mobile dropdown on outside click
   useEffect(() => {
     function handleClick(e) {
       if (mobileLangRef.current && !mobileLangRef.current.contains(e.target)) setMobileLangOpen(false)
@@ -46,73 +53,120 @@ export default function Navbar() {
   const currentLang = LANGUAGES.find(l => l.code === lang) || LANGUAGES[0]
 
   return (
-    <header className="sticky top-0 z-50"
-      style={{ background: 'rgba(7,12,24,0.98)', borderBottom: '1px solid rgba(200,152,58,0.25)', backdropFilter: 'blur(14px)' }}>
+    <header className="sticky top-0 z-50 bg-white"
+      style={{
+        borderBottom: '1px solid #e2e8f0',
+        boxShadow: scrolled ? '0 4px 20px -2px rgba(15, 23, 42, 0.07)' : '0 1px 3px rgba(15, 23, 42, 0.03)',
+        transition: 'box-shadow 0.25s ease',
+      }}>
 
-      {/* Gold top accent line */}
-      <div className="gold-line" />
+      {/* ── Institutional Top Bar: Live NIFTY / BANK NIFTY + Market Status ── */}
+      <div className="bg-[#0b1e3f] text-white text-[11px] py-1.5 px-3 sm:px-4 border-b border-[#1e3a8a]/40 shadow-xs">
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+          
+          {/* Left: Market Status condition badge */}
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                marketStatus.isOpen
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs'
+                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${marketStatus.isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+              {marketStatus.statusText}
+            </span>
+            <span className="hidden sm:inline text-slate-300 text-[10px] font-medium">
+              (Mon–Fri 09:00 - 15:30 IST)
+            </span>
+          </div>
+
+          {/* Center / Right: Live NIFTY & BANK NIFTY Prices (Real-time live updates) */}
+          <div className="flex items-center gap-3 sm:gap-5 font-mono text-[10px] sm:text-xs">
+            <div className="flex items-center gap-1">
+              <span className="text-slate-300 font-sans font-bold text-[10px]">NIFTY 50:</span>
+              <span className="font-extrabold text-white">{nifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className={`font-bold text-[10px] ${nifty.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {nifty.change >= 0 ? '+' : ''}{nifty.change.toFixed(2)} ({nifty.percent >= 0 ? '+' : ''}{nifty.percent.toFixed(2)}%)
+              </span>
+            </div>
+            <div className="hidden sm:flex items-center gap-1">
+              <span className="text-slate-300 font-sans font-bold text-[10px]">BANK NIFTY:</span>
+              <span className="font-extrabold text-white">{bankNifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              <span className={`font-bold text-[10px] ${bankNifty.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {bankNifty.change >= 0 ? '+' : ''}{bankNifty.change.toFixed(2)} ({bankNifty.percent >= 0 ? '+' : ''}{bankNifty.percent.toFixed(2)}%)
+              </span>
+            </div>
+            <div className="hidden md:inline text-amber-300 font-sans font-extrabold text-[10px] bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+              Startup India: DIPP291171
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Corporate top micro-accent line */}
+      <div style={{ height: '3px', background: 'linear-gradient(90deg, #0b1e3f 0%, #1d4ed8 45%, #d4af37 80%, #f59e0b 100%)' }} />
 
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 sm:h-20">
 
           {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            <div className="bg-white rounded-xl p-1.5 shadow-md group-hover:shadow-lg transition-shadow">
-              <img src="/logo.jpeg" alt="Javitri Trading Service" className="h-9 w-auto object-contain" />
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3.5 group shrink-0 py-1" aria-label="Javitri Trading Service Pvt. Ltd.">
+            <div className="h-12 sm:h-14 w-12 sm:w-14 rounded-2xl p-1 shadow-xs border-2 border-slate-200/90 bg-white group-hover:border-blue-400 transition-all flex items-center justify-center shrink-0">
+              <img src="/logo.jpeg" alt="Javitri Trading Service Pvt. Ltd." className="h-full w-full object-contain" />
             </div>
-            <div className="hidden sm:block">
-              <p className="text-sm font-bold leading-tight text-white">
-                Javitri <span style={{ color: '#c8983a' }}>Trading</span>
+            <div>
+              <p className="text-base sm:text-lg font-black leading-tight text-[#0f172a] tracking-tight whitespace-nowrap">
+                Javitri Trading <span className="text-[#1d4ed8]">Service</span>
               </p>
-              <p className="text-[10px] leading-none" style={{ color: '#8899aa' }}>Service Pvt. Ltd.</p>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#b45309]">Pvt. Ltd.</p>
             </div>
           </Link>
 
-          {/* ── Desktop Nav ── */}
-          <div className="hidden lg:flex items-center gap-0.5 flex-1 justify-center mx-4">
-            {navLinks.map(({ to, labelKey }) => (
-              <Link
-                key={to} to={to}
-                className="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap"
-                style={isActive(to)
-                  ? { color: '#c8983a', background: 'rgba(200,152,58,0.12)' }
-                  : { color: '#b0bec5' }
-                }
-                onMouseEnter={e => { if (!isActive(to)) { e.currentTarget.style.color = '#fff'; e.currentTarget.style.background = 'rgba(255,255,255,0.06)' } }}
-                onMouseLeave={e => { if (!isActive(to)) { e.currentTarget.style.color = '#b0bec5'; e.currentTarget.style.background = 'transparent' } }}
-              >
-                {t(labelKey)}
-              </Link>
-            ))}
+          {/* ── Desktop Nav Links ── */}
+          <div className="hidden lg:flex items-center gap-0.5 xl:gap-1 flex-1 justify-center mx-2 xl:mx-4">
+            {navLinks.map(({ to, labelKey }) => {
+              const active = isActive(to)
+              const label = t(labelKey) || labelKey
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  className={`px-2.5 xl:px-3.5 py-1.5 xl:py-2 rounded-xl text-xs xl:text-sm font-extrabold transition-all whitespace-nowrap ${
+                    active
+                      ? 'bg-[#0b1e3f] !text-white shadow-sm ring-2 ring-blue-500/20'
+                      : 'text-[#334155] hover:text-[#1d4ed8] hover:bg-[#f8fafc]'
+                  }`}
+                >
+                  {label}
+                </Link>
+              )
+            })}
           </div>
 
-          {/* ── Desktop right actions ── */}
-          <div className="hidden lg:flex items-center gap-2 shrink-0">
+          {/* ── Desktop Right Actions ── */}
+          <div className="hidden lg:flex items-center gap-1.5 xl:gap-2 shrink-0">
 
-            {/* Desktop language switcher */}
+            {/* Language Dropdown */}
             <div className="relative" ref={langRef}>
               <button
                 onClick={() => setLangOpen(v => !v)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-                style={{ color: '#b0bec5', border: '1px solid rgba(200,152,58,0.2)', background: 'rgba(200,152,58,0.05)' }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(200,152,58,0.5)'; e.currentTarget.style.color = '#c8983a' }}
-                onMouseLeave={e => { if (!langOpen) { e.currentTarget.style.borderColor = 'rgba(200,152,58,0.2)'; e.currentTarget.style.color = '#b0bec5' } }}
+                className="flex items-center gap-1 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-bold transition-all border border-[#e2e8f0] bg-[#f8fafc] text-[#0b1e3f] hover:border-[#cbd5e1]"
                 aria-label="Select language"
                 aria-haspopup="listbox"
                 aria-expanded={langOpen}
               >
-                <Globe className="h-3.5 w-3.5" />
+                <Globe className="h-3.5 w-3.5 text-[#1d4ed8] shrink-0" />
                 <span>{currentLang.flag} {currentLang.nativeLabel}</span>
-                <ChevronDown className="h-3 w-3"
+                <ChevronDown className="h-3 w-3 text-[#64748b] shrink-0"
                   style={{ transform: langOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
               </button>
 
               {langOpen && (
                 <div
-                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden z-[60] min-w-[160px]"
-                  style={{ background: '#0d1629', border: '1px solid rgba(200,152,58,0.3)', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}
+                  className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden z-[60] min-w-[170px] bg-white border border-[#e2e8f0] shadow-xl py-1"
                   role="listbox"
-                  aria-label="Available languages"
                 >
                   {LANGUAGES.map((l) => (
                     <button
@@ -120,180 +174,150 @@ export default function Navbar() {
                       onClick={() => { setLang(l.code); setLangOpen(false) }}
                       role="option"
                       aria-selected={lang === l.code}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left transition-colors"
-                      style={{
-                        color:      lang === l.code ? '#c8983a' : '#b0bec5',
-                        background: lang === l.code ? 'rgba(200,152,58,0.1)' : 'transparent',
-                        fontWeight: lang === l.code ? '600' : '400',
-                      }}
-                      onMouseEnter={e => { if (lang !== l.code) { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#fff' } }}
-                      onMouseLeave={e => { if (lang !== l.code) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#b0bec5' } }}
+                      className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left transition-colors ${
+                        lang === l.code ? 'text-[#b45309] bg-[#fffbeb] font-bold' : 'text-[#334155] hover:bg-[#f8fafc] hover:text-[#0b1e3f]'
+                      }`}
                     >
-                      <span className="text-base">{l.flag}</span>
+                      <span className="text-base shrink-0">{l.flag}</span>
                       <div className="flex flex-col">
                         <span>{l.nativeLabel}</span>
-                        {l.code !== 'en' && <span className="text-[10px]" style={{ color: '#64748b' }}>{l.label}</span>}
+                        {l.code !== 'en' && <span className="text-[10px] text-[#64748b]">{l.label}</span>}
                       </div>
-                      {lang === l.code && <span className="ml-auto text-[10px]" style={{ color: '#c8983a' }}>✓</span>}
+                      {lang === l.code && <span className="ml-auto text-xs text-[#b45309] font-bold">✓</span>}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* WhatsApp */}
+            {/* WhatsApp CTA */}
             <a
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-              style={{ background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.3)', color: '#25d366' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(37,211,102,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(37,211,102,0.1)'}
+              className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-black transition-all bg-[#eff6ff] border border-[#bfdbfe] text-[#1d4ed8] hover:bg-[#dbeafe] hover:-translate-y-0.5 shadow-xs"
               aria-label="WhatsApp"
             >
-              <MessageCircle className="h-3.5 w-3.5" />
-              {t('nav_whatsapp')}
+              <MessageCircle className="h-3.5 w-3.5 text-[#1d4ed8] shrink-0" />
+              <span>{t('nav_whatsapp')}</span>
             </a>
 
-            {/* Telegram */}
+            {/* Telegram CTA */}
             <a
               href={TELEGRAM_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-              style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.3)', color: '#29a8e8' }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(0,136,204,0.2)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'rgba(0,136,204,0.1)'}
+              className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-black transition-all bg-sky-50 border border-sky-200 text-sky-800 hover:bg-sky-100 hover:-translate-y-0.5 shadow-xs"
               aria-label="Telegram"
             >
-              {/* Telegram icon (SVG) */}
-              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-              </svg>
-              Telegram
+              <Send className="h-3.5 w-3.5 text-sky-600 shrink-0" />
+              <span>{t('nav_telegram')}</span>
             </a>
 
-            {/* Admin */}
-            <Link to="/admin/login"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-              style={{ color: '#8899aa', border: '1px solid rgba(200,152,58,0.2)' }}
-              onMouseEnter={e => { e.currentTarget.style.color = '#c8983a'; e.currentTarget.style.borderColor = 'rgba(200,152,58,0.5)' }}
-              onMouseLeave={e => { e.currentTarget.style.color = '#8899aa'; e.currentTarget.style.borderColor = 'rgba(200,152,58,0.2)' }}>
-              <Shield className="h-3.5 w-3.5" />
-              {t('nav_admin')}
+            {/* Admin Login */}
+            <Link
+              to="/admin/login"
+              className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-extrabold transition-all bg-[#0b1e3f] !text-white hover:bg-[#1d4ed8] shadow-xs hover:-translate-y-0.5"
+            >
+              <Shield className="h-3.5 w-3.5 text-blue-300 shrink-0" />
+              <span>{t('nav_admin')}</span>
             </Link>
           </div>
 
-          {/* ── Mobile right ── */}
+          {/* ── Mobile Right Actions ── */}
           <div className="flex lg:hidden items-center gap-2">
 
-            {/* Mobile language — own state + own ref */}
+            {/* Mobile language button */}
             <div className="relative" ref={mobileLangRef}>
               <button
                 onClick={() => setMobileLangOpen(v => !v)}
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all"
-                style={{ color: '#b0bec5', border: '1px solid rgba(200,152,58,0.2)', background: 'rgba(200,152,58,0.05)' }}
+                className="flex items-center gap-1 px-2.5 py-2 rounded-lg text-xs font-semibold border border-[#e2e8f0] bg-[#f8fafc] text-[#334155]"
                 aria-label="Select language"
-                aria-haspopup="listbox"
-                aria-expanded={mobileLangOpen}
               >
-                <Globe className="h-3.5 w-3.5" />
+                <Globe className="h-4 w-4 text-[#64748b] shrink-0" />
                 <span>{currentLang.flag}</span>
               </button>
 
               {mobileLangOpen && (
                 <div
-                  className="absolute right-0 top-full mt-1.5 rounded-xl overflow-hidden min-w-[170px]"
-                  style={{
-                    background:  '#0d1629',
-                    border:      '1px solid rgba(200,152,58,0.3)',
-                    boxShadow:   '0 8px 32px rgba(0,0,0,0.7)',
-                    zIndex:      9999,           // very high so nothing overlaps
-                  }}
-                  role="listbox"
-                  aria-label="Available languages"
+                  className="absolute right-0 top-full mt-2 rounded-xl overflow-hidden min-w-[170px] bg-white border border-[#e2e8f0] shadow-xl py-1 z-[9999]"
                 >
                   {LANGUAGES.map((l) => (
                     <button
                       key={l.code}
                       onClick={() => { setLang(l.code); setMobileLangOpen(false) }}
-                      role="option"
-                      aria-selected={lang === l.code}
-                      className="w-full flex items-center gap-2.5 px-4 py-3 text-sm text-left"
-                      style={{
-                        color:      lang === l.code ? '#c8983a' : '#b0bec5',
-                        background: lang === l.code ? 'rgba(200,152,58,0.1)' : 'transparent',
-                        fontWeight: lang === l.code ? '600' : '400',
-                      }}
+                      className={`w-full flex items-center gap-2.5 px-4 py-2.5 text-xs text-left ${
+                        lang === l.code ? 'text-[#b45309] bg-[#fffbeb] font-bold' : 'text-[#334155] hover:bg-[#f8fafc]'
+                      }`}
                     >
-                      <span className="text-base">{l.flag}</span>
+                      <span className="text-base shrink-0">{l.flag}</span>
                       <span>{l.nativeLabel}</span>
-                      {lang === l.code && (
-                        <span className="ml-auto text-xs" style={{ color: '#c8983a' }}>✓</span>
-                      )}
+                      {lang === l.code && <span className="ml-auto text-xs text-[#b45309]">✓</span>}
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Hamburger */}
+            {/* Mobile menu toggle */}
             <button
-              className="p-2 rounded-lg transition-colors"
-              style={{ color: '#b0bec5' }}
+              className="p-2 rounded-lg border border-[#e2e8f0] text-[#0f172a] hover:bg-[#f8fafc] transition-colors"
               onClick={() => setMobileOpen(v => !v)}
               aria-label="Toggle navigation menu"
-              aria-expanded={mobileOpen}>
-              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? <X className="h-6 w-6 shrink-0" /> : <Menu className="h-6 w-6 shrink-0" />}
             </button>
           </div>
         </div>
 
-        {/* ── Mobile Nav Menu ── */}
+        {/* ── Mobile Nav Drawer ── */}
         {mobileOpen && (
-          <div className="lg:hidden py-3 flex flex-col gap-0.5"
-            style={{ borderTop: '1px solid rgba(200,152,58,0.15)' }}>
-            {navLinks.map(({ to, labelKey }) => (
-              <Link key={to} to={to}
-                onClick={() => setMobileOpen(false)}
-                className="px-3 py-2.5 text-sm font-medium rounded-lg"
-                style={isActive(to)
-                  ? { color: '#c8983a', background: 'rgba(200,152,58,0.1)' }
-                  : { color: '#b0bec5' }}>
-                {t(labelKey)}
-              </Link>
-            ))}
-            <div className="flex flex-col gap-1 mt-2 pt-2"
-              style={{ borderTop: '1px solid rgba(200,152,58,0.15)' }}>
+          <div className="lg:hidden py-4 border-t border-[#e2e8f0] space-y-1">
+            {navLinks.map(({ to, labelKey }) => {
+              const active = isActive(to)
+              const label = t(labelKey) || labelKey
+              return (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileOpen(false)}
+                  className={`block px-4 py-2.5 text-sm rounded-xl transition-all ${
+                    active ? 'bg-[#0b1e3f] !text-white font-black shadow-xs' : 'text-[#334155] font-semibold hover:bg-[#f8fafc]'
+                  }`}
+                >
+                  {label}
+                </Link>
+              )
+            })}
+            <div className="pt-3 mt-2 border-t border-[#e2e8f0] flex flex-col gap-2">
               <a
                 href={WHATSAPP_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg"
-                style={{ color: '#25d366', background: 'rgba(37,211,102,0.08)' }}>
-                <MessageCircle className="h-4 w-4" />
-                {t('nav_whatsapp')}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl bg-[#eff6ff] border border-[#bfdbfe] text-[#1d4ed8]"
+              >
+                <MessageCircle className="h-4 w-4 shrink-0" />
+                <span>{t('nav_whatsapp')}</span>
               </a>
               <a
                 href={TELEGRAM_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-lg"
-                style={{ color: '#29a8e8', background: 'rgba(0,136,204,0.08)' }}>
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-                </svg>
-                Telegram
+                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl bg-sky-50 border border-sky-200 text-sky-800"
+              >
+                <Send className="h-4 w-4 shrink-0 text-sky-600" />
+                <span>{t('nav_telegram')}</span>
               </a>
-              <Link to="/admin/login"
+              <Link
+                to="/admin/login"
                 onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg"
-                style={{ color: '#c8983a' }}>
-                <Shield className="h-4 w-4" />
-                Admin Login
+                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl bg-[#0b1e3f] !text-white"
+              >
+                <Shield className="h-4 w-4 shrink-0" />
+                <span>{t('nav_admin')}</span>
               </Link>
             </div>
           </div>

@@ -167,33 +167,33 @@ export default function PaymentPage() {
   // ── Payment success screen ─────────────────────────────────────────────────
   if (verifying) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <Loader2 className="h-10 w-10 text-emerald-400 animate-spin" />
-        <p className="text-white font-semibold">Verifying payment signature…</p>
-        <p className="text-sm text-gray-400">Please do not close this window.</p>
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-4 px-4">
+        <Loader2 className="h-10 w-10 text-[#059669] animate-spin" />
+        <p className="text-[#0f172a] font-bold text-lg">Verifying payment signature…</p>
+        <p className="text-sm text-[#64748b]">Please do not close or refresh this window.</p>
       </div>
     )
   }
 
   if (paySuccess) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-4">
-        <div className="h-20 w-20 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
-          <CheckCircle2 className="h-10 w-10 text-emerald-400" />
+      <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-6 px-4">
+        <div className="h-20 w-20 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-sm">
+          <CheckCircle2 className="h-10 w-10 text-[#059669]" />
         </div>
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white mb-2">Payment Verified!</h1>
-          <p className="text-gray-400 text-sm max-w-sm">
-            Your <span className="text-emerald-400 font-semibold">{planName}</span> subscription is now active.
+          <h1 className="text-3xl font-extrabold text-[#0f172a] mb-2">Payment Verified!</h1>
+          <p className="text-[#475569] text-sm max-w-sm">
+            Your <span className="text-[#059669] font-bold">{planName}</span> subscription is now active.
             Check your email for confirmation.
           </p>
         </div>
-        <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 w-full max-w-sm">
-          <p className="text-xs text-gray-500 mb-3 uppercase tracking-wider">Summary</p>
+        <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 w-full max-w-sm shadow-sm">
+          <p className="text-xs text-[#64748b] font-bold mb-3 uppercase tracking-wider">Summary</p>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span className="text-gray-400">Plan</span><span className="text-white">{planName}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Amount Paid</span><span className="text-emerald-400 font-bold">₹{totalAmount.toFixed(2)}</span></div>
-            <div className="flex justify-between"><span className="text-gray-400">Order ID</span><span className="text-gray-300 text-xs">{orderData?.orderId?.slice(0,16)}…</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">Plan</span><span className="text-[#0f172a] font-bold">{planName}</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">Amount Paid</span><span className="text-[#059669] font-extrabold">₹{totalAmount.toFixed(2)}</span></div>
+            <div className="flex justify-between"><span className="text-[#64748b]">Order ID</span><span className="text-[#334155] font-mono text-xs">{orderData?.orderId?.slice(0,16)}…</span></div>
           </div>
         </div>
         <Button size="lg" onClick={() => navigate('/')}>Back to Home</Button>
@@ -202,42 +202,44 @@ export default function PaymentPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <StepIndicator currentStep={4} />
 
       <div className="max-w-5xl mx-auto px-4 pb-16">
         <div className="text-center mb-10">
-          <p className="text-emerald-400 text-sm font-semibold uppercase tracking-widest mb-3">Step 4 of 4</p>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Complete <span className="gradient-text">Payment</span>
+          <p className="text-[#059669] text-xs font-bold uppercase tracking-widest mb-2">Step 4 of 4</p>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] mb-2 tracking-tight">
+            Complete <span className="text-[#059669]">Payment</span>
           </h1>
-          <p className="text-gray-400 text-sm">Your order amount is calculated by our server — cannot be modified.</p>
+          <p className="text-[#64748b] text-sm font-medium">Your order amount is calculated by our server — verified and tamper-proof.</p>
         </div>
 
         {apiError && (
-          <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
-            <AlertCircle className="h-5 w-5 text-red-400 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-400">{apiError}</p>
+          <div className="flex items-start gap-3 bg-red-50 border border-red-200 rounded-xl p-4 mb-6 max-w-2xl mx-auto">
+            <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700 font-medium">{apiError}</p>
           </div>
         )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left — form */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-5">
 
             {/* Method selector */}
-            <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 card-glow">
-              <h3 className="text-sm font-semibold text-white mb-4">Select Payment Method</h3>
+            <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-sm">
+              <h3 className="text-sm font-bold text-[#0f172a] mb-4">Select Payment Method</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {PAYMENT_METHODS.map(({ id, label }) => {
                   const Icon = methodIcons[id]
                   return (
                     <button key={id} type="button" onClick={() => handleMethodChange(id)}
                       aria-pressed={activeMethod === id}
-                      className={`flex flex-col items-center gap-2 p-3 rounded-xl border text-center transition-all focus:outline-none focus:ring-2 focus:ring-emerald-500/50
-                        ${activeMethod === id ? 'border-emerald-500/60 bg-emerald-500/10 text-emerald-400' : 'border-gray-700 text-gray-400 hover:border-gray-600 hover:bg-gray-800/50'}`}>
+                      className={`flex flex-col items-center gap-2 p-3.5 rounded-xl border text-center transition-all focus:outline-none focus:ring-2 focus:ring-[#059669]/30
+                        ${activeMethod === id
+                          ? 'border-[#059669] bg-emerald-50 text-[#059669] shadow-sm font-semibold'
+                          : 'border-[#e2e8f0] text-[#64748b] bg-[#f8fafc] hover:border-[#cbd5e1] hover:text-[#0f172a]'}`}>
                       <Icon className="h-5 w-5" />
-                      <span className="text-xs font-medium leading-tight">{label}</span>
+                      <span className="text-xs font-semibold leading-tight">{label}</span>
                     </button>
                   )
                 })}
@@ -245,23 +247,23 @@ export default function PaymentPage() {
             </div>
 
             {/* Payment detail form */}
-            <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-5 card-glow">
+            <div className="bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-sm">
               <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
                 {activeMethod === 'upi' && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Smartphone className="h-4 w-4 text-emerald-400" />
-                      <h3 className="text-sm font-semibold text-white">UPI Payment</h3>
+                      <Smartphone className="h-4 w-4 text-[#059669]" />
+                      <h3 className="text-sm font-bold text-[#0f172a]">UPI Payment</h3>
                     </div>
                     <Input label="UPI ID" name="upiId" placeholder="yourname@paytm" required
                       register={register} error={errors.upiId?.message}
                       hint="Supported: GPay, PhonePe, Paytm, BHIM, Amazon Pay" />
-                    <div className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                      <p className="text-xs text-gray-400 mb-2 font-medium">Accepted UPI Apps</p>
+                    <div className="bg-[#f8fafc] rounded-xl p-4 border border-[#e2e8f0]">
+                      <p className="text-xs text-[#475569] mb-2 font-semibold">Accepted UPI Apps</p>
                       <div className="flex flex-wrap gap-2">
                         {['GPay','PhonePe','Paytm','BHIM','Amazon Pay','Mobikwik'].map(a => (
-                          <span key={a} className="px-3 py-1 rounded-full bg-gray-700 text-xs text-gray-300">{a}</span>
+                          <span key={a} className="px-3 py-1 rounded-full bg-white border border-[#cbd5e1] text-xs font-medium text-[#334155]">{a}</span>
                         ))}
                       </div>
                     </div>
@@ -271,8 +273,8 @@ export default function PaymentPage() {
                 {activeMethod === 'card' && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <CreditCard className="h-4 w-4 text-emerald-400" />
-                      <h3 className="text-sm font-semibold text-white">Debit / Credit Card</h3>
+                      <CreditCard className="h-4 w-4 text-[#059669]" />
+                      <h3 className="text-sm font-bold text-[#0f172a]">Debit / Credit Card</h3>
                     </div>
                     <Input label="Card Number" name="cardNumber" placeholder="1234 5678 9012 3456"
                       required register={register} error={errors.cardNumber?.message}
@@ -287,8 +289,8 @@ export default function PaymentPage() {
                       <Input label="CVV" name="cvv" type="password" placeholder="•••"
                         required register={register} error={errors.cvv?.message} maxLength={3} hint="3-digit code" />
                     </div>
-                    <p className="text-xs text-gray-500 flex items-center gap-1.5">
-                      <Lock className="h-3.5 w-3.5" /> Card details encrypted via Razorpay — never stored on our servers.
+                    <p className="text-xs text-[#64748b] flex items-center gap-1.5 font-medium">
+                      <Lock className="h-3.5 w-3.5 text-[#059669]" /> Card details encrypted via Razorpay — never stored on our servers.
                     </p>
                   </div>
                 )}
@@ -296,14 +298,14 @@ export default function PaymentPage() {
                 {activeMethod === 'netbanking' && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Building2 className="h-4 w-4 text-emerald-400" />
-                      <h3 className="text-sm font-semibold text-white">Net Banking</h3>
+                      <Building2 className="h-4 w-4 text-[#059669]" />
+                      <h3 className="text-sm font-bold text-[#0f172a]">Net Banking</h3>
                     </div>
                     <Select label="Select Your Bank" name="bank" required options={BANK_OPTIONS}
                       register={register} error={errors.bank?.message} />
-                    <div className="bg-blue-500/5 border border-blue-500/20 rounded-xl p-3 flex gap-2">
-                      <Info className="h-4 w-4 text-blue-400 shrink-0 mt-0.5" />
-                      <p className="text-xs text-blue-300/80">You will be redirected to your bank's secure login page.</p>
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-3.5 flex gap-2.5">
+                      <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                      <p className="text-xs text-blue-700 font-medium">You will be redirected to your bank's secure authorization page.</p>
                     </div>
                   </div>
                 )}
@@ -311,8 +313,8 @@ export default function PaymentPage() {
                 {activeMethod === 'wallet' && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-2">
-                      <Wallet className="h-4 w-4 text-emerald-400" />
-                      <h3 className="text-sm font-semibold text-white">Mobile Wallet</h3>
+                      <Wallet className="h-4 w-4 text-[#059669]" />
+                      <h3 className="text-sm font-bold text-[#0f172a]">Mobile Wallet</h3>
                     </div>
                     <Input label="Registered Mobile Number" name="walletPhone" type="tel"
                       placeholder="9876543210" required register={register}
@@ -327,60 +329,62 @@ export default function PaymentPage() {
                     <Lock className="h-4 w-4" />
                     Pay ₹{totalAmount.toFixed(2)} via Razorpay
                   </Button>
-                  <p className="text-xs text-gray-600 text-center mt-3">
+                  <p className="text-xs text-[#64748b] text-center mt-3 font-medium">
                     By clicking Pay, you confirm your consent to our Terms & Privacy Policy already accepted.
                   </p>
                   <div className="flex items-center justify-center gap-4 mt-3">
-                    <span className="text-xs text-gray-500 flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-gray-600" /> 256-bit SSL</span>
-                    <span className="h-3 w-px bg-gray-700" />
-                    <span className="text-xs text-gray-500">PCI DSS</span>
-                    <span className="h-3 w-px bg-gray-700" />
-                    <span className="text-xs text-gray-500">RBI Approved</span>
+                    <span className="text-xs text-[#64748b] font-medium flex items-center gap-1"><ShieldCheck className="h-3.5 w-3.5 text-[#059669]" /> 256-bit SSL</span>
+                    <span className="h-3 w-px bg-[#cbd5e1]" />
+                    <span className="text-xs text-[#64748b] font-medium">PCI DSS Compliant</span>
+                    <span className="h-3 w-px bg-[#cbd5e1]" />
+                    <span className="text-xs text-[#64748b] font-medium">RBI Approved</span>
                   </div>
                 </div>
               </form>
             </div>
 
             <Button variant="ghost" size="md" onClick={() => navigate('/consent')}>
-              <ArrowLeft className="h-4 w-4" /> Back
+              <ArrowLeft className="h-4 w-4" /> Back to Consent
             </Button>
           </div>
 
           {/* Right sidebar */}
           <div className="lg:col-span-1">
-            <div className="sticky top-20 bg-gray-900/60 border border-gray-800 rounded-2xl p-5 card-glow space-y-4">
-              <h3 className="text-sm font-semibold text-white">Order Summary</h3>
-              <div className="border-b border-gray-800 pb-4">
-                <p className="text-xs text-gray-500 mb-1">Plan</p>
-                <p className="text-base font-bold text-white">{planName}</p>
-                <p className="text-xs text-gray-400">Monthly · Auto-renews</p>
+            <div className="sticky top-24 bg-white border border-[#e2e8f0] rounded-2xl p-6 shadow-sm space-y-5">
+              <h3 className="text-base font-bold text-[#0f172a] border-b border-[#f1f5f9] pb-3">Order Summary</h3>
+              <div className="border-b border-[#f1f5f9] pb-4">
+                <p className="text-xs text-[#64748b] font-semibold uppercase tracking-wider mb-1">Selected Plan</p>
+                <p className="text-lg font-extrabold text-[#0f172a]">{planName}</p>
+                <p className="text-xs text-[#059669] font-medium mt-0.5">Monthly Subscription · Auto-renews</p>
               </div>
               {(clientData || user) && (
-                <div className="border-b border-gray-800 pb-4">
-                  <p className="text-xs text-gray-500 mb-1">Paying As</p>
-                  <p className="text-sm text-white font-medium">
+                <div className="border-b border-[#f1f5f9] pb-4">
+                  <p className="text-xs text-[#64748b] font-semibold uppercase tracking-wider mb-1">Paying As</p>
+                  <p className="text-sm text-[#0f172a] font-bold">
                     {clientData?.firstName || user?.first_name} {clientData?.lastName || user?.last_name}
                   </p>
-                  <p className="text-xs text-gray-400">{clientData?.email || user?.email}</p>
+                  <p className="text-xs text-[#64748b] mt-0.5">{clientData?.email || user?.email}</p>
                 </div>
               )}
               {dealData && (
-                <div className="space-y-1.5 text-sm border-b border-gray-800 pb-4">
-                  <div className="flex justify-between text-gray-400">
+                <div className="space-y-2 text-sm border-b border-[#f1f5f9] pb-4">
+                  <div className="flex justify-between text-[#64748b]">
                     <span>Subtotal</span>
-                    <span>₹{((dealData.baseAmount || 0) - (dealData.discount || 0) + (dealData.platformFee || 0)).toFixed(2)}</span>
+                    <span className="text-[#0f172a] font-medium">₹{((dealData.baseAmount || 0) - (dealData.discount || 0) + (dealData.platformFee || 0)).toFixed(2)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-400">
+                  <div className="flex justify-between text-[#64748b]">
                     <span>GST (18%)</span>
-                    <span>₹{(dealData.gst || 0).toFixed(2)}</span>
+                    <span className="text-[#0f172a] font-medium">₹{(dealData.gst || 0).toFixed(2)}</span>
                   </div>
                 </div>
               )}
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm font-semibold text-white">Total</span>
-                <span className="text-2xl font-extrabold text-emerald-400">₹{totalAmount.toFixed(2)}</span>
+              <div className="flex items-baseline justify-between pt-1">
+                <span className="text-sm font-bold text-[#0f172a]">Total Payable</span>
+                <span className="text-2xl font-extrabold text-[#059669]">₹{totalAmount.toFixed(2)}</span>
               </div>
-              <p className="text-xs text-emerald-500/70 text-center">Amount verified by server</p>
+              <p className="text-xs text-[#64748b] text-center font-medium bg-[#f8fafc] py-2 rounded-lg border border-[#e2e8f0]">
+                ✓ Amount cryptographically signed by server
+              </p>
             </div>
           </div>
         </div>

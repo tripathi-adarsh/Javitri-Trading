@@ -398,51 +398,52 @@ export default function GenerateInvoicePage() {
   }
 
   /* Styles */
-  const inp  = { width:'100%', padding:'9px 12px', borderRadius:'9px', border:'1px solid rgba(212,168,67,0.3)', background:'rgba(6,12,28,0.7)', color:'#f0f4f8', fontSize:'13px', outline:'none', boxSizing:'border-box' }
-  const lbl  = { display:'block', fontSize:'10px', fontWeight:'700', color:'#8aa4ba', marginBottom:'4px', textTransform:'uppercase', letterSpacing:'0.5px' }
-  const card = { background:'rgba(15,36,96,0.4)', border:'1px solid rgba(212,168,67,0.22)', borderRadius:'14px', padding:'18px 20px', marginBottom:'14px' }
-  const sec  = { fontSize:'12px', fontWeight:'800', color:'#d4a843', marginBottom:'12px', paddingBottom:'8px', borderBottom:'1px solid rgba(212,168,67,0.15)' }
-  const g3   = { display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:'13px' }
-  const reqB = v => v ? 'rgba(212,168,67,0.3)' : 'rgba(248,113,113,0.5)'
+  const inp  = { width:'100%', padding:'10px 14px', borderRadius:'10px', border:'1px solid #cbd5e1', background:'#ffffff', color:'#0f172a', fontSize:'13px', outline:'none', boxSizing:'border-box', transition:'border-color 0.15s' }
+  const lbl  = { display:'block', fontSize:'11px', fontWeight:'700', color:'#475569', marginBottom:'6px', textTransform:'uppercase', letterSpacing:'0.5px' }
+  const card = { background:'#ffffff', border:'1px solid #e2e8f0', borderRadius:'16px', padding:'22px 24px', marginBottom:'16px', boxShadow:'0 1px 3px rgba(0,0,0,0.04)' }
+  const sec  = { fontSize:'14px', fontWeight:'800', color:'#0f172a', marginBottom:'16px', paddingBottom:'10px', borderBottom:'1px solid #f1f5f9', display:'flex', alignItems:'center', gap:'8px' }
+  const g3   = { display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(180px,1fr))', gap:'16px' }
+  const reqB = v => v ? '#cbd5e1' : '#f87171'
 
   return (
-    <div style={{ minHeight:'100vh', background:'#080f22', color:'#f0f4f8', paddingBottom:'60px' }}>
+    <div style={{ minHeight:'100vh', background:'#f8fafc', color:'#0f172a', paddingBottom:'60px' }}>
 
       {/* Header */}
-      <div style={{ background:'linear-gradient(180deg,rgba(15,36,96,0.7) 0%,transparent 100%)', borderBottom:'1px solid rgba(212,168,67,0.2)', padding:'22px 20px 16px' }}>
-        <div style={{ maxWidth:'900px', margin:'0 auto', display:'flex', alignItems:'center', gap:'12px' }}>
-          <div style={{ background:'rgba(212,168,67,0.12)', border:'1px solid rgba(212,168,67,0.3)', borderRadius:'12px', padding:'10px' }}>
-            <FileText style={{ width:'22px', height:'22px', color:'#d4a843' }} />
+      <div style={{ background:'#ffffff', borderBottom:'1px solid #e2e8f0', padding:'24px 20px 20px', boxShadow:'0 1px 2px rgba(0,0,0,0.03)' }}>
+        <div style={{ maxWidth:'900px', margin:'0 auto', display:'flex', alignItems:'center', gap:'14px' }}>
+          <div style={{ background:'#ecfdf5', border:'1px solid #a7f3d0', borderRadius:'12px', padding:'10px' }}>
+            <FileText style={{ width:'24px', height:'24px', color:'#059669' }} />
           </div>
           <div>
-            <h1 style={{ fontSize:'20px', fontWeight:'800', color:'#f0f4f8', margin:0 }}>Invoice Generator</h1>
-            <p style={{ fontSize:'11px', color:'#7090a8', margin:'2px 0 0' }}>Javitri Trading Service Pvt. Ltd.</p>
+            <h1 style={{ fontSize:'22px', fontWeight:'800', color:'#0f172a', margin:0, letterSpacing:'-0.02em' }}>Corporate Invoice Generator</h1>
+            <p style={{ fontSize:'12px', color:'#64748b', margin:'3px 0 0', fontWeight:'500' }}>Javitri Trading Service Pvt. Ltd. · Billing System</p>
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth:'900px', margin:'0 auto', padding:'20px 16px 0' }}>
+      <div style={{ maxWidth:'900px', margin:'0 auto', padding:'24px 16px 0' }}>
 
         {/* ── INVOICE TYPE TOGGLE ── */}
-        <div style={{ ...card, marginBottom:'14px' }}>
+        <div style={{ ...card, marginBottom:'16px' }}>
           <div style={sec}>📋 Invoice Type</div>
           <div style={{ display:'flex', gap:'12px' }}>
             {[
-              { val:false, label:'Normal Invoice', sub:'Without GST' },
-              { val:true,  label:'GST Invoice',    sub:'With CGST + SGST' },
+              { val:false, label:'Standard Invoice', sub:'Without GST (Direct Service)' },
+              { val:true,  label:'GST Tax Invoice', sub:'With CGST (9%) + SGST (9%)' },
             ].map(opt => (
               <button key={String(opt.val)}
                 onClick={() => set('gstMode', opt.val)}
                 style={{
-                  flex:1, padding:'12px 16px', borderRadius:'12px', cursor:'pointer',
-                  border: form.gstMode===opt.val ? '2px solid #d4a843' : '1px solid rgba(212,168,67,0.2)',
-                  background: form.gstMode===opt.val ? 'rgba(212,168,67,0.12)' : 'rgba(8,15,34,0.5)',
+                  flex:1, padding:'14px 18px', borderRadius:'12px', cursor:'pointer',
+                  border: form.gstMode===opt.val ? '2px solid #059669' : '1px solid #e2e8f0',
+                  background: form.gstMode===opt.val ? '#f0fdf4' : '#ffffff',
                   textAlign:'left', transition:'all 0.2s',
+                  boxShadow: form.gstMode===opt.val ? '0 2px 6px rgba(5,150,105,0.08)' : 'none',
                 }}>
-                <div style={{ fontSize:'13px', fontWeight:'700', color: form.gstMode===opt.val ? '#d4a843' : '#f0f4f8' }}>
+                <div style={{ fontSize:'13.5px', fontWeight:'700', color: form.gstMode===opt.val ? '#059669' : '#0f172a' }}>
                   {form.gstMode===opt.val ? '● ' : '○ '}{opt.label}
                 </div>
-                <div style={{ fontSize:'11px', color:'#7090a8', marginTop:'3px' }}>{opt.sub}</div>
+                <div style={{ fontSize:'11.5px', color:'#64748b', marginTop:'4px', fontWeight:'500' }}>{opt.sub}</div>
               </button>
             ))}
           </div>
@@ -463,11 +464,11 @@ export default function GenerateInvoicePage() {
             <div>
               <label style={lbl}>Payment Mode</label>
               <select style={{ ...inp, cursor:'pointer' }} value={form.paymentMode} onChange={e=>set('paymentMode',e.target.value)}>
-                {PMODES.map(m=><option key={m} value={m} style={{ background:'#0d1629' }}>{m}</option>)}
+                {PMODES.map(m=><option key={m} value={m}>{m}</option>)}
               </select>
             </div>
             <div style={{ gridColumn:'span 2' }}>
-              <label style={{ ...lbl, color: form.txnId ? '#8aa4ba':'#f87171' }}>Transaction ID *</label>
+              <label style={{ ...lbl, color: form.txnId ? '#475569':'#dc2626' }}>Transaction ID / UTR *</label>
               <input style={{ ...inp, borderColor:reqB(form.txnId) }} value={form.txnId} onChange={e=>set('txnId',e.target.value)} placeholder="UPI Ref / UTR / TXN Number" />
             </div>
           </div>
@@ -478,15 +479,15 @@ export default function GenerateInvoicePage() {
           <div style={sec}>👤 Client Details</div>
           <div style={g3}>
             <div>
-              <label style={{ ...lbl, color: form.clientName ? '#8aa4ba':'#f87171' }}>Client Name *</label>
+              <label style={{ ...lbl, color: form.clientName ? '#475569':'#dc2626' }}>Client Full Name *</label>
               <input style={{ ...inp, borderColor:reqB(form.clientName) }} value={form.clientName} onChange={e=>set('clientName',e.target.value)} placeholder="Full name" />
             </div>
             <div>
-              <label style={lbl}>Mobile</label>
+              <label style={lbl}>Mobile Number</label>
               <input style={inp} value={form.clientPhone} onChange={e=>set('clientPhone',e.target.value)} placeholder="+91 XXXXX XXXXX" />
             </div>
             <div>
-              <label style={lbl}>Email</label>
+              <label style={lbl}>Email Address</label>
               <input style={inp} value={form.clientEmail} onChange={e=>set('clientEmail',e.target.value)} placeholder="email@example.com" />
             </div>
           </div>
@@ -497,47 +498,47 @@ export default function GenerateInvoicePage() {
           <div style={sec}>📦 Plan Details</div>
           <div style={g3}>
             <div>
-              <label style={{ ...lbl, color: form.plan ? '#8aa4ba':'#f87171' }}>Select Plan *</label>
+              <label style={{ ...lbl, color: form.plan ? '#475569':'#dc2626' }}>Select Plan *</label>
               <select style={{ ...inp, cursor:'pointer', borderColor:reqB(form.plan) }} value={form.plan} onChange={e=>setPlan(e.target.value)}>
-                <option value="" style={{ background:'#0d1629' }}>— Select Plan —</option>
-                {PLANS.map(p=><option key={p.value} value={p.value} style={{ background:'#0d1629' }}>{p.label}</option>)}
+                <option value="">— Select Plan —</option>
+                {PLANS.map(p=><option key={p.value} value={p.value}>{p.label}</option>)}
               </select>
             </div>
             <div>
               <label style={lbl}>Duration</label>
               <select style={{ ...inp, cursor:'pointer' }} value={form.duration} onChange={e=>setDur(e.target.value)}>
-                <option value="" style={{ background:'#0d1629' }}>— Select —</option>
-                {DURATIONS.map(d=><option key={d.value} value={d.value} style={{ background:'#0d1629' }}>{d.label}</option>)}
+                <option value="">— Select Duration —</option>
+                {DURATIONS.map(d=><option key={d.value} value={d.value}>{d.label}</option>)}
               </select>
             </div>
             <div>
               <label style={lbl}>Installment No.</label>
-              <select style={{ ...inp, cursor: form.duration ? 'pointer':'not-allowed', opacity: form.duration ? 1:0.4 }}
+              <select style={{ ...inp, cursor: form.duration ? 'pointer':'not-allowed', opacity: form.duration ? 1:0.5 }}
                 value={form.installment} onChange={e=>set('installment',e.target.value)} disabled={!form.duration}>
-                <option value="" style={{ background:'#0d1629' }}>— Select —</option>
-                {instOpts.map(i=><option key={i} value={i} style={{ background:'#0d1629' }}>Installment {i} of {selDur?.months}</option>)}
+                <option value="">— Select Installment —</option>
+                {instOpts.map(i=><option key={i} value={i}>Installment {i} of {selDur?.months}</option>)}
               </select>
             </div>
           </div>
 
           {/* Live summary */}
           {selPlan && (
-            <div style={{ marginTop:'14px', padding:'12px 16px', borderRadius:'10px', background:'rgba(15,36,96,0.55)', border:'1px solid rgba(212,168,67,0.2)' }}>
-              <div style={{ display:'flex', flexWrap:'wrap', gap:'20px', marginBottom: form.gstMode ? '10px' : 0 }}>
-                <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>PLAN AMOUNT</div><div style={{ fontSize:'16px', fontWeight:'800', color:'#f0c060' }}>₹ {inr(planAmt)}</div></div>
-                {selDur && <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>DURATION</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#f0f4f8' }}>{selDur.label}</div></div>}
-                {form.installment && selDur && <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>INSTALLMENT</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#4ade80' }}>{form.installment}/{selDur.months}</div></div>}
-                {showDue && nextDue && !isFinal && <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>NEXT DUE DATE</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#f0f4f8' }}>{fmtD(nextDue)}</div></div>}
-                {isFinal && <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>STATUS</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#4ade80' }}>✓ Final Payment</div></div>}
+            <div style={{ marginTop:'18px', padding:'16px 20px', borderRadius:'12px', background:'#f8fafc', border:'1px solid #e2e8f0' }}>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'24px', marginBottom: form.gstMode ? '14px' : 0 }}>
+                <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px', textTransform:'uppercase' }}>PLAN AMOUNT</div><div style={{ fontSize:'18px', fontWeight:'800', color:'#0f172a' }}>₹ {inr(planAmt)}</div></div>
+                {selDur && <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px', textTransform:'uppercase' }}>DURATION</div><div style={{ fontSize:'15px', fontWeight:'700', color:'#0f172a' }}>{selDur.label}</div></div>}
+                {form.installment && selDur && <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px', textTransform:'uppercase' }}>INSTALLMENT</div><div style={{ fontSize:'15px', fontWeight:'700', color:'#059669' }}>{form.installment} of {selDur.months}</div></div>}
+                {showDue && nextDue && !isFinal && <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px', textTransform:'uppercase' }}>NEXT DUE DATE</div><div style={{ fontSize:'15px', fontWeight:'700', color:'#0f172a' }}>{fmtD(nextDue)}</div></div>}
+                {isFinal && <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px', textTransform:'uppercase' }}>STATUS</div><div style={{ fontSize:'15px', fontWeight:'700', color:'#059669' }}>✓ Final Payment</div></div>}
               </div>
 
               {/* GST breakdown */}
               {form.gstMode && planAmt > 0 && (
-                <div style={{ borderTop:'1px solid rgba(212,168,67,0.15)', paddingTop:'10px', display:'flex', gap:'16px', flexWrap:'wrap' }}>
-                  <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>TAXABLE</div><div style={{ fontSize:'13px', fontWeight:'700', color:'#c0d0e0' }}>₹ {inr(planAmt)}</div></div>
-                  <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>CGST 9%</div><div style={{ fontSize:'13px', fontWeight:'700', color:'#4ade80' }}>₹ {inr(cgst)}</div></div>
-                  <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>SGST 9%</div><div style={{ fontSize:'13px', fontWeight:'700', color:'#4ade80' }}>₹ {inr(sgst)}</div></div>
-                  <div><div style={{ fontSize:'9px', color:'#7090a8', marginBottom:'2px' }}>GRAND TOTAL</div><div style={{ fontSize:'16px', fontWeight:'800', color:'#f0c060' }}>₹ {inr(total)}</div></div>
+                <div style={{ borderTop:'1px solid #e2e8f0', paddingTop:'12px', display:'flex', gap:'20px', flexWrap:'wrap' }}>
+                  <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px' }}>TAXABLE BASE</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#334155' }}>₹ {inr(planAmt)}</div></div>
+                  <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px' }}>CGST 9%</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#059669' }}>₹ {inr(cgst)}</div></div>
+                  <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px' }}>SGST 9%</div><div style={{ fontSize:'14px', fontWeight:'700', color:'#059669' }}>₹ {inr(sgst)}</div></div>
+                  <div><div style={{ fontSize:'10px', color:'#64748b', fontWeight:'700', marginBottom:'3px' }}>TOTAL INCL. GST</div><div style={{ fontSize:'18px', fontWeight:'800', color:'#059669' }}>₹ {inr(total)}</div></div>
                 </div>
               )}
             </div>
@@ -545,30 +546,30 @@ export default function GenerateInvoicePage() {
         </div>
 
         {/* ── GENERATE ── */}
-        <div style={{ display:'flex', gap:'10px' }}>
+        <div style={{ display:'flex', gap:'12px' }}>
           {/* Download button */}
           <button onClick={generate} disabled={gen||!canGen} style={{
             flex: 1, padding:'15px', borderRadius:'12px', border:'none',
-            background: canGen ? 'linear-gradient(135deg,#d4a843,#a07020)':'rgba(212,168,67,0.12)',
-            color: canGen ? '#fff':'#506070', fontSize:'15px', fontWeight:'800',
+            background: canGen ? '#059669' : '#e2e8f0',
+            color: canGen ? '#ffffff' : '#94a3b8', fontSize:'15px', fontWeight:'800',
             cursor: canGen ? 'pointer':'not-allowed',
             display:'flex', alignItems:'center', justifyContent:'center', gap:'10px',
-            boxShadow: canGen ? '0 6px 28px rgba(212,168,67,0.35)':'none',
+            boxShadow: canGen ? '0 4px 14px rgba(5,150,105,0.25)':'none',
             transition:'all 0.2s',
           }}>
             {gen
               ? <><Loader2 style={{ width:'20px', height:'20px', animation:'spin 1s linear infinite' }}/> Generating…</>
-              : <><Download style={{ width:'20px', height:'20px' }}/> Download PDF</>}
+              : <><Download style={{ width:'20px', height:'20px' }}/> Download PDF Invoice</>}
           </button>
 
           {/* WhatsApp Share — show when mobile number entered */}
           {form.clientPhone && (
             <button onClick={shareWA} disabled={gen||!canGen} style={{
-              padding:'15px 20px', borderRadius:'12px', border:'none',
-              background: canGen ? 'rgba(37,211,102,0.15)':'rgba(37,211,102,0.05)',
-              border: canGen ? '1px solid rgba(37,211,102,0.45)':'1px solid rgba(37,211,102,0.15)',
-              color: canGen ? '#25d366':'#506070', fontSize:'13px', fontWeight:'800',
-              cursor: canGen ? 'pointer':'not-allowed',
+              padding:'15px 22px', borderRadius:'12px',
+              background: canGen ? '#ecfdf5' : '#f8fafc',
+              border: canGen ? '1px solid #a7f3d0' : '1px solid #e2e8f0',
+              color: canGen ? '#059669' : '#94a3b8', fontSize:'13.5px', fontWeight:'800',
+              cursor: canGen ? 'pointer' : 'not-allowed',
               display:'flex', alignItems:'center', justifyContent:'center', gap:'8px',
               flexShrink:0, transition:'all 0.2s',
             }}>
@@ -577,15 +578,15 @@ export default function GenerateInvoicePage() {
                   <svg style={{ width:'20px', height:'20px' }} viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
                   </svg>
-                  Share
+                  Share via WhatsApp
                 </>
               )}
             </button>
           )}
         </div>
         {!canGen && (
-          <p style={{ textAlign:'center', fontSize:'11px', color:'#f87171', marginTop:'6px' }}>
-            {!form.clientName.trim() ? '⚠ Client Name required' : !form.txnId.trim() ? '⚠ Transaction ID required' : '⚠ Plan select karein'}
+          <p style={{ textAlign:'center', fontSize:'12px', color:'#dc2626', marginTop:'10px', fontWeight:'600' }}>
+            {!form.clientName.trim() ? '⚠ Client Name required' : !form.txnId.trim() ? '⚠ Transaction ID / UTR required' : '⚠ Please select a plan'}
           </p>
         )}
       </div>

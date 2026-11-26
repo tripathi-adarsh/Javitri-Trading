@@ -50,66 +50,46 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-950">
+    <div className="min-h-screen flex bg-[#f8fafc]">
 
-      {/* ── LEFT PANEL — Logo ─────────────────────────────────────────── */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col items-center justify-center relative overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #0a1628 0%, #0d2057 50%, #0a1628 100%)',
-        }}
-      >
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-20 left-20 w-64 h-64 rounded-full border border-white" />
-          <div className="absolute top-10 left-10 w-96 h-96 rounded-full border border-white" />
-          <div className="absolute bottom-20 right-10 w-48 h-48 rounded-full border border-white" />
-        </div>
+      {/* ── LEFT PANEL — Brand ─────────────────────────────────────────── */}
+      <div className="hidden lg:flex lg:w-5/12 flex-col items-center justify-center relative overflow-hidden"
+        style={{ background: 'linear-gradient(160deg, #071326 0%, #0b1e3f 40%, #1d4ed8 100%)' }}>
 
-        {/* Gold accent top line */}
-        <div className="absolute top-0 left-0 right-0 h-1"
-          style={{ background: 'linear-gradient(90deg, transparent, #C8983A, transparent)' }} />
+        {/* Top royal gold accent line */}
+        <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
 
-        <div className="relative z-10 flex flex-col items-center px-12">
-          {/* Logo image — white background card for clean display */}
-          <div className="bg-white rounded-2xl shadow-2xl p-8 mb-10"
-            style={{ maxWidth: '340px', width: '100%' }}>
-            <img
-              src="/logo.jpeg"
-              alt="Javitri Trading Service"
-              className="w-full h-auto object-contain"
-              style={{ maxHeight: '280px' }}
-            />
+        <div className="relative z-10 flex flex-col items-center px-10 text-center">
+          <div className="bg-white rounded-3xl shadow-2xl p-8 mb-8 border border-white/20 max-w-[280px] w-full">
+            <img src="/logo.jpeg" alt="Javitri Trading Service"
+              className="w-full h-auto object-contain max-h-[180px] mx-auto" />
           </div>
 
-          {/* Tagline below logo */}
-          <p className="text-center text-gray-300 text-sm leading-relaxed max-w-xs">
-            Secure admin panel for managing employees, clients, plans and payments.
+          <h2 className="text-2xl font-black text-white mb-2 tracking-tight">Javitri Trading Service</h2>
+          <p className="text-xs uppercase tracking-widest text-[#d4af37] font-extrabold mb-3">Pvt. Ltd. · Established 2026</p>
+          <p className="text-sm leading-relaxed max-w-xs mb-8 text-white/80 font-normal">
+            Enterprise administration &amp; institutional compliance portal.
           </p>
 
-          {/* Three feature pills */}
-          <div className="flex flex-wrap justify-center gap-3 mt-6">
-            {['Trading', 'Fixed Deposits', 'Wealth Growth'].map(item => (
-              <span key={item}
-                className="px-3 py-1 rounded-full text-xs font-medium border"
-                style={{ borderColor: '#C8983A', color: '#C8983A', background: 'rgba(200,152,58,0.08)' }}>
+          <div className="flex flex-wrap justify-center gap-2">
+            {['Client Management', 'KYC Verification', 'Plan Requests', 'Audited Operations'].map(item => (
+              <span key={item} className="px-3.5 py-1 rounded-full text-xs font-semibold border border-amber-300/30 text-amber-200 bg-amber-400/10">
                 {item}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Bottom gold line */}
-        <div className="absolute bottom-0 left-0 right-0 h-1"
-          style={{ background: 'linear-gradient(90deg, transparent, #C8983A, transparent)' }} />
+        <div className="absolute bottom-0 left-0 right-0 h-1.5 royal-gold-line" />
       </div>
 
       {/* ── RIGHT PANEL — Login Form ──────────────────────────────────── */}
-      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center px-6 sm:px-10 py-12">
+      <div className="w-full lg:w-7/12 flex flex-col items-center justify-center px-6 sm:px-12 py-12">
 
-        {/* Mobile logo (shown only on small screens) */}
-        <div className="lg:hidden mb-8 bg-white rounded-2xl p-4 shadow-lg">
+        {/* Mobile logo */}
+        <div className="lg:hidden mb-8 bg-white rounded-2xl p-5 shadow-sm border border-[#e2e8f0]">
           <img src="/logo.jpeg" alt="Javitri Trading Service"
-            className="h-24 w-auto object-contain mx-auto" />
+            className="h-20 w-auto object-contain mx-auto" />
         </div>
 
         <div className="w-full max-w-md">
@@ -117,93 +97,85 @@ export default function AdminLoginPage() {
           {/* Header */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-3">
-              <div className="h-8 w-8 rounded-lg flex items-center justify-center"
-                style={{ background: 'rgba(200,152,58,0.15)', border: '1px solid rgba(200,152,58,0.3)' }}>
-                <Shield className="h-4 w-4" style={{ color: '#C8983A' }} />
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center bg-blue-50 border border-blue-200">
+                <Shield className="h-4 w-4 text-[#1d4ed8]" />
               </div>
-              <span className="text-xs font-semibold tracking-widest uppercase text-gray-400">
-                Admin Panel
+              <span className="text-xs font-black tracking-widest uppercase text-[#b45309]">
+                Admin Portal
               </span>
             </div>
-            <h1 className="text-3xl font-bold text-white mb-1">Welcome Back</h1>
-            <p className="text-gray-500 text-sm">
-              Sign in to your administrator account
-            </p>
+            <h1 className="text-3xl font-black text-[#0b1e3f] mb-2 tracking-tight">Administrator Sign In</h1>
+            <p className="text-sm text-[#64748b] font-medium">Access your enterprise dashboard and operational controls</p>
           </div>
 
           {/* Form card */}
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-7 shadow-xl">
+          <div className="bg-white rounded-3xl p-8 shadow-xl border border-[#e2e8f0] relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 royal-gold-line" />
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-5">
 
-              {/* Email */}
-              <div>
-                <Input
-                  label="Email"
-                  name="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  required
-                  register={register}
-                  error={errors.email?.message}
-                  icon={<Mail className="h-4 w-4" />}
-                  autoComplete="username"
-                />
-              </div>
+              <Input
+                label="Corporate Email Address"
+                name="email"
+                type="email"
+                placeholder="admin@javitritrading.com"
+                required
+                register={register}
+                error={errors.email?.message}
+                icon={<Mail className="h-4 w-4 text-[#64748b]" />}
+                autoComplete="username"
+              />
 
-              {/* Password */}
-              <div>
-                <Input
-                  label="Password"
-                  name="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Enter your password"
-                  required
-                  register={register}
-                  error={errors.password?.message}
-                  icon={<Lock className="h-4 w-4" />}
-                  autoComplete="current-password"
-                  rightElement={
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="text-gray-400 hover:text-gray-200 transition-colors"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  }
-                />
-              </div>
+              <Input
+                label="Secure Password"
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter your security password"
+                required
+                register={register}
+                error={errors.password?.message}
+                icon={<Lock className="h-4 w-4 text-[#64748b]" />}
+                autoComplete="current-password"
+                rightElement={
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-[#64748b] hover:text-[#0f172a] transition-colors p-1"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                }
+              />
 
-              {/* Error */}
               {apiError && (
-                <div className="flex gap-2.5 bg-red-500/10 border border-red-500/30 rounded-xl p-3">
-                  <AlertCircle className="h-4 w-4 text-red-400 shrink-0 mt-0.5" />
-                  <p className="text-sm text-red-400">{apiError}</p>
+                <div className="flex gap-2.5 rounded-xl p-3.5 bg-red-50 border border-red-200">
+                  <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-red-600" />
+                  <p className="text-sm text-red-700 font-medium">{apiError}</p>
                 </div>
               )}
 
-              {/* Submit */}
-              <Button
+              <button
                 type="submit"
-                size="lg"
-                loading={isSubmitting}
-                className="w-full mt-2"
-                style={{ background: 'linear-gradient(135deg, #1a6645, #0d4a31)' }}
+                disabled={isSubmitting}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl text-base font-black transition-all bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] !text-white shadow-[0_4px_16px_rgba(29,78,216,0.35)] hover:shadow-[0_6px_22px_rgba(29,78,216,0.45)] hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:hover:translate-y-0 cursor-pointer border border-[#1d4ed8]"
               >
-                Sign In
-                <ArrowRight className="h-4 w-4" />
-              </Button>
+                {isSubmitting ? (
+                  <svg className="animate-spin h-4 w-4 !text-white" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : null}
+                <span className="!text-white">Sign In to Dashboard</span>
+                {!isSubmitting && <ArrowRight className="h-4 w-4 !text-white" />}
+              </button>
             </form>
           </div>
 
-          {/* Footer note */}
-          <p className="text-center text-xs text-gray-600 mt-5">
-            Authorised personnel only · Access is logged and monitored
+          <p className="text-center text-xs mt-6 text-[#94a3b8] font-medium">
+            🔒 Authorized corporate personnel only · All IP sessions are logged & monitored
           </p>
         </div>
       </div>
-
     </div>
   )
 }

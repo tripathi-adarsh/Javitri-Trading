@@ -45,12 +45,14 @@ export default function CreateEmployeeModal({ token, onClose, onCreated }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={!created ? onClose : undefined} />
-      <div className="relative z-10 w-full max-w-md bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-gray-800">
-          <h2 className="text-base font-semibold text-white">
+      <div className="relative z-10 w-full max-w-md rounded-2xl shadow-2xl" style={{ background: '#ffffff', border: '1px solid #e2e8f0' }}>
+        <div className="flex items-center justify-between p-5" style={{ borderBottom: '1px solid #e2e8f0' }}>
+          <h2 className="text-base font-semibold" style={{ color: '#0d1f3c' }}>
             {created ? 'Employee Created' : 'New Employee'}
           </h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-800">
+          <button onClick={onClose} className="p-1 rounded-lg transition-colors" style={{ color: '#5a6e85' }}
+            onMouseEnter={e => { e.currentTarget.style.background = '#f0f4f8'; e.currentTarget.style.color = '#0d1f3c' }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#5a6e85' }}>
             <X className="h-4 w-4" />
           </button>
         </div>
@@ -58,24 +60,24 @@ export default function CreateEmployeeModal({ token, onClose, onCreated }) {
         <div className="p-5">
           {created ? (
             <div className="space-y-4">
-              <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+              <div className="flex items-center gap-3 rounded-xl p-4" style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+                <CheckCircle2 className="h-5 w-5 shrink-0" style={{ color: '#059669' }} />
                 <div>
-                  <p className="text-sm font-semibold text-white">Employee created successfully</p>
-                  <p className="text-xs text-gray-400">Code: <span className="font-mono text-emerald-400">{created.employee?.employeeCode}</span></p>
+                  <p className="text-sm font-semibold" style={{ color: '#0d1f3c' }}>Employee created successfully</p>
+                  <p className="text-xs" style={{ color: '#5a6e85' }}>Code: <span className="font-mono" style={{ color: '#1a3c8f' }}>{created.employee?.employeeCode}</span></p>
                 </div>
               </div>
 
-              <div className="bg-amber-500/5 border border-amber-500/30 rounded-xl p-4">
-                <p className="text-xs text-amber-300 font-semibold mb-2">⚠ Temporary Password — Share Securely</p>
-                <p className="text-xs text-gray-400 mb-3">
+              <div className="rounded-xl p-4" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+                <p className="text-xs font-semibold mb-2" style={{ color: '#d97706' }}>⚠ Temporary Password — Share Securely</p>
+                <p className="text-xs mb-3" style={{ color: '#5a6e85' }}>
                   This password is shown only once. Share it with the employee through a secure channel.
                   They should change it on first login.
                 </p>
-                <div className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2">
-                  <code className="flex-1 text-sm text-white font-mono">{created.temporaryPassword}</code>
-                  <button onClick={copyPassword} className="text-gray-400 hover:text-emerald-400 transition-colors">
-                    {copied ? <CheckCircle2 className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+                <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: '#f8f9fb', border: '1px solid #e2e8f0' }}>
+                  <code className="flex-1 text-sm font-mono" style={{ color: '#0d1f3c' }}>{created.temporaryPassword}</code>
+                  <button onClick={copyPassword} className="transition-colors" style={{ color: '#5a6e85' }}>
+                    {copied ? <CheckCircle2 className="h-4 w-4" style={{ color: '#059669' }} /> : <Copy className="h-4 w-4" />}
                   </button>
                 </div>
               </div>

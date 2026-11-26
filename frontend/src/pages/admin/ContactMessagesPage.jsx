@@ -43,86 +43,81 @@ function MessageModal({ msg, token, onClose, onUpdated }) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)' }}>
-      <div className="relative w-full max-w-lg bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs">
+      <div className="relative w-full max-w-lg bg-white border border-[#e2e8f0] rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-800">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0] bg-white">
           <div>
-            <p className="font-semibold text-white">{msg.name}</p>
-            <p className="text-xs text-gray-500">{new Date(msg.createdAt).toLocaleString('en-IN')}</p>
+            <p className="font-extrabold text-[#0f172a] text-base">{msg.name}</p>
+            <p className="text-xs text-[#64748b]">{new Date(msg.createdAt).toLocaleString('en-IN')}</p>
           </div>
           <div className="flex items-center gap-2">
             <Badge color={STATUS_COLOR[msg.status] || 'gray'}>{msg.status}</Badge>
             <button onClick={onClose}
-              className="h-7 w-7 rounded-full flex items-center justify-center transition-colors hover:bg-gray-800">
-              <X className="h-4 w-4 text-gray-400" />
+              className="h-8 w-8 rounded-full flex items-center justify-center bg-[#f8fafc] hover:bg-[#f1f5f9] text-[#64748b] border border-[#e2e8f0] transition-colors cursor-pointer">
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
 
         {/* Body */}
-        <div className="px-5 py-4 space-y-4 max-h-[70vh] overflow-y-auto">
+        <div className="px-6 py-5 space-y-4 max-h-[70vh] overflow-y-auto">
           {/* Contact info */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#f8fafc] p-3.5 rounded-xl border border-[#e2e8f0]">
             <div className="flex items-center gap-2">
-              <Mail className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-              <a href={`mailto:${msg.email}`} className="text-blue-400 hover:underline truncate">{msg.email}</a>
+              <Mail className="h-3.5 w-3.5 text-[#059669] shrink-0" />
+              <a href={`mailto:${msg.email}`} className="text-[#059669] font-bold hover:underline truncate">{msg.email}</a>
             </div>
             <div className="flex items-center gap-2">
-              <Phone className="h-3.5 w-3.5 text-gray-500 shrink-0" />
-              <a href={`tel:${msg.phone}`} className="text-green-400 hover:underline">{msg.phone}</a>
+              <Phone className="h-3.5 w-3.5 text-[#059669] shrink-0" />
+              <a href={`tel:${msg.phone}`} className="text-[#059669] font-bold hover:underline">{msg.phone}</a>
             </div>
           </div>
 
-          {/* Message */}
-          <div className="rounded-xl p-4 bg-gray-800/60 border border-gray-700">
-            <p className="text-xs text-gray-500 uppercase tracking-wider mb-2">Message</p>
-            <p className="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed">{msg.message}</p>
+          {/* Message content */}
+          <div className="rounded-xl p-4 bg-[#f8fafc] border border-[#e2e8f0]">
+            <p className="text-xs font-bold uppercase tracking-wider text-[#64748b] mb-1.5">Enquiry Message</p>
+            <p className="text-xs text-[#0f172a] whitespace-pre-wrap leading-relaxed font-medium">{msg.message}</p>
           </div>
 
           {/* Admin notes */}
           <div>
-            <label className="block text-xs text-gray-500 uppercase tracking-wider mb-1.5">Admin Notes</label>
+            <label className="block text-xs font-bold uppercase tracking-wider text-[#475569] mb-1.5">Internal Response Notes</label>
             <textarea
               value={notes}
               onChange={e => setNotes(e.target.value)}
               rows={3}
-              placeholder="Add internal notes…"
-              className="w-full rounded-xl px-3 py-2 text-sm bg-gray-800 border border-gray-700 text-gray-200 focus:outline-none focus:border-emerald-500 resize-none"
+              placeholder="Add internal notes on follow-up…"
+              className="w-full rounded-xl px-3.5 py-2.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669] resize-none"
             />
             <button onClick={saveNotes} disabled={saving}
-              className="mt-1.5 text-xs px-3 py-1.5 rounded-lg bg-gray-700 text-gray-300 hover:bg-gray-600 transition-colors disabled:opacity-50">
+              className="mt-2 text-xs font-bold px-3 py-1.5 rounded-lg bg-[#f1f5f9] text-[#334155] border border-[#e2e8f0] hover:bg-[#e2e8f0] transition-colors cursor-pointer disabled:opacity-50">
               {saving ? 'Saving…' : 'Save Notes'}
             </button>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex gap-2 flex-wrap pt-2 border-t border-[#f1f5f9]">
             {msg.status !== 'read' && (
               <button onClick={() => updateStatus('read')} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(59,130,246,0.3)', color: '#60a5fa' }}>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all cursor-pointer disabled:opacity-50">
                 <CheckCheck className="h-3.5 w-3.5" /> Mark Read
               </button>
             )}
             {msg.status !== 'archived' && (
               <button onClick={() => updateStatus('archived')} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                style={{ background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.3)', color: '#9ca3af' }}>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f8fafc] text-[#64748b] border border-[#e2e8f0] hover:bg-[#f1f5f9] transition-all cursor-pointer disabled:opacity-50">
                 <Archive className="h-3.5 w-3.5" /> Archive
               </button>
             )}
             {msg.status === 'archived' && (
               <button onClick={() => updateStatus('read')} disabled={saving}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50"
-                style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)', color: '#60a5fa' }}>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-all cursor-pointer disabled:opacity-50">
                 Unarchive
               </button>
             )}
             <button onClick={deleteMsg} disabled={deleting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all disabled:opacity-50 ml-auto"
-              style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.25)', color: '#f87171' }}>
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 transition-all cursor-pointer disabled:opacity-50 ml-auto">
               <Trash2 className="h-3.5 w-3.5" /> Delete
             </button>
           </div>
@@ -166,7 +161,6 @@ export default function ContactMessagesPage() {
   useEffect(() => { fetchMessages(); fetchStats() }, [page, filter])
 
   const openMessage = async (msg) => {
-    // Fetch full detail (which also marks it read)
     try {
       const res = await api.admin.contact.get(msg.id, token)
       setSelected(res.data)
@@ -176,115 +170,116 @@ export default function ContactMessagesPage() {
   }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-xs">
         <div>
-          <h1 className="text-xl font-bold text-white">Contact Messages</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            {total} total
-            {stats?.new > 0 && <span className="ml-2 text-amber-400 font-medium">· {stats.new} new</span>}
+          <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight">Contact Messages & Enquiries</h1>
+          <p className="text-sm text-[#64748b] font-medium mt-1">
+            {total} total messages received
+            {stats?.new > 0 && <span className="ml-2 text-[#059669] font-bold">· {stats.new} unread messages</span>}
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={() => { fetchMessages(); fetchStats() }}>
-          <RefreshCw className="h-4 w-4" />
+        <Button variant="secondary" size="md" onClick={() => { fetchMessages(); fetchStats() }}>
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
       </div>
 
       {/* Stats row */}
       {stats && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: 'Total', value: stats.total, color: '#d4a843' },
-            { label: 'New', value: stats.new, color: '#fbbf24' },
-            { label: 'Read', value: stats.read, color: '#60a5fa' },
-            { label: 'Archived', value: stats.archived, color: '#6b7280' },
+            { label: 'Total Messages', value: stats.total, color: '#0f172a' },
+            { label: 'Unread (New)',   value: stats.new,   color: '#059669' },
+            { label: 'Read Messages',  value: stats.read,  color: '#1a3c8f' },
+            { label: 'Archived',       value: stats.archived, color: '#64748b' },
           ].map(s => (
-            <div key={s.label} className="rounded-xl p-3 bg-gray-900/60 border border-gray-800">
-              <p className="text-xs text-gray-500">{s.label}</p>
-              <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
+            <div key={s.label} className="rounded-2xl p-4 bg-white border border-[#e2e8f0] shadow-xs">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">{s.label}</p>
+              <p className="text-2xl font-extrabold mt-1 tracking-tight" style={{ color: s.color }}>{s.value}</p>
             </div>
           ))}
         </div>
       )}
 
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-5 flex-wrap">
+      <div className="flex gap-2 bg-white p-2.5 rounded-2xl border border-[#e2e8f0] shadow-xs flex-wrap">
         {[
-          { val: 'all',      label: 'All' },
-          { val: 'new',      label: '🔔 New' },
+          { val: 'all',      label: 'All Enquiries' },
+          { val: 'new',      label: '🔔 Unread (New)' },
           { val: 'read',     label: '✓ Read' },
           { val: 'archived', label: 'Archived' },
         ].map(({ val, label }) => (
           <button key={val} onClick={() => { setFilter(val); setPage(1) }}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{
-              background: filter === val ? 'rgba(212,168,67,0.2)' : 'rgba(31,41,55,0.5)',
-              border: filter === val ? '1px solid rgba(212,168,67,0.5)' : '1px solid rgba(55,65,81,0.8)',
-              color: filter === val ? '#d4a843' : '#9ca3af',
-              cursor: 'pointer',
-            }}>
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              filter === val
+                ? 'bg-emerald-50 text-[#059669] border border-emerald-200 shadow-xs'
+                : 'text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] border border-transparent'
+            }`}>
             {label}
           </button>
         ))}
       </div>
 
       {/* Table */}
-      <div className="bg-gray-900/60 border border-gray-800 rounded-xl overflow-hidden">
+      <div className="bg-white border border-[#e2e8f0] rounded-2xl shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-800 text-left">
-                {['Name', 'Contact', 'Message Preview', 'Status', 'Date', 'Action'].map(h => (
-                  <th key={h} className="px-4 py-3 text-xs text-gray-500 font-medium uppercase tracking-wider">{h}</th>
-                ))}
+          <table className="w-full text-left text-xs">
+            <thead className="bg-[#f8fafc] text-[#475569] font-bold uppercase tracking-wider border-b border-[#e2e8f0]">
+              <tr>
+                <th className="py-3.5 px-6">Sender Name</th>
+                <th className="py-3.5 px-6">Contact Info</th>
+                <th className="py-3.5 px-6">Message Preview</th>
+                <th className="py-3.5 px-6">Status</th>
+                <th className="py-3.5 px-6">Received Date</th>
+                <th className="py-3.5 px-6 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800/50">
+            <tbody className="divide-y divide-[#f1f5f9]">
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <tr key={i}>
                     {Array.from({ length: 6 }).map((_, j) => (
-                      <td key={j} className="px-4 py-3">
-                        <div className="h-4 bg-gray-800 rounded animate-pulse" />
+                      <td key={j} className="py-4 px-6">
+                        <div className="h-4 bg-[#f1f5f9] rounded animate-pulse" />
                       </td>
                     ))}
                   </tr>
                 ))
               ) : messages.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-4 py-14 text-center">
-                    <MessageSquare className="h-8 w-8 mx-auto mb-2 text-gray-700" />
-                    <p className="text-sm text-gray-500">No messages found</p>
+                  <td colSpan={6} className="py-14 text-center">
+                    <MessageSquare className="h-8 w-8 mx-auto mb-2 text-[#94a3b8] opacity-50" />
+                    <p className="text-sm font-bold text-[#0f172a]">No messages found</p>
                   </td>
                 </tr>
               ) : messages.map(msg => (
                 <tr key={msg.id}
-                  className="hover:bg-gray-800/30 transition-colors cursor-pointer"
+                  className="hover:bg-[#f8fafc] transition-colors cursor-pointer"
                   onClick={() => openMessage(msg)}>
-                  <td className="px-4 py-3">
-                    <p className={`font-medium ${msg.status === 'new' ? 'text-white' : 'text-gray-300'}`}>
-                      {msg.status === 'new' && <span className="inline-block w-2 h-2 rounded-full bg-amber-400 mr-2 mb-0.5" />}
+                  <td className="py-4 px-6">
+                    <p className={`font-bold text-sm ${msg.status === 'new' ? 'text-[#0f172a]' : 'text-[#334155]'}`}>
+                      {msg.status === 'new' && <span className="inline-block w-2 h-2 rounded-full bg-[#059669] mr-2 mb-0.5" />}
                       {msg.name}
                     </p>
                   </td>
-                  <td className="px-4 py-3">
-                    <p className="text-gray-400 text-xs">{msg.email}</p>
-                    <p className="text-gray-500 text-xs">{msg.phone}</p>
+                  <td className="py-4 px-6">
+                    <p className="text-[#0f172a] font-medium">{msg.email}</p>
+                    <p className="text-[11px] text-[#64748b]">{msg.phone}</p>
                   </td>
-                  <td className="px-4 py-3 max-w-[200px]">
-                    <p className="text-gray-400 text-xs truncate">{msg.message}</p>
+                  <td className="py-4 px-6 max-w-[240px]">
+                    <p className="text-[#475569] font-medium truncate">{msg.message}</p>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="py-4 px-6">
                     <Badge color={STATUS_COLOR[msg.status] || 'gray'}>{msg.status}</Badge>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                    {new Date(msg.createdAt).toLocaleDateString('en-IN')}
+                  <td className="py-4 px-6 text-[#64748b] whitespace-nowrap font-medium">
+                    {new Date(msg.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="py-4 px-6 text-right">
                     <button
                       onClick={e => { e.stopPropagation(); openMessage(msg) }}
-                      className="text-xs px-2.5 py-1 rounded-lg transition-all"
-                      style={{ background: 'rgba(212,168,67,0.1)', border: '1px solid rgba(212,168,67,0.25)', color: '#d4a843' }}>
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-[#f8fafc] text-[#059669] border border-[#e2e8f0] hover:bg-emerald-50 transition-colors cursor-pointer">
                       View
                     </button>
                   </td>
@@ -295,9 +290,9 @@ export default function ContactMessagesPage() {
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-gray-800">
+          <div className="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0] bg-[#f8fafc]">
             <Button variant="secondary" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-            <span className="text-xs text-gray-500">Page {page} of {totalPages}</span>
+            <span className="text-xs font-bold text-[#64748b]">Page {page} of {totalPages}</span>
             <Button variant="secondary" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
           </div>
         )}
