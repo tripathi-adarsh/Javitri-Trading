@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { RefreshCw, ChevronDown, ChevronUp, Plus, CheckCircle2, XCircle, Clock, TrendingUp, Wallet } from 'lucide-react'
+import { RefreshCw, ChevronDown, ChevronUp, Plus, CheckCircle2, XCircle, Clock, TrendingUp, Wallet, User, Calendar, CreditCard } from 'lucide-react'
 import Button from '../../components/ui/Button.jsx'
 import Badge from '../../components/ui/Badge.jsx'
 import { api } from '../../utils/api.js'
@@ -53,35 +53,32 @@ function PayoutPanel({ requestId, dailyAmount, token }) {
       setTxRef('')
       load()
     } catch (e) {
-      setErr(e.message || 'Failed to save payout')
+      setErr(e.message || 'Failed to save payout record')
     } finally { setSaving(false) }
   }
 
   return (
-    <div className="mt-4 rounded-xl p-4" style={{ background: 'rgba(14,26,53,0.6)', border: '1px solid rgba(212,168,67,0.15)' }}>
+    <div className="mt-4 rounded-xl p-4 bg-[#f8fafc] border border-[#e2e8f0]">
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#d4a843' }}>
-          Daily Payouts
+        <p className="text-xs font-bold uppercase tracking-wider text-[#0f172a]">
+          Daily Payout Tracking
         </p>
-        <span className="text-xs font-semibold" style={{ color: '#4ade80' }}>
-          Total paid: {fmt(total)}
+        <span className="text-xs font-bold text-[#059669]">
+          Cumulative Paid: {fmt(total)}
         </span>
       </div>
 
       {/* Add payout row */}
-      <div className="space-y-2 mb-3">
+      <div className="space-y-2.5 mb-3 bg-white p-3.5 rounded-xl border border-[#e2e8f0]">
         <div className="flex gap-2 flex-wrap">
           <input type="date" value={date} onChange={e => setDate(e.target.value)}
-            className="rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-            style={{ background: 'rgba(22,46,110,0.6)', border: '1px solid rgba(212,168,67,0.25)', color: '#dde8f5' }} />
+            className="rounded-lg px-3 py-1.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
           <input type="number" value={amount} onChange={e => setAmount(e.target.value)}
             placeholder="Amount (₹)"
-            className="w-28 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-            style={{ background: 'rgba(22,46,110,0.6)', border: '1px solid rgba(212,168,67,0.25)', color: '#dde8f5' }} />
+            className="w-32 rounded-lg px-3 py-1.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
           <select value={method} onChange={e => setMethod(e.target.value)}
-            className="rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-            style={{ background: 'rgba(22,46,110,0.6)', border: '1px solid rgba(212,168,67,0.25)', color: '#dde8f5' }}>
-            <option value="bank_transfer">Bank Transfer</option>
+            className="rounded-lg px-3 py-1.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]">
+            <option value="bank_transfer">Bank Transfer (NEFT/RTGS)</option>
             <option value="upi">UPI</option>
             <option value="cash">Cash</option>
             <option value="cheque">Cheque</option>
@@ -90,45 +87,42 @@ function PayoutPanel({ requestId, dailyAmount, token }) {
         </div>
         <div className="flex gap-2 flex-wrap">
           <input value={txRef} onChange={e => setTxRef(e.target.value)}
-            placeholder="Transaction Reference (optional)"
-            className="flex-1 min-w-[120px] rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-            style={{ background: 'rgba(22,46,110,0.6)', border: '1px solid rgba(212,168,67,0.25)', color: '#dde8f5' }} />
+            placeholder="Transaction UTR / Reference ID"
+            className="flex-1 min-w-[140px] rounded-lg px-3 py-1.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
           <input value={notes} onChange={e => setNotes(e.target.value)}
             placeholder="Notes (optional)"
-            className="flex-1 min-w-[100px] rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-            style={{ background: 'rgba(22,46,110,0.6)', border: '1px solid rgba(212,168,67,0.25)', color: '#dde8f5' }} />
+            className="flex-1 min-w-[120px] rounded-lg px-3 py-1.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
           <button onClick={save} disabled={saving}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
-            style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff', border: 'none', cursor: saving ? 'not-allowed' : 'pointer' }}>
-            <Plus size={12} /> {saving ? 'Saving…' : 'Mark Paid'}
+            className="flex items-center gap-1 px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-[#2563eb] hover:bg-[#1d4ed8] text-white disabled:opacity-50 cursor-pointer shadow-xs">
+            <Plus size={13} /> {saving ? 'Recording…' : 'Record Payout'}
           </button>
         </div>
       </div>
 
-      {err && <p className="text-xs mb-2" style={{ color: '#f87171' }}>{err}</p>}
+      {err && <p className="text-xs mb-2 text-red-600 font-semibold">{err}</p>}
 
       {/* Payout list */}
       {loading ? (
-        <p className="text-xs" style={{ color: '#506070' }}>Loading…</p>
+        <p className="text-xs text-[#64748b]">Loading payout history…</p>
       ) : payouts.length === 0 ? (
-        <p className="text-xs" style={{ color: '#506070' }}>No payout records yet.</p>
+        <p className="text-xs text-[#64748b] italic">No payout records registered for this plan request.</p>
       ) : (
-        <div className="space-y-1 max-h-48 overflow-y-auto">
+        <div className="space-y-1.5 max-h-48 overflow-y-auto">
           {payouts.map(p => (
-            <div key={p.id} className="flex justify-between items-center text-xs py-1.5 px-2 rounded-lg"
-              style={{ background: 'rgba(74,222,128,0.05)', border: '1px solid rgba(74,222,128,0.1)' }}>
+            <div key={p.id} className="flex justify-between items-center text-xs py-2 px-3 rounded-lg bg-white border border-[#e2e8f0]">
               <div className="flex items-center gap-2">
-                <span style={{ color: '#9ab0c4' }}>{p.payout_date}</span>
+                <span className="font-semibold text-[#0f172a]">{p.payout_date}</span>
                 {p.payment_method && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded-full"
-                    style={{ background: 'rgba(212,168,67,0.1)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.2)' }}>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-[#f1f5f9] text-[#475569] border border-[#e2e8f0]">
                     {p.payment_method.replace('_', ' ')}
                   </span>
                 )}
               </div>
-              <span className="font-semibold" style={{ color: '#4ade80' }}>{fmt(p.amount)}</span>
-              {p.transaction_reference && <span className="text-[10px] font-mono" style={{ color: '#506070' }}>{p.transaction_reference}</span>}
-              {p.notes && <span style={{ color: '#506070' }}>{p.notes}</span>}
+              <span className="font-extrabold text-[#059669]">{fmt(p.amount)}</span>
+              {p.transaction_reference && (
+                <span className="text-[10px] font-mono font-semibold text-[#64748b]">{p.transaction_reference}</span>
+              )}
+              {p.notes && <span className="text-[#64748b] text-[11px] truncate max-w-[120px]">{p.notes}</span>}
             </div>
           ))}
         </div>
@@ -179,139 +173,155 @@ function RequestCard({ r, token, onUpdate, isAdmin }) {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ background: 'rgba(22,46,110,0.35)', border: '1px solid rgba(212,168,67,0.2)' }}>
+    <div className="rounded-2xl overflow-hidden bg-white border border-[#e2e8f0] shadow-xs hover:border-[#cbd5e1] transition-all">
       {/* Header row */}
-      <div className="flex items-center justify-between px-4 py-3 cursor-pointer"
-        onClick={() => setOpen(v => !v)}
-        style={{ borderBottom: open ? '1px solid rgba(212,168,67,0.12)' : 'none' }}>
+      <div className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-[#f8fafc] transition-colors"
+        onClick={() => setOpen(v => !v)}>
         <div className="flex items-center gap-3 min-w-0">
           <div className="min-w-0">
-            <p className="font-semibold text-sm truncate" style={{ color: '#f0f4f8' }}>{r.clientName}</p>
-            <p className="text-xs truncate" style={{ color: '#7090a8' }}>
+            <div className="flex items-center gap-2">
+              <p className="font-extrabold text-sm text-[#0f172a] truncate">{r.clientName}</p>
+              {r.requestNumber && (
+                <span className="font-mono text-xs font-bold text-[#059669] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  {r.requestNumber}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-[#64748b] font-medium mt-0.5">
               {r.clientMobile} · {r.registrationId}
-              {r.requestNumber && <span className="font-mono ml-2" style={{ color: '#d4a843' }}>{r.requestNumber}</span>}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-3">
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
-            style={{ background: 'rgba(212,168,67,0.1)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.3)' }}>
+        <div className="flex items-center gap-2.5 shrink-0 ml-3">
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#f8fafc] text-[#0f172a] border border-[#e2e8f0]">
             {r.planName}
           </span>
           <Badge color={PAY_COLOR[r.paymentStatus]}>{r.paymentStatus}</Badge>
-          {open ? <ChevronUp size={14} style={{ color: '#506070' }} /> : <ChevronDown size={14} style={{ color: '#506070' }} />}
+          {open ? <ChevronUp size={16} className="text-[#64748b]" /> : <ChevronDown size={16} className="text-[#64748b]" />}
         </div>
       </div>
 
       {/* Expanded details */}
       {open && (
-        <div className="px-4 py-4 space-y-4">
+        <div className="px-6 py-5 border-t border-[#f1f5f9] space-y-5 bg-[#fafafa]">
 
           {/* Info grid */}
-          <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 text-xs">
-            <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Request #</span><span className="font-mono" style={{ color: '#d4a843' }}>{r.requestNumber || r.id.slice(0, 8)}</span></div>
-            <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Deal Amount</span><span style={{ color: '#f0f4f8' }}>{fmt(r.dealAmount)}</span></div>
-            <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Daily Amount</span><span style={{ color: '#4ade80' }}>{fmt(r.dailyAmount)}</span></div>
-            <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Status</span><Badge color={STATUS_COLOR[r.status]}>{r.status}</Badge></div>
-            <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Submitted</span><span style={{ color: '#f0f4f8' }}>{new Date(r.createdAt).toLocaleDateString('en-IN')}</span></div>
-            {r.nomineeInfo && <div className="col-span-2 flex justify-between"><span style={{ color: '#7090a8' }}>Nominee</span><span style={{ color: '#f0f4f8' }}>{r.nomineeInfo}</span></div>}
-            <div className="col-span-2 flex justify-between">
-              <span style={{ color: '#7090a8' }}>Assigned Employee</span>
-              <span style={{ color: '#d4a843' }}>{r.assignedEmployeeCode || '—'} {r.assignedEmployeeName ? `(${r.assignedEmployeeName})` : ''}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 text-xs bg-white p-4 rounded-xl border border-[#e2e8f0]">
+            <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+              <span className="text-[#64748b] font-semibold">Request Identifier</span>
+              <span className="font-mono font-bold text-[#0f172a]">{r.requestNumber || r.id.slice(0, 8)}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+              <span className="text-[#64748b] font-semibold">Plan Investment Amount</span>
+              <span className="font-extrabold text-[#0f172a]">{fmt(r.dealAmount)}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+              <span className="text-[#64748b] font-semibold">Estimated Daily Payout</span>
+              <span className="font-extrabold text-[#059669]">{fmt(r.dailyAmount)}</span>
+            </div>
+            <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+              <span className="text-[#64748b] font-semibold">Request Lifecycle</span>
+              <Badge color={STATUS_COLOR[r.status]}>{r.status}</Badge>
+            </div>
+            <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+              <span className="text-[#64748b] font-semibold">Date Submitted</span>
+              <span className="text-[#0f172a] font-medium">{new Date(r.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+            </div>
+            {r.nomineeInfo && (
+              <div className="flex justify-between py-1 border-b border-[#f1f5f9]">
+                <span className="text-[#64748b] font-semibold">Nominee</span>
+                <span className="text-[#0f172a] font-medium">{r.nomineeInfo}</span>
+              </div>
+            )}
+            <div className="col-span-1 sm:col-span-2 flex justify-between py-1">
+              <span className="text-[#64748b] font-semibold">Assigned Account Manager</span>
+              <span className="font-bold text-[#059669]">
+                {r.assignedEmployeeCode || '—'} {r.assignedEmployeeName ? `(${r.assignedEmployeeName})` : '(Direct)'}
+              </span>
             </div>
           </div>
 
           {/* Admin: reassign employee */}
           {isAdmin && (
-            <div className="flex gap-2 items-center">
+            <div className="flex gap-2 items-center bg-white p-3.5 rounded-xl border border-[#e2e8f0]">
+              <span className="text-xs font-bold text-[#475569] shrink-0">Reassign Staff:</span>
               <select value={empId} onChange={e => setEmpId(e.target.value)}
-                className="flex-1 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-                style={{ background: 'rgba(14,26,53,0.8)', border: '1px solid rgba(212,168,67,0.3)', color: '#dde8f5' }}>
-                <option value="">— Unassign —</option>
+                className="flex-1 rounded-lg px-3 py-1.5 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]">
+                <option value="">— Unassigned (Company Direct) —</option>
                 {employees.map(e => (
-                  <option key={e.id} value={e.id} style={{ background: '#111f3d' }}>
+                  <option key={e.id} value={e.id}>
                     {e.employeeCode} — {e.fullName}
                   </option>
                 ))}
               </select>
               <button onClick={assignEmp} disabled={assigning}
-                className="px-3 py-1.5 rounded-lg text-xs font-semibold disabled:opacity-50"
-                style={{ background: 'rgba(212,168,67,0.15)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.3)', cursor: 'pointer' }}>
+                className="px-4 py-1.5 rounded-lg text-xs font-bold transition-all bg-[#2563eb] hover:bg-[#1d4ed8] text-white disabled:opacity-50 cursor-pointer">
                 {assigning ? '…' : 'Assign'}
               </button>
             </div>
           )}
 
-          {/* Payment status */}
+          {/* Payment status action */}
           {r.paymentStatus === 'pending' && (
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wide" style={{ color: '#d4a843' }}>Mark Payment</p>
-              <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-3 bg-white p-4 rounded-xl border border-[#e2e8f0]">
+              <p className="text-xs font-bold uppercase tracking-wider text-[#0f172a]">
+                Update Payment Status
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] mb-1" style={{ color: '#7090a8' }}>Payment Amount (₹)</label>
+                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">Received Amount (₹)</label>
                   <input type="number" value={payAmount} onChange={e => setPayAmount(e.target.value)}
-                    placeholder="Amount"
-                    className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-                    style={{ background: 'rgba(14,26,53,0.8)', border: '1px solid rgba(212,168,67,0.2)', color: '#dde8f5' }} />
+                    placeholder="Amount in Rupees"
+                    className="w-full rounded-lg px-3 py-2 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
                 </div>
                 <div>
-                  <label className="block text-[10px] mb-1" style={{ color: '#7090a8' }}>Transaction / Reference ID</label>
+                  <label className="block text-[11px] font-semibold text-[#475569] mb-1">Transaction / Reference ID</label>
                   <input value={txId} onChange={e => setTxId(e.target.value)}
-                    placeholder="Transaction ID"
-                    className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-                    style={{ background: 'rgba(14,26,53,0.8)', border: '1px solid rgba(212,168,67,0.2)', color: '#dde8f5' }} />
+                    placeholder="Razorpay ID or Bank UTR"
+                    className="w-full rounded-lg px-3 py-2 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
                 </div>
               </div>
               <input value={payNotes} onChange={e => setPayNotes(e.target.value)}
-                placeholder="Payment notes (optional)"
-                className="w-full rounded-lg px-2 py-1.5 text-xs focus:outline-none"
-                style={{ background: 'rgba(14,26,53,0.8)', border: '1px solid rgba(212,168,67,0.2)', color: '#dde8f5' }} />
-              <div className="flex gap-2">
+                placeholder="Payment settlement notes (optional)"
+                className="w-full rounded-lg px-3 py-2 text-xs bg-white border border-[#cbd5e1] text-[#0f172a] focus:outline-none focus:border-[#059669]" />
+              <div className="flex gap-3 pt-1">
                 <button onClick={() => markPayment('success')} disabled={marking}
-                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-semibold disabled:opacity-50"
-                  style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80', cursor: 'pointer' }}>
-                  <CheckCircle2 size={12} /> Payment Success
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-[#2563eb] hover:bg-[#1d4ed8] text-white disabled:opacity-50 cursor-pointer shadow-xs">
+                  <CheckCircle2 size={14} /> Confirm Payment (Success)
                 </button>
                 <button onClick={() => markPayment('failed')} disabled={marking}
-                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-lg text-xs font-semibold disabled:opacity-50"
-                  style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', color: '#f87171', cursor: 'pointer' }}>
-                  <XCircle size={12} /> Payment Failed
+                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 disabled:opacity-50 cursor-pointer">
+                  <XCircle size={14} /> Mark Payment Failed
                 </button>
               </div>
             </div>
           )}
 
           {r.paymentStatus === 'success' && (
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 size={14} style={{ color: '#4ade80' }} />
-                <span className="text-xs" style={{ color: '#4ade80' }}>
-                  Payment confirmed {r.paymentMarkedAt ? `on ${new Date(r.paymentMarkedAt).toLocaleDateString('en-IN')}` : ''}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                <CheckCircle2 size={16} className="text-[#059669]" />
+                <span className="text-xs font-bold text-[#059669]">
+                  Payment Verified {r.paymentMarkedAt ? `on ${new Date(r.paymentMarkedAt).toLocaleDateString('en-IN')}` : ''}
                 </span>
+                {r.transactionId && (
+                  <span className="font-mono text-xs text-[#0f172a] ml-auto font-bold">
+                    Ref: {r.transactionId}
+                  </span>
+                )}
               </div>
-              {(r.paymentAmount || r.transactionId) && (
-                <div className="grid grid-cols-2 gap-2 text-xs mb-2 px-3 py-2 rounded-lg"
-                  style={{ background: 'rgba(34,197,94,0.05)', border: '1px solid rgba(34,197,94,0.1)' }}>
-                  {r.paymentAmount && (
-                    <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Amount</span><span style={{ color: '#f0f4f8' }}>{fmt(r.paymentAmount)}</span></div>
-                  )}
-                  {r.transactionId && (
-                    <div className="flex justify-between"><span style={{ color: '#7090a8' }}>Txn ID</span><span className="font-mono" style={{ color: '#dde8f5' }}>{r.transactionId}</span></div>
-                  )}
-                </div>
-              )}
-              {/* Daily payout tracking */}
+              {/* Daily payout tracking panel */}
               <PayoutPanel requestId={r.id} dailyAmount={r.dailyAmount} token={token} />
             </div>
           )}
 
           {r.paymentStatus === 'failed' && (
-            <div className="flex items-center gap-2">
-              <XCircle size={14} style={{ color: '#f87171' }} />
-              <span className="text-xs" style={{ color: '#f87171' }}>Payment failed</span>
+            <div className="flex items-center gap-3 p-3.5 rounded-xl bg-red-50 border border-red-200">
+              <XCircle size={16} className="text-red-600 shrink-0" />
+              <span className="text-xs font-bold text-red-700">Payment failed or declined</span>
               <button onClick={() => markPayment('pending')} disabled={marking}
-                className="ml-2 text-xs underline" style={{ color: '#7090a8', background: 'none', border: 'none', cursor: 'pointer' }}>
-                Reset to pending
+                className="ml-auto text-xs font-bold underline text-[#64748b] hover:text-[#0f172a] cursor-pointer">
+                Reset to Pending
               </button>
             </div>
           )}
@@ -340,8 +350,8 @@ export default function PlanRequestsPage() {
       if (filter !== 'all') params.set('paymentStatus', filter)
       const res = await api.admin.planRequests.list(token, params.toString())
       setRequests(res.data.requests || [])
-      setTotalPages(res.data.pagination.pages)
-      setTotal(res.data.pagination.total)
+      setTotalPages(res.data.pagination.pages || 1)
+      setTotal(res.data.pagination.total || 0)
     } catch { /* handled */ }
     finally { setLoading(false) }
   }
@@ -349,50 +359,54 @@ export default function PlanRequestsPage() {
   useEffect(() => { fetchRequests() }, [page, filter])
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-2xl border border-[#e2e8f0] shadow-xs">
         <div>
-          <h1 className="text-xl font-bold" style={{ color: '#f0f4f8' }}>Plan Requests</h1>
-          <p className="text-sm mt-0.5" style={{ color: '#7090a8' }}>
-            {total} total — client requests, payment tracking, daily payouts
+          <h1 className="text-2xl font-extrabold text-[#0f172a] tracking-tight">Plan Requests</h1>
+          <p className="text-sm text-[#64748b] font-medium mt-1">
+            {total} total subscriptions · Payment settlement verification and daily returns management
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={fetchRequests}>
-          <RefreshCw className="h-4 w-4" />
+        <Button variant="secondary" size="md" onClick={fetchRequests}>
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
         </Button>
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-2 mb-5 flex-wrap">
+      <div className="flex gap-2 bg-white p-2.5 rounded-2xl border border-[#e2e8f0] shadow-xs flex-wrap">
         {[
-          { val: 'all',     label: 'All' },
-          { val: 'pending', label: '⏳ Pending Payment', icon: Clock },
-          { val: 'success', label: '✓ Payment Done' },
-          { val: 'failed',  label: '✗ Failed' },
+          { val: 'all',     label: 'All Requests' },
+          { val: 'pending', label: '⏳ Pending Payment' },
+          { val: 'success', label: '✓ Payment Confirmed' },
+          { val: 'failed',  label: '✗ Payment Failed' },
         ].map(({ val, label }) => (
-          <button key={val} onClick={() => { setFilter(val); setPage(1) }}
-            className="px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
-            style={{
-              background: filter === val ? 'rgba(212,168,67,0.2)' : 'rgba(22,46,110,0.3)',
-              border: filter === val ? '1px solid rgba(212,168,67,0.5)' : '1px solid rgba(212,168,67,0.15)',
-              color: filter === val ? '#d4a843' : '#7090a8',
-              cursor: 'pointer',
-            }}>
+          <button
+            key={val}
+            onClick={() => { setFilter(val); setPage(1) }}
+            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              filter === val
+                ? 'bg-emerald-50 text-[#059669] border border-emerald-200 shadow-xs'
+                : 'text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] border border-transparent'
+            }`}
+          >
             {label}
           </button>
         ))}
       </div>
 
+      {/* Content */}
       {loading ? (
         <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-14 rounded-xl animate-pulse" style={{ background: 'rgba(212,168,67,0.06)' }} />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-16 rounded-2xl bg-white border border-[#e2e8f0] animate-pulse" />
           ))}
         </div>
       ) : requests.length === 0 ? (
-        <div className="text-center py-16" style={{ color: '#506070' }}>
-          <TrendingUp size={32} className="mx-auto mb-3 opacity-30" />
-          <p className="text-sm">No plan requests found.</p>
+        <div className="bg-white rounded-2xl border border-[#e2e8f0] p-16 text-center shadow-xs">
+          <TrendingUp size={36} className="mx-auto mb-3 text-[#94a3b8] opacity-50" />
+          <p className="text-base font-bold text-[#0f172a]">No plan requests in this category</p>
+          <p className="text-xs text-[#64748b] mt-1">Client plan requests will appear here as they sign up.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -403,10 +417,14 @@ export default function PlanRequestsPage() {
       )}
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between mt-6">
-          <Button variant="secondary" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>Previous</Button>
-          <span className="text-xs" style={{ color: '#506070' }}>Page {page} of {totalPages}</span>
-          <Button variant="secondary" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next</Button>
+        <div className="flex items-center justify-between px-6 py-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-xs">
+          <Button variant="secondary" size="sm" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+            Previous
+          </Button>
+          <span className="text-xs font-bold text-[#64748b]">Page {page} of {totalPages}</span>
+          <Button variant="secondary" size="sm" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+            Next
+          </Button>
         </div>
       )}
     </div>

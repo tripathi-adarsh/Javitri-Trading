@@ -1,137 +1,168 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import {
-  TrendingUp, BookOpen, BarChart2, MessageSquare, Users,
-  Briefcase, Globe, Layers, Bell, PieChart, ArrowRight,
-  AlertCircle, CheckCircle2
+  BookOpen, GraduationCap, BarChart2, TrendingUp, Users,
+  Briefcase, ShieldCheck, ArrowRight, MessageSquare, Bell, Award, CheckCircle2,
+  Calendar, Landmark, FileText, Sparkles, Car, HeartPulse, HeartHandshake, PhoneCall
 } from 'lucide-react'
 import Button from '../components/ui/Button.jsx'
+import { useLang } from '../context/LanguageContext.jsx'
 
 const WHATSAPP_URL = 'https://wa.me/919022487800'
-const TELEGRAM_URL = 'https://t.me/Javitritradingservice'
-const TG = ({ cls='h-4 w-4' }) => <svg className={cls} viewBox="0 0 24 24" fill="currentColor"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
-
-const SERVICES = [
-  {
-    icon: Briefcase,
-    title: 'Demat Account Opening Assistance',
-    desc: 'Guidance through the process of opening a Demat account with a registered broker. We help you understand the documentation required and walk you through every step.',
-    tag: 'Assistance',
-  },
-  {
-    icon: Users,
-    title: 'Advisor Support',
-    desc: 'Access to market educators and support staff who can help you understand concepts, answer questions, and guide your learning journey in the stock market.',
-    tag: 'Support',
-  },
-  {
-    icon: CheckCircle2,
-    title: 'Account Handling Guidance',
-    desc: 'Educational support on how to manage your trading account, understand statements, and navigate your broker platform effectively.',
-    tag: 'Guidance',
-  },
-  {
-    icon: BookOpen,
-    title: 'Stock Market Learning',
-    desc: 'Comprehensive beginner-to-intermediate learning on how the stock market works — including market structure, indices, order types, and trading basics.',
-    tag: 'Education',
-  },
-  {
-    icon: Layers,
-    title: 'Options Trading Education',
-    desc: 'Structured learning modules on options contracts, key terminology (calls, puts, strike price, expiry), basic strategies, and risk awareness for options trading.',
-    tag: 'Education',
-  },
-  {
-    icon: TrendingUp,
-    title: 'Equity Market Education',
-    desc: 'Understanding how to read equity markets, analyse company fundamentals, interpret financial statements, and make informed decisions as a learning investor.',
-    tag: 'Education',
-  },
-  {
-    icon: BarChart2,
-    title: 'Commodity Market Education',
-    desc: 'Introduction to commodity trading including metals, energy, and agricultural products. Learn how commodity markets work, pricing factors, and associated risks.',
-    tag: 'Education',
-  },
-  {
-    icon: Globe,
-    title: 'Forex Market Education',
-    desc: 'Educational content on the foreign exchange market, currency pairs, how forex trading works, and the significant risks involved in forex and currency derivatives.',
-    tag: 'Education',
-  },
-  {
-    icon: PieChart,
-    title: 'Stock Market Analysis',
-    desc: 'Learn how to read charts, apply technical analysis tools, understand candlestick patterns, and develop analytical thinking for evaluating market movements.',
-    tag: 'Analysis',
-  },
-  {
-    icon: Bell,
-    title: 'Daily Trading Insights and Tips',
-    desc: 'Educational daily insights to help learners stay informed about market trends, news, and relevant developments — provided for learning purposes only.',
-    tag: 'Insights',
-  },
-]
-
-const tagColors = {
-  Assistance: { bg: 'rgba(212,168,67,0.12)', color: '#d4a843', border: 'rgba(212,168,67,0.3)' },
-  Support:    { bg: 'rgba(59,130,246,0.12)', color: '#60a5fa', border: 'rgba(59,130,246,0.3)' },
-  Guidance:   { bg: 'rgba(139,92,246,0.12)', color: '#a78bfa', border: 'rgba(139,92,246,0.3)' },
-  Education:  { bg: 'rgba(26,102,69,0.15)',  color: '#4ade80', border: 'rgba(26,102,69,0.4)' },
-  Analysis:   { bg: 'rgba(245,158,11,0.12)', color: '#fbbf24', border: 'rgba(245,158,11,0.3)' },
-  Insights:   { bg: 'rgba(236,72,153,0.12)', color: '#f472b6', border: 'rgba(236,72,153,0.3)' },
-}
 
 export default function ServicesPage() {
+  const { t, lang } = useLang()
+
+  const SERVICES = [
+    {
+      icon: TrendingUp,
+      title: t('service_equity_title'),
+      desc: t('service_equity_desc'),
+      tag: lang === 'hi' ? 'निवेश' : 'Investment',
+      badgeCls: 'bg-blue-50 text-[#1d4ed8] border-blue-200',
+      link: '/plans',
+      linkText: lang === 'hi' ? 'निवेश प्लान्स देखें' : 'Explore Investment Plans',
+      features: [
+        lang === 'hi' ? 'सोमवार से शुक्रवार दैनिक पेआउट (महीने के 22 सत्र)' : 'Monday to Friday daily payouts (22 sessions/month)',
+        lang === 'hi' ? '100% औपचारिक कानूनी अनुबंध और पारदर्शिता' : '100% documented agreements & statutory compliance',
+        lang === 'hi' ? 'सप्ताहांत (शनि व रवि) शून्य जोखिम एवं अवकाश' : 'Zero weekend market exposure'
+      ],
+    },
+    {
+      icon: Car,
+      title: t('service_auto_title'),
+      desc: t('service_auto_desc'),
+      tag: lang === 'hi' ? 'वाहन बीमा' : 'Vehicle Insurance',
+      badgeCls: 'bg-amber-50 text-[#b45309] border-amber-200',
+      link: '/contact',
+      linkText: lang === 'hi' ? 'बीमा कोटेशन प्राप्त करें' : 'Request Vehicle Quote',
+      features: [
+        lang === 'hi' ? 'बाइक एवं कार दोनों के लिए कॉम्प्रिहेंसिव पॉलिसी' : 'Comprehensive coverage for bikes & cars',
+        lang === 'hi' ? 'जीरो डेप्रिसिएशन एवं 24x7 ऑन-रोड सहायता' : 'Zero-depreciation rider & 24x7 roadside assist',
+        lang === 'hi' ? 'पूरे भारत में कैशलेस गैरेज नेटवर्क' : 'Cashless network across India'
+      ],
+    },
+    {
+      icon: HeartPulse,
+      title: t('service_health_title'),
+      desc: t('service_health_desc'),
+      tag: lang === 'hi' ? 'स्वास्थ्य बीमा' : 'Health Insurance',
+      badgeCls: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+      link: '/contact',
+      linkText: lang === 'hi' ? 'हेल्थ पॉलिसी परामर्श लें' : 'Get Health Cover Consultation',
+      features: [
+        lang === 'hi' ? '10,000+ अस्पतालों में कैशलेस इलाज' : 'Cashless admission in 10,000+ hospitals',
+        lang === 'hi' ? 'गंभीर बीमारी एवं डे-केयर सर्जरी कवर' : 'Critical illness cover & day-care treatments',
+        lang === 'hi' ? 'धारा 80D के तहत संपूर्ण आयकर बचत' : 'Full tax deduction under Section 80D'
+      ],
+    },
+    {
+      icon: HeartHandshake,
+      title: t('service_vivah_title'),
+      desc: t('service_vivah_desc'),
+      tag: lang === 'hi' ? 'कन्या सुरक्षा' : 'Family Future',
+      badgeCls: 'bg-purple-50 text-purple-800 border-purple-200',
+      link: '/contact',
+      linkText: lang === 'hi' ? 'बेटी विवाह योजना शुरू करें' : 'Start Daughter Plan',
+      features: [
+        lang === 'hi' ? 'बेटी के सुखद विवाह हेतु समर्पित वेल्थ फंड' : "Dedicated fund for daughter's marriage",
+        lang === 'hi' ? 'उच्च शिक्षा एवं दीर्घकालिक कम्पाउंडिंग ग्रोथ' : 'Higher education & long-term wealth compounding',
+        lang === 'hi' ? 'व्यक्तिगत रिलेशनशिप मैनेजर द्वारा मार्गदर्शन' : 'Dedicated relationship manager guidance'
+      ],
+    },
+    {
+      icon: GraduationCap,
+      title: t('service_demat_title'),
+      desc: t('service_demat_desc'),
+      tag: lang === 'hi' ? 'ऑनबोर्डिंग' : 'Onboarding',
+      badgeCls: 'bg-indigo-50 text-indigo-800 border-indigo-200',
+      link: '/contact',
+      linkText: lang === 'hi' ? 'डीमैट सहायता प्राप्त करें' : 'Demat Assistance',
+      features: [
+        lang === 'hi' ? 'तत्काल डिजिटल केवाईसी एवं सत्यापन' : 'Instant digital KYC & depository setup',
+        lang === 'hi' ? 'ब्रोकरेज शुल्क बचत अनुकूलन' : 'Brokerage fee optimization',
+        lang === 'hi' ? 'सीधा SEBI-पंजीकृत डिपॉजिटरी एकीकरण' : 'Direct SEBI-registered depository integration'
+      ],
+    },
+    {
+      icon: BarChart2,
+      title: t('service_mentorship_title'),
+      desc: t('service_mentorship_desc'),
+      tag: lang === 'hi' ? 'प्रशिक्षण' : 'Education',
+      badgeCls: 'bg-sky-50 text-sky-800 border-sky-200',
+      link: '/contact',
+      linkText: lang === 'hi' ? 'ट्रेनिंग शेड्यूल जानें' : 'View Training Schedule',
+      features: [
+        lang === 'hi' ? 'प्राइस एक्शन, ब्रेकआउट और कैंडलस्टिक संरचनाएं' : 'Price action & candlestick structures',
+        lang === 'hi' ? 'वॉल्यूम वेटेड एवरेज प्राइस (VWAP) तकनीक' : 'Volume weighted average price (VWAP)',
+        lang === 'hi' ? 'ऑप्शंस हेजिंग एवं स्ट्रिक्ट स्टॉप-लॉस अनुशासन' : 'Options hedging & strict drawdown control'
+      ],
+    },
+  ]
+
   return (
-    <div className="min-h-screen" style={{ background: '#080f22' }}>
+    <div className="min-h-screen bg-white">
 
       {/* Header */}
-      <section className="max-w-5xl mx-auto px-4 pt-16 pb-10 text-center">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-5"
-          style={{ background: 'rgba(212,168,67,0.12)', border: '1px solid rgba(212,168,67,0.3)', color: '#d4a843' }}>
-          <Briefcase className="h-3.5 w-3.5" />
-          What We Offer
+      <section className="bg-gradient-to-b from-blue-50/70 via-[#f8fafc] to-white border-b border-[#e2e8f0] py-16 sm:py-20 text-center relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-4">
+          <h1 className="text-3xl sm:text-5xl font-black text-[#0b1e3f] tracking-tight mb-4">
+            {t('services_heading')}
+          </h1>
+          <p className="text-base sm:text-lg text-[#334155] max-w-2xl mx-auto leading-relaxed font-medium">
+            {t('services_subheading')}
+          </p>
+
+          <div className="flex flex-wrap justify-center gap-3 mt-6">
+            <div className="px-4 py-2 rounded-2xl bg-white border border-[#cbd5e1] text-xs font-bold text-[#0b1e3f] shadow-xs flex items-center gap-2">
+              <Award className="h-4 w-4 text-[#b45309] shrink-0" />
+              <span>{t('govt_recognized')}</span>
+            </div>
+          </div>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-extrabold mb-4" style={{ color: '#fff' }}>
-          Our <span className="gradient-text">Services</span>
-        </h1>
-        <p className="text-sm max-w-2xl mx-auto leading-relaxed" style={{ color: '#b0c8dc' }}>
-          Javitri Trading Service Pvt. Ltd. provides stock market education, trading guidance, and learning support.
-          Our services are focused on helping beginners and learners understand the market.
-        </p>
       </section>
 
       {/* Services Grid */}
-      <section className="max-w-5xl mx-auto px-4 pb-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {SERVICES.map(({ icon: Icon, title, desc, tag }) => {
-            const tc = tagColors[tag] || tagColors.Education
+      <section className="py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {SERVICES.map(({ icon: Icon, title, desc, tag, badgeCls, link, linkText, features }) => {
             return (
-              <div key={title}
-                className="rounded-2xl p-5 flex flex-col gap-3 transition-all duration-200 hover:-translate-y-1"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(15,36,96,0.55) 0%, rgba(8,15,32,0.7) 100%)',
-                  border: '1px solid rgba(212,168,67,0.15)',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
-                }}
-                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(212,168,67,0.4)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(212,168,67,0.15)'}
+              <div
+                key={title}
+                className="p-8 rounded-3xl bg-white border-2 border-[#e2e8f0] shadow-sm hover:border-[#1d4ed8] hover:shadow-xl transition-all duration-300 flex flex-col justify-between group relative overflow-hidden"
               >
-                <div className="flex items-start justify-between">
-                  <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(212,168,67,0.12)', border: '1px solid rgba(212,168,67,0.25)' }}>
-                    <Icon className="h-5 w-5" style={{ color: '#d4a843' }} />
-                  </div>
-                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                    style={{ background: tc.bg, color: tc.color, border: `1px solid ${tc.border}` }}>
-                    {tag}
-                  </span>
-                </div>
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-[#cbd5e1] to-transparent group-hover:from-[#0b1e3f] group-hover:via-[#1d4ed8] group-hover:to-[#d4af37] transition-all" />
                 <div>
-                  <h3 className="text-sm font-semibold mb-1.5" style={{ color: '#fff' }}>{title}</h3>
-                  <p className="text-xs leading-relaxed" style={{ color: '#9ab0c4' }}>{desc}</p>
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="h-12 w-12 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1d4ed8] group-hover:scale-105 transition-transform shadow-xs">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <span className={`text-[10px] font-black px-3 py-1 rounded-full border ${badgeCls}`}>
+                      {tag}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-[#0b1e3f] mb-2 group-hover:text-[#1d4ed8] transition-colors">{title}</h3>
+                  <p className="text-xs sm:text-sm text-[#334155] leading-relaxed mb-6 font-normal">{desc}</p>
+
+                  {/* Feature bullet list */}
+                  <div className="space-y-2 pt-4 border-t border-[#f1f5f9]">
+                    {features.map((feat, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-[#0f172a] font-medium">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-[#1d4ed8] shrink-0" />
+                        <span>{feat}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6 mt-6 border-t border-[#f1f5f9]">
+                  <Link
+                    to={link}
+                    className="inline-flex items-center gap-2 text-xs font-black text-[#1d4ed8] hover:text-[#0b1e3f] transition-colors"
+                  >
+                    <span>{linkText}</span>
+                    <ArrowRight className="h-3.5 w-3.5 shrink-0" />
+                  </Link>
                 </div>
               </div>
             )
@@ -139,39 +170,59 @@ export default function ServicesPage() {
         </div>
       </section>
 
-      {/* Divider */}
-      <div className="gold-line" />
-
-      {/* CTA */}
-      <section className="max-w-5xl mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold mb-3" style={{ color: '#fff' }}>
-          Ready to <span className="gradient-text">Get Started?</span>
-        </h2>
-        <p className="text-sm mb-7 max-w-md mx-auto" style={{ color: '#b0c8dc' }}>
-          Reach out to us to learn more about our educational services or to begin your stock market learning journey.
-        </p>
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/contact">
-            <Button size="lg"
-              style={{ background: 'linear-gradient(135deg,#c8983a,#a07020)', border: 'none', color: '#fff' }}>
-              Contact Us <ArrowRight className="h-4 w-4" />
-            </Button>
-          </Link>
-          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
-            <Button size="lg"
-              style={{ background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.35)', color: '#25d366' }}>
-              <MessageSquare className="h-4 w-4" />
-              WhatsApp Us
-            </Button>
-          </a>
-          <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer">
-            <Button size="lg"
-              style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.35)', color: '#29a8e8' }}>
-              <TG /> Telegram
-            </Button>
-          </a>
+      {/* Monday-Friday Market Operating Framework */}
+      <section className="py-14 bg-[#f8fafc] border-y border-[#e2e8f0]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-white rounded-3xl border-2 border-[#cbd5e1] p-8 sm:p-10 shadow-sm flex flex-col md:flex-row items-center gap-8">
+            <div className="h-16 w-16 rounded-3xl bg-blue-50 border border-blue-200 flex items-center justify-center text-[#1d4ed8] shrink-0 shadow-xs">
+              <Calendar className="h-8 w-8 shrink-0" />
+            </div>
+            <div className="flex-1 space-y-2 text-center md:text-left">
+              <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-black bg-[#eff6ff] text-[#1d4ed8] border border-[#bfdbfe]">
+                {lang === 'hi' ? 'संस्थागत कार्य दिवस चक्र' : 'Institutional Operating Schedule'}
+              </div>
+              <h3 className="text-xl font-black text-[#0b1e3f]">
+                {lang === 'hi' ? 'सोमवार से शुक्रवार कड़ा परिचालन अनुशासन' : 'Strict Monday to Friday Operational Discipline'}
+              </h3>
+              <p className="text-xs sm:text-sm text-[#334155] leading-relaxed font-normal">
+                {lang === 'hi'
+                  ? 'हमारे सभी निवेश रिटर्न प्रोजेक्शन और ट्रेडिंग कार्य नेशनल स्टॉक एक्सचेंज (NSE) और बॉम्बे स्टॉक एक्सचेंज (BSE) के 5 सक्रिय दिनों (सोमवार से शुक्रवार) पर संचालित होते हैं। सप्ताहांत में व्यक्तिगत समीक्षा व आगामी सप्ताह की रणनीति तैयार की जाती है।'
+                  : 'All trading desk simulations, mentorship classes, and investment return projections are anchored to the 5 active trading days (Monday to Friday) observed by the NSE and BSE. Weekends are reserved for personal risk review and strategic preparation.'}
+              </p>
+            </div>
+            <div className="shrink-0">
+              <Link to="/plans">
+                <Button size="md" variant="primary" className="font-black !text-white bg-[#1d4ed8] hover:bg-[#1e40af] shadow-md">
+                  {lang === 'hi' ? 'रिटर्न सिम्युलेटर देखें' : 'View Return Simulator'} <ArrowRight className="h-4 w-4 !text-white shrink-0" />
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
       </section>
+
+      {/* Trust & CTA Section */}
+      <section className="py-16 bg-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <h2 className="text-3xl font-black text-[#0b1e3f]">{t('cta_title')}</h2>
+          <p className="text-base text-[#334155] max-w-xl mx-auto leading-relaxed font-medium">
+            {t('cta_desc')}
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+            <Link to="/contact">
+              <Button size="lg" variant="primary" className="font-black !text-white bg-[#1d4ed8] hover:bg-[#1e40af] shadow-md">
+                {t('cta_contact')} <ArrowRight className="h-4 w-4 !text-white shrink-0" />
+              </Button>
+            </Link>
+            <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+              <Button size="lg" variant="secondary" className="font-black text-[#1d4ed8] border-2 border-[#bfdbfe] hover:bg-[#eff6ff] shadow-xs">
+                <MessageSquare className="h-4 w-4 text-[#1d4ed8] shrink-0" /> {t('cta_whatsapp')}
+              </Button>
+            </a>
+          </div>
+        </div>
+      </section>
+
     </div>
   )
 }

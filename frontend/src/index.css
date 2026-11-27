@@ -1,193 +1,320 @@
 @import "tailwindcss";
 
 /* ═══════════════════════════════════════════════════════════════
-   JAVITRI TRADING SERVICE PVT. LTD. — DESIGN SYSTEM
+   JAVITRI TRADING SERVICE PVT. LTD.
+   LUXURY INSTITUTIONAL FINTECH DESIGN SYSTEM
    
-   Background palette (dark-to-darker navy):
-     Page bg:    #080f22  (rich dark navy)
-     Section A:  #0c1530  (slightly lighter)
-     Section B:  #060c1a  (slightly darker)
-     Cards:      rgba(15,36,96,0.35) + gold border
-   
-   Brand palette:
-     Gold:       #d4a843  (primary accent — readable on dark)
-     Gold light: #f0c060  (highlights / gradient)
-     Green:      #22c55e / #4ade80
-     Navy:       #0f2460
-   
-   Text palette (all readable on dark bg):
-     Heading:    #f5f8fc  (near-white)
-     Body:       #c8d8e8  (light blue-grey)
-     Muted:      #8fa8c0  (mid blue-grey)
-     Faint:      #506070  (subtle — captions only)
+   Palette:
+   - Pure Corporate White (#ffffff, secondary #f8fafc)
+   - Deep Midnight Navy (#0b1e3f / #0a192f / #0f2744)
+   - Sapphire Blue (#1d4ed8 / #2563eb)
+   - Champagne Gold & Metallic Amber (#d4af37 / #b45309 / #d97706)
 ═══════════════════════════════════════════════════════════════ */
 
 @layer base {
-  *, *::before, *::after { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    overflow-x: hidden;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 
   body {
     @apply antialiased;
-    background: #080f22;
-    /* Depth layer: subtle radial glow at top */
-    background-image:
-      radial-gradient(ellipse 100% 50% at 50% -5%, rgba(20,55,140,0.5) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 90% 95%,  rgba(10,25,70,0.35) 0%, transparent 60%);
-    background-attachment: fixed;
-    color: #c8d8e8;
-    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #ffffff;
+    color: #0b1e3f;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     min-height: 100vh;
+    line-height: 1.5;
   }
 
-  h1 { color: #f5f8fc; font-weight: 800; line-height: 1.15; }
-  h2 { color: #eef3f8; font-weight: 700; }
-  h3 { color: #e5edf5; font-weight: 600; }
-  h4, h5, h6 { color: #dce7f0; font-weight: 600; }
-  p  { color: #c8d8e8; }
-  a  { color: inherit; }
+  /* High-Contrast Robust Corporate Typography */
+  h1 {
+    color: #0b1e3f;
+    font-weight: 850;
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+  h2 {
+    color: #0b1e3f;
+    font-weight: 800;
+    line-height: 1.22;
+    letter-spacing: -0.025em;
+  }
+  h3 {
+    color: #0b1e3f;
+    font-weight: 750;
+    line-height: 1.28;
+    letter-spacing: -0.02em;
+  }
+  h4, h5, h6 {
+    color: #0b1e3f;
+    font-weight: 700;
+    line-height: 1.35;
+  }
+  p {
+    color: #334155;
+    line-height: 1.6;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+  label {
+    color: #0b1e3f;
+    font-weight: 700;
+  }
 }
 
 @layer components {
 
-  /* ── Gradient text ──────────────────────────────────────────── */
+  /* ── Gradients ──────────────────────────────────────────────── */
   .gradient-text {
-    background: linear-gradient(135deg, #f0c060 0%, #d4a843 55%, #e8b84a 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-  .gradient-text-green {
-    background: linear-gradient(135deg, #4ade80 0%, #22c55e 60%, #86efac 100%);
+    background: linear-gradient(135deg, #0b1e3f 0%, #1d4ed8 55%, #2563eb 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
-  /* ── Section backgrounds ──────────────────────────────────── */
-  /* Alternate sections for visual rhythm */
-  .bg-section-a {
-    background: rgba(15, 30, 70, 0.25);
-  }
-  .bg-section-b {
-    background: rgba(6, 10, 22, 0.4);
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #92400e 0%, #b45309 30%, #d97706 70%, #d4af37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* ── Gold divider ─────────────────────────────────────────── */
-  .gold-line {
-    height: 2px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      rgba(212,168,67,0.25) 15%,
-      #d4a843 40%,
-      #f0c060 50%,
-      #d4a843 60%,
-      rgba(212,168,67,0.25) 85%,
-      transparent 100%
-    );
+  .gradient-text-sapphire {
+    background: linear-gradient(135deg, #0f2744 0%, #1d4ed8 60%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
-  /* ── Cards ────────────────────────────────────────────────── */
-  .card-gold {
-    background: linear-gradient(145deg, rgba(15,36,96,0.4) 0%, rgba(8,15,32,0.65) 100%);
-    border: 1px solid rgba(212,168,67,0.22);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.35), inset 0 1px 0 rgba(212,168,67,0.07);
-    transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
-  }
-  .card-gold:hover {
-    border-color: rgba(212,168,67,0.48);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.45), 0 0 0 1px rgba(212,168,67,0.12);
-    transform: translateY(-2px);
+  /* ── Luxury Tri-Color Accent Line (Midnight + Sapphire + Gold) ─ */
+  .royal-gold-line {
+    height: 3px;
+    background: linear-gradient(90deg, #0b1e3f 0%, #1d4ed8 45%, #d4af37 80%, #f59e0b 100%);
   }
 
-  .card-glow {
-    background: linear-gradient(145deg, rgba(15,36,96,0.38) 0%, rgba(8,15,32,0.65) 100%);
-    border: 1px solid rgba(34,197,94,0.18);
-    box-shadow: 0 2px 16px rgba(0,0,0,0.3);
-    transition: all 0.2s;
-  }
-  .card-glow:hover {
-    border-color: rgba(34,197,94,0.38);
-    box-shadow: 0 8px 28px rgba(0,0,0,0.4), 0 0 20px rgba(34,197,94,0.08);
-    transform: translateY(-2px);
+  .gold-hairline {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, rgba(212, 175, 55, 0.6) 50%, transparent 100%);
   }
 
-  /* ── Plan card ────────────────────────────────────────────── */
+  /* ── Corporate Sections ─────────────────────────────────────── */
+  .bg-section-white {
+    background-color: #ffffff;
+  }
+  .bg-section-soft {
+    background-color: #f8fafc;
+  }
+  .bg-section-muted {
+    background-color: #f1f5f9;
+  }
+
+  /* ── High-End Luxury Cards ─────────────────────────────────── */
+  .corporate-card {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 24px;
+    box-shadow: 0 4px 20px -2px rgba(11, 30, 63, 0.05);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .corporate-card:hover {
+    border-color: #93c5fd;
+    box-shadow: 0 16px 36px -4px rgba(29, 78, 216, 0.12);
+    transform: translateY(-3px);
+  }
+
+  /* ── Modern Attractive Plan Card with Gold & Sapphire Accent ─ */
   .plan-card {
-    background: linear-gradient(145deg, rgba(15,36,96,0.55) 0%, rgba(8,15,32,0.75) 100%);
-    border: 1px solid rgba(212,168,67,0.18);
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 28px;
     position: relative;
     overflow: hidden;
-    transition: all 0.22s ease;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 16px rgba(11, 30, 63, 0.04);
   }
   .plan-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(212,168,67,0.45), transparent);
+    height: 4px;
+    background: linear-gradient(90deg, #0b1e3f 0%, #1d4ed8 50%, #d4af37 100%);
   }
   .plan-card:hover {
-    border-color: rgba(212,168,67,0.5);
+    border-color: #3b82f6;
     transform: translateY(-4px);
-    box-shadow: 0 12px 36px rgba(212,168,67,0.1), 0 4px 16px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 40px rgba(29, 78, 216, 0.14), 0 4px 12px rgba(11, 30, 63, 0.04);
   }
 
-  /* ── Navy backgrounds ─────────────────────────────────────── */
-  .bg-navy       { background-color: #0f2460; }
-  .bg-navy-light { background-color: #132d74; }
+  /* ── Luxury Gold Badge Pill ────────────────────────────────── */
+  .gold-badge {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    color: #92400e;
+    font-weight: 800;
+  }
+
+  /* ── Financial Calculator Widgets ───────────────────────────── */
+  .calc-container {
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 28px;
+    box-shadow: 0 16px 40px rgba(11, 30, 63, 0.06), 0 2px 8px rgba(11, 30, 63, 0.04);
+  }
+
+  .calc-slider-thumb::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #1d4ed8;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.5);
+    border: 3px solid #ffffff;
+    transition: transform 0.15s ease;
+  }
+  .calc-slider-thumb::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   ADMIN PANEL — Theme override (navy + gold to match website)
+   BUTTON SYSTEM & TEXT CONTRAST GUARANTEE
+   Ensures ALL buttons have rich, visible, high-contrast text!
 ═══════════════════════════════════════════════════════════════ */
 
-/* Admin wrapper backgrounds — lighter navy for readability */
-.bg-gray-950  { background-color: #0e1a35 !important; }
-.bg-gray-900  { background-color: #111f3d !important; }
-.bg-gray-950\/60,
-.bg-gray-900\/60,
-.bg-gray-900\/40 {
-  background-color: rgba(22,46,110,0.45) !important;
-}
-.bg-gray-800\/40,
-.bg-gray-800\/30 {
-  background-color: rgba(22,46,110,0.3) !important;
-}
-.bg-gray-800  { background-color: rgba(22,46,110,0.65) !important; }
-.bg-gray-700  { background-color: rgba(22,46,110,0.8)  !important; }
-
-/* Admin borders */
-.border-gray-800 { border-color: rgba(212,168,67,0.22) !important; }
-.border-gray-700 { border-color: rgba(212,168,67,0.35) !important; }
-
-/* Admin text — lighter for readability */
-.text-gray-500 { color: #7090a8 !important; }
-.text-gray-400 { color: #9ab8d0 !important; }
-.text-gray-300 { color: #dde8f5 !important; }
-.text-gray-200 { color: #eef4fb !important; }
-
-/* Admin inputs/selects */
-select.text-gray-300,
-input.text-gray-300 {
-  background: rgba(14,26,53,0.8) !important;
-  border-color: rgba(212,168,67,0.3) !important;
-  color: #eef4fb !important;
-}
-select.text-gray-300:focus,
-input.text-gray-300:focus {
-  border-color: rgba(212,168,67,0.65) !important;
-  outline: none;
+/* Buttons with Solid Sapphire / Blue backgrounds */
+button.bg-\[\#1d4ed8\],
+button.bg-\[\#2563eb\],
+button.bg-blue-600,
+button.bg-blue-700,
+a.bg-\[\#1d4ed8\],
+a.bg-\[\#2563eb\],
+a.bg-blue-600,
+a.bg-blue-700,
+.btn-primary {
+  color: #ffffff !important;
+  font-weight: 700 !important;
 }
 
-/* Hover rows */
-.hover\:bg-gray-800\/30:hover {
-  background-color: rgba(212,168,67,0.07) !important;
+button.bg-\[\#1d4ed8\] *,
+button.bg-\[\#2563eb\] *,
+button.bg-blue-600 *,
+button.bg-blue-700 *,
+a.bg-\[\#1d4ed8\] *,
+a.bg-\[\#2563eb\] *,
+a.bg-blue-600 *,
+a.bg-blue-700 *,
+.btn-primary * {
+  color: #ffffff !important;
 }
 
-/* Skeleton loaders */
-.animate-pulse {
-  background: rgba(212,168,67,0.08) !important;
+/* Luxury Gold & Amber Buttons */
+button.btn-gold,
+a.btn-gold {
+  background: linear-gradient(135deg, #b45309 0%, #d97706 50%, #f59e0b 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(212, 175, 55, 0.5) !important;
+  box-shadow: 0 4px 14px rgba(180, 83, 9, 0.35) !important;
+  font-weight: 800 !important;
+}
+
+button.btn-gold *,
+a.btn-gold * {
+  color: #ffffff !important;
+}
+
+/* Dark Midnight Navy buttons */
+button.bg-\[\#0b1e3f\],
+button.bg-\[\#0a192f\],
+button.bg-\[\#0f172a\],
+button.bg-slate-900,
+a.bg-\[\#0b1e3f\],
+a.bg-\[\#0a192f\],
+a.bg-\[\#0f172a\],
+a.bg-slate-900 {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+}
+
+button.bg-\[\#0b1e3f\] *,
+button.bg-\[\#0a192f\] *,
+button.bg-\[\#0f172a\] *,
+button.bg-slate-900 *,
+a.bg-\[\#0b1e3f\] *,
+a.bg-\[\#0a192f\] *,
+a.bg-\[\#0f172a\] *,
+a.bg-slate-900 * {
+  color: #ffffff !important;
+}
+
+/* Weekday Pills active states */
+.weekday-active {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+}
+.weekday-active * {
+  color: #ffffff !important;
+}
+
+/* Table Polish */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+}
+
+thead th {
+  background-color: #f8fafc !important;
+  color: #0b1e3f !important;
+  font-weight: 750 !important;
+  border-bottom: 1.5px solid #cbd5e1 !important;
+}
+
+tbody tr {
+  background-color: #ffffff;
+  transition: background-color 0.15s ease;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc !important;
+}
+
+tbody td {
+  border-bottom: 1px solid #f1f5f9 !important;
+  color: #0b1e3f;
+}
+
+/* Input Fields & Form Controls */
+input, select, textarea {
+  background-color: #ffffff !important;
+  color: #0b1e3f !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+
+input::placeholder, textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: #1d4ed8 !important;
+  box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.15) !important;
+  outline: none !important;
 }

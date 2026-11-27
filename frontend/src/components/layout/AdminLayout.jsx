@@ -1,212 +1,227 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
-  LayoutDashboard, Users, Link2, UserCheck, FileSearch,
-  BarChart3, ShoppingCart, CreditCard, Scale, FileText,
-  ClipboardList, Settings, LogOut, TrendingUp, ChevronLeft,
-  ChevronRight, Shield, Menu, X, Wallet, MessageSquare
+  LayoutDashboard, Users, UserCheck, FileSearch,
+  BarChart3, TrendingUp, FileText,
+  LogOut, ChevronLeft, ChevronRight,
+  Shield, Menu, Wallet, MessageSquare, ExternalLink, ArrowRight
 } from 'lucide-react'
 import { useTrading } from '../../context/TradingContext.jsx'
 import { api } from '../../utils/api.js'
 
 const NAV_ITEMS = [
-  { to: '/admin/dashboard',        icon: LayoutDashboard, label: 'Dashboard',          roles: ['admin','super_admin','employee'] },
-  { to: '/admin/employees',        icon: Users,           label: 'Employees',           roles: ['admin','super_admin'] },
-  { to: '/admin/clients',          icon: UserCheck,       label: 'Clients',             roles: ['admin','super_admin','employee'] },
-  { to: '/admin/kyc-review',       icon: FileSearch,      label: 'KYC Review',          roles: ['admin','super_admin'] },
-  { to: '/admin/plan-requests',    icon: TrendingUp,      label: 'Plan Requests',       roles: ['admin','super_admin','employee'] },
-  { to: '/admin/payout-reports',   icon: Wallet,          label: 'Payout Reports',      roles: ['admin','super_admin','employee'] },
-  { to: '/admin/contact-messages', icon: MessageSquare,   label: 'Contact Messages',    roles: ['admin','super_admin'] },
-  { to: '/admin/plans',            icon: BarChart3,       label: 'Plans Configurations',roles: ['admin','super_admin'] },
-  { to: '/admin/audit-logs',       icon: FileText,        label: 'Audit Logs',          roles: ['admin','super_admin'] },
+  { to: '/admin/dashboard',        icon: LayoutDashboard, label: 'Dashboard',           roles: ['admin','super_admin','employee'] },
+  { to: '/admin/employees',        icon: Users,           label: 'Employees',            roles: ['admin','super_admin'] },
+  { to: '/admin/clients',          icon: UserCheck,       label: 'Clients',              roles: ['admin','super_admin','employee'] },
+  { to: '/admin/kyc-review',       icon: FileSearch,      label: 'KYC Review',           roles: ['admin','super_admin'] },
+  { to: '/admin/plan-requests',    icon: TrendingUp,      label: 'Plan Requests',        roles: ['admin','super_admin','employee'] },
+  { to: '/admin/payment-requests', icon: Wallet,          label: 'Payment Requests',     roles: ['admin','super_admin','employee'] },
+  { to: '/admin/payout-reports',   icon: BarChart3,       label: 'Payout Reports',       roles: ['admin','super_admin','employee'] },
+  { to: '/admin/contact-messages', icon: MessageSquare,   label: 'Contact Messages',     roles: ['admin','super_admin'] },
+  { to: '/admin/plans',            icon: BarChart3,       label: 'Plans Configuration',  roles: ['admin','super_admin'] },
+  { to: '/admin/audit-logs',       icon: FileText,        label: 'Audit Logs',           roles: ['admin','super_admin'] },
 ]
 
-/* ── colours — lighter theme, better readability ── */
-const THEME = {
-  bg:          '#0e1a35',
-  sidebar:     '#111f3d',
-  border:      'rgba(212,168,67,0.22)',
-  gold:        '#d4a843',
-  goldMuted:   'rgba(212,168,67,0.6)',
-  activeB:     'rgba(212,168,67,0.15)',
-  activeBorder:'rgba(212,168,67,0.45)',
-  text:        '#dde8f5',
-  textMuted:   '#7090a8',
-  hover:       'rgba(212,168,67,0.08)',
-}
-
 export default function AdminLayout({ children }) {
-  const [collapsed,   setCollapsed]   = useState(false)
-  const [mobileOpen,  setMobileOpen]  = useState(false)
+  const [collapsed,  setCollapsed]  = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
   const location  = useLocation()
   const navigate  = useNavigate()
-  const { user, logout, token } = useTrading()
+  const { user, token, logout } = useTrading()
 
   const role = user?.role || 'employee'
   const visibleItems = NAV_ITEMS.filter(item => item.roles.includes(role))
 
+  // Determine active item for breadcrumb
+  const currentItem = visibleItems.find(item => location.pathname === item.to || location.pathname.startsWith(item.to + '/'))
+  const pageTitle = currentItem?.label || 'Administration'
+
   const handleLogout = async () => {
-    try { await api.auth.logout() } catch { /* ignore */ }
+    try { await api.auth.logout(token) } catch { /* ignore */ }
     logout()
     navigate('/admin/login')
   }
 
   const SidebarContent = () => (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full bg-white select-none">
 
-      {/* Brand */}
-      <div style={{ borderBottom: `1px solid ${THEME.border}`, padding: collapsed ? '14px 12px' : '14px 16px' }}
-        className="flex items-center gap-3">
-        <div style={{ background: '#fff', borderRadius: '10px', padding: '4px', flexShrink: 0 }}>
-          <img src="/logo.jpeg" alt="Javitri" className={collapsed ? 'h-7 w-7' : 'h-9 w-9'} style={{ objectFit:'contain', borderRadius:'6px', display:'block' }} />
+      {/* Brand header */}
+      <div className={`border-b border-[#e2e8f0] flex items-center gap-3 ${collapsed ? 'p-3 justify-center' : 'px-5 py-4'}`}>
+        <div className="bg-white rounded-xl p-1 shrink-0 border border-[#e2e8f0] shadow-sm flex items-center justify-center">
+          <img src="/logo.jpeg" alt="Javitri Trading" className={collapsed ? 'h-7 w-7' : 'h-8 w-8'}
+            style={{ objectFit: 'contain', borderRadius: '6px' }} />
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-xs font-bold leading-tight truncate" style={{ color: '#f0f4f8' }}>Admin Panel</p>
-            <p className="text-[10px] truncate" style={{ color: THEME.gold }}>Javitri Trading</p>
+            <p className="text-xs font-black text-[#0b1e3f] leading-tight truncate tracking-tight">Javitri Trading Service</p>
+            <p className="text-[10px] text-[#b45309] font-black uppercase tracking-wider">Pvt. Ltd. · Admin</p>
           </div>
         )}
       </div>
 
-      {/* User badge */}
+      {/* User profile snippet */}
       {!collapsed && (
-        <div style={{ borderBottom: `1px solid ${THEME.border}`, padding: '10px 16px' }}>
-          <div className="flex items-center gap-2.5">
-            <div className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
-              style={{ background: 'rgba(212,168,67,0.15)', color: THEME.gold, border: `1px solid ${THEME.activeBorder}` }}>
+        <div className="border-b border-[#e2e8f0] px-5 py-3.5 bg-[#f8fafc]">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-xs font-black bg-gradient-to-br from-blue-50 to-amber-50 text-[#0b1e3f] border border-blue-200 shadow-xs">
               {user?.first_name?.charAt(0) || 'A'}
             </div>
-            <div className="min-w-0">
-              <p className="text-xs font-semibold truncate" style={{ color: '#f0f4f8' }}>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-[#0b1e3f] truncate">
                 {user?.first_name} {user?.last_name}
               </p>
-              <p className="text-[10px] capitalize" style={{ color: THEME.gold }}>
-                {role.replace('_', ' ')}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#1d4ed8]" />
+                <p className="text-[10px] text-[#64748b] font-semibold capitalize truncate">
+                  {role.replace('_', ' ')}
+                </p>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Nav */}
-      <nav className="flex-1 overflow-y-auto py-3 space-y-0.5" style={{ padding: '10px 8px' }}>
+      {/* Navigation menu */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+        {!collapsed && (
+          <p className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-wider px-3 pt-2 pb-1">
+            Menu Navigation
+          </p>
+        )}
         {visibleItems.map(({ to, icon: Icon, label }) => {
           const active = location.pathname === to || location.pathname.startsWith(to + '/')
           return (
-            <Link key={to} to={to}
+            <Link
+              key={to}
+              to={to}
               onClick={() => setMobileOpen(false)}
               title={collapsed ? label : undefined}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all"
-              style={{
-                justifyContent: collapsed ? 'center' : 'flex-start',
-                background:     active ? THEME.activeB : 'transparent',
-                border:         `1px solid ${active ? THEME.activeBorder : 'transparent'}`,
-                color:          active ? THEME.gold : THEME.text,
-              }}
-              onMouseEnter={e => { if (!active) { e.currentTarget.style.background = THEME.hover; e.currentTarget.style.color = '#f0f4f8' } }}
-              onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = THEME.text } }}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                collapsed ? 'justify-center' : 'justify-start'
+              } ${
+                active
+                  ? 'bg-blue-50/70 text-[#1d4ed8] font-bold border-l-4 border-[#1d4ed8] shadow-xs'
+                  : 'text-[#475569] hover:bg-[#f8fafc] hover:text-[#0b1e3f] border-l-4 border-transparent'
+              }`}
             >
-              <Icon className="h-4 w-4 shrink-0" style={{ color: active ? THEME.gold : THEME.textMuted }} />
+              <Icon className={`h-4 w-4 shrink-0 transition-colors ${active ? 'text-[#1d4ed8]' : 'text-[#64748b]'}`} />
               {!collapsed && <span className="truncate">{label}</span>}
             </Link>
           )
         })}
       </nav>
 
-      {/* Gold line */}
-      <div style={{ height:'1px', background:`linear-gradient(90deg,transparent,${THEME.gold},transparent)`, margin:'0 12px' }} />
+      {/* Footer controls */}
+      <div className="border-t border-[#e2e8f0] p-3 space-y-1">
+        <Link
+          to="/"
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#64748b] hover:text-[#0f172a] hover:bg-[#f8fafc] transition-all ${
+            collapsed ? 'justify-center' : 'justify-start'
+          }`}
+          title={collapsed ? 'Public Site' : undefined}
+        >
+          <ExternalLink className="h-4 w-4 shrink-0 text-[#64748b]" />
+          {!collapsed && <span>View Public Website</span>}
+        </Link>
 
-      {/* Logout */}
-      <div style={{ padding: '8px' }}>
-        <button onClick={handleLogout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all"
-          style={{ justifyContent: collapsed ? 'center' : 'flex-start', color: THEME.textMuted, border:'1px solid transparent' }}
-          onMouseEnter={e => { e.currentTarget.style.background='rgba(239,68,68,0.08)'; e.currentTarget.style.color='#f87171'; e.currentTarget.style.borderColor='rgba(239,68,68,0.2)' }}
-          onMouseLeave={e => { e.currentTarget.style.background='transparent'; e.currentTarget.style.color=THEME.textMuted; e.currentTarget.style.borderColor='transparent' }}
-          title={collapsed ? 'Logout' : undefined}>
-          <LogOut className="h-4 w-4 shrink-0" />
-          {!collapsed && 'Logout'}
+        <button
+          onClick={handleLogout}
+          className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition-all cursor-pointer ${
+            collapsed ? 'justify-center' : 'justify-start'
+          }`}
+          title={collapsed ? 'Sign Out' : undefined}
+        >
+          <LogOut className="h-4 w-4 shrink-0 text-red-500" />
+          {!collapsed && <span>Sign Out</span>}
         </button>
       </div>
     </div>
   )
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: THEME.bg }}>
+    <div className="flex h-screen overflow-hidden bg-[#f8fafc]">
 
       {/* Desktop sidebar */}
-      <aside className={`hidden lg:flex flex-col transition-all duration-300 shrink-0 ${collapsed ? 'w-16' : 'w-58'}`}
-        style={{ background: THEME.sidebar, borderRight: `1px solid ${THEME.border}`, width: collapsed ? '64px' : '224px' }}>
+      <aside
+        className={`hidden lg:flex flex-col transition-all duration-300 shrink-0 relative bg-white border-r border-[#e2e8f0] shadow-xs ${
+          collapsed ? 'w-18' : 'w-60'
+        }`}
+      >
         <SidebarContent />
-        {/* Collapse toggle */}
-        <button onClick={() => setCollapsed(!collapsed)}
-          className="absolute flex items-center justify-center h-6 w-6 rounded-full z-20 transition-colors"
-          style={{ top:'68px', left: collapsed ? '52px' : '212px', background:'#0f2460', border:`1px solid ${THEME.border}`, color: THEME.gold }}
-          onMouseEnter={e => e.currentTarget.style.background='rgba(212,168,67,0.2)'}
-          onMouseLeave={e => e.currentTarget.style.background='#0f2460'}
-          aria-label={collapsed ? 'Expand' : 'Collapse'}>
+
+        {/* Collapse toggle button */}
+        <button
+          onClick={() => setCollapsed(!collapsed)}
+          className="absolute -right-3 top-20 flex items-center justify-center h-6 w-6 rounded-full z-20 bg-white border border-[#cbd5e1] text-[#475569] hover:text-[#0f172a] hover:bg-[#f8fafc] shadow-xs cursor-pointer transition-colors"
+          aria-label={collapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
+        >
           {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
         </button>
       </aside>
 
-      {/* Mobile overlay */}
+      {/* Mobile drawer overlay */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <aside className="relative z-10 flex flex-col w-56 h-full"
-            style={{ background: THEME.sidebar, borderRight: `1px solid ${THEME.border}` }}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" onClick={() => setMobileOpen(false)} />
+          <aside className="relative z-10 flex flex-col w-64 h-full bg-white border-r border-[#e2e8f0] shadow-xl">
             <SidebarContent />
           </aside>
         </div>
       )}
 
-      {/* Main */}
+      {/* Main content area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Topbar */}
-        <header className="h-14 flex items-center justify-between px-4 shrink-0"
-          style={{ background: THEME.sidebar, borderBottom: `1px solid ${THEME.border}` }}>
-          {/* Mobile hamburger */}
-          <button onClick={() => setMobileOpen(true)}
-            className="lg:hidden p-1.5 rounded-lg transition-colors"
-            style={{ color: THEME.text }}
-            onMouseEnter={e => e.currentTarget.style.background = THEME.hover}
-            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-            aria-label="Open menu">
-            <Menu className="h-5 w-5" />
-          </button>
-
-          {/* Mobile logo */}
-          <div className="lg:hidden flex items-center gap-2">
-            <div style={{ background:'#fff', borderRadius:'8px', padding:'3px' }}>
+        <header className="h-16 flex items-center justify-between px-6 shrink-0 bg-white border-b border-[#e2e8f0] shadow-xs">
+          {/* Mobile hamburger + Logo */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="p-2 rounded-xl text-[#475569] hover:bg-[#f8fafc] border border-[#e2e8f0] transition-colors cursor-pointer"
+              aria-label="Open menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+            <div className="flex items-center gap-2">
               <img src="/logo.jpeg" alt="Javitri" className="h-7 w-7 object-contain rounded" />
+              <span className="text-sm font-bold text-[#0f172a]">Admin</span>
             </div>
-            <span className="text-sm font-bold" style={{ color:'#f0f4f8' }}>Admin Panel</span>
           </div>
 
-          {/* Desktop info */}
-          <div className="hidden lg:flex items-center gap-1.5 text-xs" style={{ color: THEME.textMuted }}>
-            <Shield className="h-3.5 w-3.5" style={{ color: THEME.gold }} />
-            <span className="capitalize">{role.replace('_',' ')}</span>
-            <span>·</span>
-            <span>{user?.email}</span>
+          {/* Desktop breadcrumb */}
+          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold text-[#64748b]">
+            <Link to="/admin/dashboard" className="text-[#64748b] hover:text-[#1d4ed8] transition-colors">
+              Admin Portal
+            </Link>
+            <ChevronRight className="h-3.5 w-3.5 text-[#cbd5e1]" />
+            <span className="text-[#0b1e3f] font-black">{pageTitle}</span>
           </div>
 
-          {/* Back to site */}
-          <Link to="/"
-            className="text-xs px-3 py-1.5 rounded-lg transition-all"
-            style={{ color: THEME.gold, border:`1px solid ${THEME.activeBorder}`, background: THEME.activeB }}
-            onMouseEnter={e => e.currentTarget.style.background='rgba(212,168,67,0.2)'}
-            onMouseLeave={e => e.currentTarget.style.background=THEME.activeB}>
-            ← Public Site
-          </Link>
+          {/* Right section: security pill & profile */}
+          <div className="flex items-center gap-3">
+            <div className="hidden sm:flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f8fafc] border border-amber-200/80 text-xs shadow-xs">
+              <Shield className="h-3.5 w-3.5 text-[#b45309]" />
+              <span className="font-black text-[#0b1e3f] capitalize">{role.replace('_', ' ')}</span>
+              <span className="text-[#cbd5e1]">|</span>
+              <span className="text-[#64748b] font-medium">{user?.email}</span>
+            </div>
+
+            <Link
+              to="/"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#e2e8f0] text-xs font-semibold text-[#475569] hover:text-[#1d4ed8] hover:bg-[#f8fafc] transition-all"
+            >
+              <span>Public Site</span>
+              <ExternalLink className="h-3 w-3" />
+            </Link>
+          </div>
         </header>
 
-        {/* Gold accent line */}
-        <div style={{ height:'1px', background:`linear-gradient(90deg,transparent,rgba(212,168,67,0.4),transparent)`, flexShrink:0 }} />
+        {/* Top corporate tri-color accent line */}
+        <div className="h-1 royal-gold-line shrink-0" />
 
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        {/* Page Content */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-8 bg-[#f8fafc]">
           {children}
         </main>
       </div>

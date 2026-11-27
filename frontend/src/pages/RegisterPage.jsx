@@ -150,26 +150,29 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-white">
       <StepIndicator currentStep={1} />
 
-      <div className="max-w-2xl mx-auto px-4 pb-16">
+      <div className="max-w-2xl mx-auto px-4 py-8 pb-20">
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Open Your <span className="gradient-text">Trading Account</span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#f0fdf4] border border-[#bbf7d0] text-[#059669] uppercase tracking-wider mb-3">
+            Step 1 of 4
+          </span>
+          <h1 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] mb-2 tracking-tight">
+            Open Your Trading Account
           </h1>
-          <p className="text-gray-400 text-sm">
-            Fill in your details below. All fields marked with <span className="text-emerald-400">*</span> are required.
+          <p className="text-[#475569] text-sm">
+            Fill in your details below. All fields marked with <span className="text-red-500 font-bold">*</span> are required for statutory KYC verification.
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="bg-gray-900/60 border border-gray-800 rounded-2xl p-6 sm:p-8 card-glow space-y-8">
+          <div className="bg-white border border-[#e2e8f0] rounded-3xl p-6 sm:p-10 shadow-lg space-y-8">
 
             {/* Personal Information */}
             <section>
-              <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <h2 className="text-xs font-bold text-[#059669] uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-[#f1f5f9]">
                 <User className="h-4 w-4" />
                 Personal Information
               </h2>
@@ -206,7 +209,7 @@ export default function RegisterPage() {
                   required
                   register={register}
                   error={errors.pan?.message}
-                  hint="Required for KYC verification"
+                  hint="Required for statutory KYC"
                   icon={<CreditCard className="h-4 w-4" />}
                   className="uppercase"
                 />
@@ -215,7 +218,7 @@ export default function RegisterPage() {
 
             {/* Contact Details */}
             <section>
-              <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <h2 className="text-xs font-bold text-[#059669] uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-[#f1f5f9]">
                 <Mail className="h-4 w-4" />
                 Contact Details
               </h2>
@@ -263,7 +266,7 @@ export default function RegisterPage() {
 
             {/* Trading Profile */}
             <section>
-              <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <h2 className="text-xs font-bold text-[#059669] uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-[#f1f5f9]">
                 <Calendar className="h-4 w-4" />
                 Trading Profile
               </h2>
@@ -289,7 +292,7 @@ export default function RegisterPage() {
 
             {/* Security */}
             <section>
-              <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+              <h2 className="text-xs font-bold text-[#059669] uppercase tracking-wider mb-4 flex items-center gap-2 pb-2 border-b border-[#f1f5f9]">
                 <Lock className="h-4 w-4" />
                 Account Security
               </h2>
@@ -307,7 +310,7 @@ export default function RegisterPage() {
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="text-gray-400 hover:text-gray-200 transition-colors"
+                        className="text-[#64748b] hover:text-[#0f172a] transition-colors"
                         aria-label={showPassword ? 'Hide password' : 'Show password'}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -321,13 +324,13 @@ export default function RegisterPage() {
                           <div
                             key={i}
                             className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                              i <= passwordStrength.score ? passwordStrength.color : 'bg-gray-700'
+                              i <= passwordStrength.score ? passwordStrength.color : 'bg-[#e2e8f0]'
                             }`}
                           />
                         ))}
                       </div>
-                      <p className="text-xs text-gray-500">
-                        Strength: <span className="text-gray-300">{passwordStrength.label}</span>
+                      <p className="text-xs text-[#64748b]">
+                        Strength: <span className="font-semibold text-[#0f172a]">{passwordStrength.label}</span>
                       </p>
                     </div>
                   )}
@@ -346,7 +349,7 @@ export default function RegisterPage() {
                       <button
                         type="button"
                         onClick={() => setShowConfirm(!showConfirm)}
-                        className="text-gray-400 hover:text-gray-200 transition-colors"
+                        className="text-[#64748b] hover:text-[#0f172a] transition-colors"
                         aria-label={showConfirm ? 'Hide password' : 'Show password'}
                       >
                         {showConfirm ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -359,27 +362,27 @@ export default function RegisterPage() {
 
             {/* KYC Documents */}
             <section>
-              <h2 className="text-sm font-semibold text-emerald-400 uppercase tracking-wider mb-1 flex items-center gap-2">
+              <h2 className="text-xs font-bold text-[#059669] uppercase tracking-wider mb-1 flex items-center gap-2 pb-2 border-b border-[#f1f5f9]">
                 <Upload className="h-4 w-4" />
                 KYC Documents
               </h2>
-              <p className="text-xs text-gray-500 mb-4">Aadhaar, PAN Card, Bank Passbook. JPEG/PNG/PDF, max 5MB each.</p>
+              <p className="text-xs text-[#64748b] mb-4">Aadhaar, PAN Card, Bank Passbook. JPEG/PNG/PDF, max 5MB each.</p>
               <div className="space-y-3">
 
                 {/* Aadhaar */}
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-28 shrink-0">Aadhaar Card *</span>
+                  <span className="text-xs font-bold text-[#0f172a] w-28 shrink-0">Aadhaar Card *</span>
                   {aadhaarFile ? (
-                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-                      <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                      <span className="text-xs text-emerald-400 flex-1 truncate">{aadhaarFile.name}</span>
-                      <button type="button" onClick={() => setAadhaarFile(null)} className="text-red-400 text-xs ml-1">✕</button>
+                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                      <FileCheck className="h-3.5 w-3.5 text-[#059669] shrink-0" />
+                      <span className="text-xs font-semibold text-[#059669] flex-1 truncate">{aadhaarFile.name}</span>
+                      <button type="button" onClick={() => setAadhaarFile(null)} className="text-red-500 hover:text-red-700 text-xs font-bold ml-1">✕</button>
                     </div>
                   ) : (
                     <label className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 border border-dashed border-gray-700 hover:border-emerald-500/50 transition-colors">
-                        <Upload className="h-3.5 w-3.5 text-gray-500" />
-                        <span className="text-xs text-gray-500">Choose Aadhaar</span>
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#f8fafc] border border-dashed border-[#cbd5e1] hover:border-[#059669] transition-colors">
+                        <Upload className="h-3.5 w-3.5 text-[#64748b]" />
+                        <span className="text-xs font-semibold text-[#475569]">Upload Aadhaar Document</span>
                       </div>
                       <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf"
                         onChange={e => { if (e.target.files?.[0]) setAadhaarFile(e.target.files[0]) }} />
@@ -389,18 +392,18 @@ export default function RegisterPage() {
 
                 {/* PAN */}
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-28 shrink-0">PAN Card *</span>
+                  <span className="text-xs font-bold text-[#0f172a] w-28 shrink-0">PAN Card *</span>
                   {panFile ? (
-                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-                      <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                      <span className="text-xs text-emerald-400 flex-1 truncate">{panFile.name}</span>
-                      <button type="button" onClick={() => setPanFile(null)} className="text-red-400 text-xs ml-1">✕</button>
+                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                      <FileCheck className="h-3.5 w-3.5 text-[#059669] shrink-0" />
+                      <span className="text-xs font-semibold text-[#059669] flex-1 truncate">{panFile.name}</span>
+                      <button type="button" onClick={() => setPanFile(null)} className="text-red-500 hover:text-red-700 text-xs font-bold ml-1">✕</button>
                     </div>
                   ) : (
                     <label className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 border border-dashed border-gray-700 hover:border-emerald-500/50 transition-colors">
-                        <Upload className="h-3.5 w-3.5 text-gray-500" />
-                        <span className="text-xs text-gray-500">Choose PAN Card</span>
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#f8fafc] border border-dashed border-[#cbd5e1] hover:border-[#059669] transition-colors">
+                        <Upload className="h-3.5 w-3.5 text-[#64748b]" />
+                        <span className="text-xs font-semibold text-[#475569]">Upload PAN Card</span>
                       </div>
                       <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf"
                         onChange={e => { if (e.target.files?.[0]) setPanFile(e.target.files[0]) }} />
@@ -410,18 +413,18 @@ export default function RegisterPage() {
 
                 {/* Passbook */}
                 <div className="flex items-center gap-3">
-                  <span className="text-xs text-gray-400 w-28 shrink-0">Bank Passbook</span>
+                  <span className="text-xs font-bold text-[#0f172a] w-28 shrink-0">Bank Passbook</span>
                   {passbookFile ? (
-                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-                      <FileCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
-                      <span className="text-xs text-emerald-400 flex-1 truncate">{passbookFile.name}</span>
-                      <button type="button" onClick={() => setPassbookFile(null)} className="text-red-400 text-xs ml-1">✕</button>
+                    <div className="flex flex-1 items-center gap-2 px-3 py-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                      <FileCheck className="h-3.5 w-3.5 text-[#059669] shrink-0" />
+                      <span className="text-xs font-semibold text-[#059669] flex-1 truncate">{passbookFile.name}</span>
+                      <button type="button" onClick={() => setPassbookFile(null)} className="text-red-500 hover:text-red-700 text-xs font-bold ml-1">✕</button>
                     </div>
                   ) : (
                     <label className="flex-1 cursor-pointer">
-                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-gray-800/50 border border-dashed border-gray-700 hover:border-emerald-500/50 transition-colors">
-                        <Upload className="h-3.5 w-3.5 text-gray-500" />
-                        <span className="text-xs text-gray-500">Choose Passbook</span>
+                      <div className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-[#f8fafc] border border-dashed border-[#cbd5e1] hover:border-[#059669] transition-colors">
+                        <Upload className="h-3.5 w-3.5 text-[#64748b]" />
+                        <span className="text-xs font-semibold text-[#475569]">Upload Passbook / Statement</span>
                       </div>
                       <input type="file" className="hidden" accept="image/jpeg,image/png,image/webp,application/pdf"
                         onChange={e => { if (e.target.files?.[0]) setPassbookFile(e.target.files[0]) }} />
@@ -430,15 +433,15 @@ export default function RegisterPage() {
                 </div>
 
               </div>
-              {uploadStatus === 'uploading' && <p className="text-xs text-blue-400 mt-2">⏳ Uploading documents...</p>}
-              {uploadStatus === 'done'      && <p className="text-xs text-emerald-400 mt-2">✓ Documents uploaded!</p>}
-              {uploadStatus === 'failed'    && <p className="text-xs text-amber-400 mt-2">⚠ Upload failed — aap baad mein upload kar sakte ho.</p>}
+              {uploadStatus === 'uploading' && <p className="text-xs text-blue-600 font-semibold mt-2">⏳ Uploading documents...</p>}
+              {uploadStatus === 'done'      && <p className="text-xs text-[#059669] font-bold mt-2">✓ Documents verified & uploaded!</p>}
+              {uploadStatus === 'failed'    && <p className="text-xs text-amber-700 font-semibold mt-2">⚠ Upload deferred — you may upload documents in the next step.</p>}
             </section>
 
             {/* API Error */}
             {apiError && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4">
-                <p className="text-sm text-red-400">{apiError}</p>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <p className="text-sm text-red-700 font-medium">{apiError}</p>
               </div>
             )}
 
@@ -446,17 +449,17 @@ export default function RegisterPage() {
               type="submit"
               size="lg"
               loading={isSubmitting || uploadStatus === 'uploading'}
-              className="w-full"
+              className="w-full font-bold bg-[#059669] hover:bg-[#047857]"
             >
               {uploadStatus === 'uploading' ? 'Uploading Documents…' : 'Continue to Trading Plans →'}
             </Button>
           </div>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{' '}
-          <Link to="/plans" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">
-            View Plans
+        <p className="text-center text-sm text-[#64748b] mt-6">
+          Already registered?{' '}
+          <Link to="/plans" className="text-[#059669] hover:underline font-bold transition-colors">
+            View Available Plans
           </Link>
         </p>
       </div>

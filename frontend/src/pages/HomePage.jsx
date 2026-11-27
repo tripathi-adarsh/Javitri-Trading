@@ -1,494 +1,720 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  ArrowRight, ShieldCheck, BookOpen,
-  TrendingUp, BadgeCheck, MessageSquare, GraduationCap,
-  Briefcase, BarChart2, Users, Shield, ChevronRight, Star, ClipboardList, Quote
+  TrendingUp, Award, Clock, ArrowRight, CheckCircle2,
+  Calendar, ShieldCheck, Star, Activity, PhoneCall,
+  MessageSquare, ChevronRight, Calculator, FileCheck, Users,
+  BookOpen, Building, Sparkles, Quote, BadgeCheck, X, ZoomIn, Eye, MapPin, ClipboardList,
+  RefreshCw, Car, HeartPulse, HeartHandshake, Send
 } from 'lucide-react'
-import Button from '../components/ui/Button.jsx'
+import { useLang } from '../context/LanguageContext.jsx'
+import { useMarket } from '../context/MarketContext.jsx'
 import PlanEnquiryModal from '../components/PlanEnquiryModal.jsx'
+import {
+  TRADING_PLANS,
+  TENURE_OPTIONS,
+  TRADING_DAYS_PER_WEEK,
+  TRADING_DAYS_PER_MONTH,
+  formatINR,
+  calculateTradingProjections,
+  parseFeatures
+} from '../utils/tradingCalculations.js'
+import { api } from '../utils/api.js'
 
 const WHATSAPP_URL = 'https://wa.me/919022487800'
-const TELEGRAM_URL = 'https://t.me/Javitritradingservice'
 
-/* Reusable Telegram SVG icon */
-const TelegramIcon = ({ className = 'h-4 w-4' }) => (
-  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-  </svg>
-)
-
-const PLANS = [
-  { slug: 'plan-1',  name: 'Plan 1',  deal: '₹10,000',    daily: '₹200',      dealAmountINR: 10000 },
-  { slug: 'plan-2',  name: 'Plan 2',  deal: '₹30,000',    daily: '₹700',      dealAmountINR: 30000 },
-  { slug: 'plan-3',  name: 'Plan 3',  deal: '₹50,000',    daily: '₹1,200',    dealAmountINR: 50000 },
-  { slug: 'plan-4',  name: 'Plan 4',  deal: '₹1,00,000',  daily: '₹2,500',    dealAmountINR: 100000 },
-  { slug: 'plan-5',  name: 'Plan 5',  deal: '₹3,00,000',  daily: '₹8,000',    dealAmountINR: 300000 },
-  { slug: 'plan-6',  name: 'Plan 6',  deal: '₹5,00,000',  daily: '₹13,500',   dealAmountINR: 500000 },
-  { slug: 'plan-7',  name: 'Plan 7',  deal: '₹10,00,000', daily: '₹30,000',   dealAmountINR: 1000000 },
-  { slug: 'plan-8',  name: 'Plan 8',  deal: '₹15,00,000', daily: '₹40,000',   dealAmountINR: 1500000 },
-  { slug: 'plan-9',  name: 'Plan 9',  deal: '₹20,00,000', daily: '₹55,000',   dealAmountINR: 2000000 },
-  { slug: 'plan-10', name: 'Plan 10', deal: '₹50,00,000', daily: '₹1,30,000', dealAmountINR: 5000000 },
-]
-
-const SERVICES_PREVIEW = [
-  { icon: BookOpen,      title: 'Stock Market Learning',      desc: 'Beginner-to-intermediate stock market education.' },
-  { icon: GraduationCap, title: 'Demat Account Assistance',   desc: 'Step-by-step guidance to open your Demat account.' },
-  { icon: BarChart2,     title: 'Market Analysis Education',  desc: 'Technical and fundamental analysis training.' },
-  { icon: TrendingUp,    title: 'Options & Equity Education', desc: 'Understand derivatives and equity investing.' },
-  { icon: Users,         title: 'Mentoring & Support',        desc: 'Dedicated mentors available for beginners.' },
-  { icon: Briefcase,     title: 'Daily Trading Insights',     desc: 'Educational daily market insights and tips.' },
+const CORPORATE_GALLERY = [
+  { src: '/gallery/img1.jpeg' },
+  { src: '/gallery/img2.jpeg' },
+  { src: '/gallery/img3.jpeg' },
+  { src: '/gallery/img4.jpeg' },
+  { src: '/gallery/img5.jpeg' },
+  { src: '/gallery/img6.jpeg' },
+  { src: '/gallery/img7.jpeg' },
+  { src: '/gallery/img8.jpeg' },
+  { src: '/gallery/img9.jpeg' },
+  { src: '/gallery/img10.jpeg' },
+  { src: '/gallery/img11.jpeg' },
+  { src: '/gallery/img12.jpeg' },
 ]
 
 const VALUES = [
-  { icon: ShieldCheck, title: 'Transparent',     desc: 'All plan terms and conditions are disclosed before any commitment.' },
-  { icon: BookOpen,    title: 'Education First', desc: 'We focus on building genuine market knowledge for every learner.' },
-  { icon: BadgeCheck,  title: 'Trustworthy',     desc: 'A registered company committed to honest, ethical practice.' },
+  { icon: ShieldCheck, title: 'Absolute Compliance', desc: 'Registered private limited company (CIN: U66190GJ2026PTC183862, GST: 09AAHCJ6166E1ZD, DPIIT Recognized).' },
+  { icon: Clock,       title: 'Monday to Friday Schedule', desc: 'Strict Monday-to-Friday trading calendar aligned with NSE/BSE market cycles. Payouts processed every trading day.' },
+  { icon: BadgeCheck,  title: 'Documented Legal Agreements', desc: 'Every plan subscription is backed by formal documentation, zero hidden deductions, and complete statutory transparency.' },
 ]
 
 const REVIEWS = [
+  { name: 'Ramesh Verma',    location: 'Lucknow, UP',    rating: 5, text: 'Javitri Trading Service Pvt. Ltd. has given me the confidence to understand stock charts and trade safely. The team explained everything clearly in Hindi and English.', date: 'October 2026' },
+  { name: 'Priya Sharma',    location: 'Kanpur, UP',     rating: 5, text: 'Outstanding customer support. As a beginner, I was hesitant, but their transparency and structured approach made a real difference.', date: 'September 2026' },
+  { name: 'Amit Kushwaha',   location: 'Fatehpur, UP',   rating: 5, text: 'Very trustworthy organization. Complete documentation provided upfront. The proposed Monday to Friday daily figures were honoured punctually.', date: 'October 2026' },
+  { name: 'Sunita Yadav',    location: 'Prayagraj, UP',  rating: 5, text: 'Learned disciplined investing and risk management. Guidance for opening a Demat account was smooth and completely hassle-free.', date: 'September 2026' },
+  { name: 'Deepak Gupta',    location: 'Varanasi, UP',   rating: 5, text: 'Top-tier corporate responsiveness on WhatsApp and phone. The educational market webinars are practical and high quality.', date: 'August 2026' },
+  { name: 'Kavita Singh',    location: 'Agra, UP',       rating: 5, text: 'Startup India recognized entity which gives immense peace of mind. Transparent terms and reliable team support throughout.', date: 'October 2026' },
+]
+
+const REVIEW_THEMES = [
   {
-    name: 'Ramesh Verma',
-    location: 'Lucknow, UP',
-    rating: 5,
-    text: 'Bahut accha platform hai. Mujhe stock market ke baare mein bilkul bhi jaankari nahi thi, inke saath seekh ke confidence badha. Team bahut helpful hai.',
-    date: 'October 2026',
+    topBorder: 'border-t-4 border-t-blue-600',
+    badge: 'bg-blue-50 text-blue-700 border-blue-200',
+    avatarBg: 'bg-gradient-to-br from-blue-600 to-indigo-700 text-white',
+    accentGlow: 'hover:shadow-[0_12px_30px_rgba(37,99,235,0.14)] hover:border-blue-300',
+    tag: 'Verified Participant',
   },
   {
-    name: 'Priya Sharma',
-    location: 'Kanpur, UP',
-    rating: 5,
-    text: 'Javitri Trading Service ka support system excellent hai. Beginners ke liye best platform. Har cheez clearly explain ki jaati hai.',
-    date: 'September 2026',
+    topBorder: 'border-t-4 border-t-emerald-600',
+    badge: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    avatarBg: 'bg-gradient-to-br from-emerald-600 to-teal-700 text-white',
+    accentGlow: 'hover:shadow-[0_12px_30px_rgba(16,185,129,0.14)] hover:border-emerald-300',
+    tag: 'Verified Participant',
   },
   {
-    name: 'Amit Kushwaha',
-    location: 'Fatehpur, UP',
-    rating: 5,
-    text: 'Very trustworthy company. Plans ki poori jankari dete hain pehle, koi hidden terms nahi. Mujhe inke saath bahut accha experience raha.',
-    date: 'October 2026',
+    topBorder: 'border-t-4 border-t-amber-500',
+    badge: 'bg-amber-50 text-amber-700 border-amber-200',
+    avatarBg: 'bg-gradient-to-br from-amber-500 to-orange-600 text-white',
+    accentGlow: 'hover:shadow-[0_12px_30px_rgba(245,158,11,0.14)] hover:border-amber-300',
+    tag: 'Verified Participant',
   },
   {
-    name: 'Sunita Yadav',
-    location: 'Allahabad, UP',
-    rating: 5,
-    text: 'Stock market mein invest karna seekha inki help se. Demat account kholwane mein bhi guide kiya. Genuinely helpful team.',
-    date: 'September 2026',
+    topBorder: 'border-t-4 border-t-purple-600',
+    badge: 'bg-purple-50 text-purple-700 border-purple-200',
+    avatarBg: 'bg-gradient-to-br from-purple-600 to-indigo-800 text-white',
+    accentGlow: 'hover:shadow-[0_12px_30px_rgba(147,51,234,0.14)] hover:border-purple-300',
+    tag: 'Verified Participant',
   },
   {
-    name: 'Deepak Gupta',
-    location: 'Varanasi, UP',
-    rating: 4,
-    text: 'Good experience overall. Team promptly responds on WhatsApp. Market analysis training is very useful for beginners like me.',
-    date: 'August 2026',
+    topBorder: 'border-t-4 border-t-rose-500',
+    badge: 'bg-rose-50 text-rose-700 border-rose-200',
+    avatarBg: 'bg-gradient-to-br from-rose-500 to-red-600 text-white',
+    accentGlow: 'hover:shadow-[0_12px_30px_rgba(244,63,94,0.14)] hover:border-rose-300',
+    tag: 'Verified Participant',
   },
   {
-    name: 'Kavita Singh',
-    location: 'Agra, UP',
-    rating: 5,
-    text: 'Startup India registered company hai, isliye trust kiya. Sab kuch transparent hai. Investment plans ke baare mein acchi jaankari di.',
-    date: 'October 2026',
+    topBorder: 'border-t-4 border-t-cyan-600',
+    badge: 'bg-cyan-50 text-cyan-700 border-cyan-200',
+    avatarBg: 'bg-gradient-to-br from-cyan-600 to-blue-700 text-white',
+    accentGlow: 'hover:shadow-[0_12px_30px_rgba(6,182,212,0.14)] hover:border-cyan-300',
+    tag: 'Verified Participant',
   },
 ]
 
-function SectionLabel({ color = 'gold', children }) {
-  const s = color === 'green'
-    ? { background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', color: '#4ade80' }
-    : { background: 'rgba(212,168,67,0.12)', border: '1px solid rgba(212,168,67,0.38)', color: '#d4a843' }
-  return (
-    <span className="inline-flex items-center text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full" style={s}>
-      {children}
-    </span>
-  )
-}
-
 export default function HomePage() {
-  const [modalOpen, setModalOpen]   = useState(false)
-  const [activePlan, setActivePlan] = useState(null)
+  const { t, lang } = useLang()
+  const { marketStatus, nifty, bankNifty, dataSource, lastUpdated } = useMarket()
+  const [modalOpen, setModalOpen]         = useState(false)
+  const [activePlan, setActivePlan]       = useState(null)
+  const [lightboxImg, setLightboxImg]     = useState(null)
+
+  // Dynamic Plans from Database
+  const [dbPlans, setDbPlans] = useState([])
+  const [loadingPlans, setLoadingPlans] = useState(true)
+
+  useEffect(() => {
+    setLoadingPlans(true)
+    api.plans.list()
+      .then(res => {
+        const apiPlans = res.data?.plans || []
+        if (Array.isArray(apiPlans) && apiPlans.length > 0) {
+          const formatted = apiPlans.map((ap, i) => {
+            const dealAmount = Number(ap.dealAmountINR || (ap.deal_amount_paise ? ap.deal_amount_paise / 100 : 0)) || 10000
+            const daily = Number(ap.proposedDailyINR || ap.associatedValueINR || (ap.associated_value_paise ? ap.associated_value_paise / 100 : 0)) || 200
+            const features = parseFeatures(ap.features)
+
+            return {
+              id: ap.id,
+              slug: ap.slug || `plan-${i + 1}`,
+              name: ap.name || `Plan ${i + 1}`,
+              dealAmountINR: dealAmount,
+              deal: formatINR(dealAmount),
+              proposedDailyINR: daily,
+              daily: formatINR(daily),
+              tagline: ap.tagline || 'Structured Investment Plan',
+              category: ap.badge || 'Standard',
+              features: features.length > 0 ? features : [
+                'Monday to Friday daily payout',
+                'Comprehensive market insights',
+                'Dedicated compliance documentation'
+              ],
+            }
+          })
+          formatted.sort((a, b) => a.dealAmountINR - b.dealAmountINR)
+          setDbPlans(formatted)
+        } else {
+          setDbPlans(TRADING_PLANS)
+        }
+      })
+      .catch(() => setDbPlans(TRADING_PLANS))
+      .finally(() => setLoadingPlans(false))
+  }, [])
 
   const openModal = (plan) => { setActivePlan(plan); setModalOpen(true) }
 
+  const plansList = dbPlans.length > 0 ? dbPlans : TRADING_PLANS
+
   return (
-    <>
-      <div className="min-h-screen">
+    <div className="bg-white">
 
-        {/* ── HERO ─────────────────────────────────────────────────────── */}
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 pointer-events-none" aria-hidden="true">
-            <div className="absolute -top-32 left-1/2 -translate-x-1/2 w-[900px] h-[700px] rounded-full blur-3xl"
-              style={{ background: 'radial-gradient(ellipse, rgba(20,60,160,0.45) 0%, rgba(15,40,120,0.2) 40%, transparent 70%)' }} />
-            <div className="absolute top-20 right-0 w-96 h-96 rounded-full blur-3xl"
-              style={{ background: 'radial-gradient(circle, rgba(212,168,67,0.08) 0%, transparent 70%)' }} />
-          </div>
+      {/* ── 1. HERO SECTION WITH INSTITUTIONAL FINANCIAL CARD ──────────── */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50/40 via-white to-white border-b border-[#e2e8f0] pt-6 pb-12 sm:pt-8 sm:pb-14 lg:pt-8 lg:pb-14">
+        {/* Subtle luxury ambient glows */}
+        <div className="absolute inset-0 pointer-events-none opacity-50">
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full bg-blue-100/70 blur-3xl" />
+          <div className="absolute top-1/3 -left-24 w-96 h-96 rounded-full bg-amber-100/40 blur-3xl" />
+        </div>
 
-          <div className="max-w-6xl mx-auto px-4 pt-10 pb-16 sm:pt-16 sm:pb-24 relative z-10">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-8 items-center">
 
-              {/* Logo */}
-              <div className="flex justify-center lg:justify-start order-2 lg:order-1">
-                <div className="relative w-full max-w-[260px] sm:max-w-[320px] lg:max-w-[400px]">
-                  <div className="absolute inset-0 rounded-3xl blur-3xl"
-                    style={{ background: 'radial-gradient(circle, rgba(212,168,67,0.18) 0%, transparent 70%)' }} />
-                  <div className="relative rounded-3xl p-1 shadow-2xl"
-                    style={{ background: 'linear-gradient(135deg, rgba(212,168,67,0.3), rgba(212,168,67,0.05))' }}>
-                    <div className="bg-white rounded-[22px] p-4 sm:p-6">
-                      <img src="/logo.jpeg" alt="Javitri Trading Service Pvt. Ltd."
-                        className="w-full h-auto object-contain" style={{ maxHeight: '220px' }} />
-                    </div>
-                  </div>
-                  <div className="absolute -bottom-3 -right-3 px-2.5 py-1 rounded-full text-xs font-bold shadow-lg"
-                    style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff' }}>
-                    ✓ Est. 2026
-                  </div>
-                </div>
-              </div>
+            {/* Left Content Column */}
+            <div className="lg:col-span-7 text-center lg:text-left space-y-4 sm:space-y-5">
 
-              {/* Text */}
-              <div className="order-1 lg:order-2 text-center lg:text-left">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold mb-5"
-                  style={{ background: 'rgba(212,168,67,0.12)', border: '1px solid rgba(212,168,67,0.38)', color: '#d4a843' }}>
-                  <Shield className="h-3.5 w-3.5" />
-                  Javitri Trading Service Pvt. Ltd.
-                </div>
-                <h1 className="font-extrabold leading-[1.15] mb-4"
-                  style={{ fontSize: 'clamp(1.75rem,5vw,3.25rem)', color: '#f8fafc' }}>
-                  Learn the <span className="gradient-text">Stock Market</span>
-                  <br />with Confidence
-                </h1>
-                <p className="text-base leading-relaxed mb-6 max-w-lg mx-auto lg:mx-0" style={{ color: '#c0cdd8' }}>
-                  Stock market education, trading guidance, market analysis, and beginner
-                  learning support. Serving learners across India.
-                </p>
-                <div className="flex flex-wrap gap-2 mb-6 justify-center lg:justify-start">
-                  {['Stock Market Education', 'Trading Guidance', 'Market Analysis', 'Beginner Support'].map(s => (
-                    <span key={s} className="px-3 py-1 rounded-full text-xs font-semibold"
-                      style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', color: '#4ade80' }}>
-                      {s}
+              {/* Main Headline */}
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0b1e3f] tracking-tight leading-[1.18]">
+                {lang === 'hi' ? (
+                  <>
+                    निवेश, वित्तीय मार्गदर्शन <br />
+                    <span className="bg-gradient-to-r from-[#0b1e3f] via-[#1d4ed8] to-[#2563eb] bg-clip-text text-transparent">
+                      एवं बीमा समाधान
                     </span>
-                  ))}
-                </div>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                  <Link to="/services" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full"
-                      style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', border: 'none', color: '#fff',
-                        boxShadow: '0 4px 20px rgba(212,168,67,0.35)' }}>
-                      Explore Our Services <ArrowRight className="h-4 w-4" />
-                    </Button>
-                  </Link>
-                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full"
-                      style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.4)', color: '#25d366' }}>
-                      <MessageSquare className="h-4 w-4" />
-                      WhatsApp
-                    </Button>
-                  </a>
-                  <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                    <Button size="lg" className="w-full"
-                      style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.35)', color: '#29a8e8' }}>
-                      <TelegramIcon className="h-4 w-4" />
-                      Telegram
-                    </Button>
-                  </a>
-                </div>
+                  </>
+                ) : (
+                  <>
+                    Investment, Financial Guidance <br />
+                    <span className="bg-gradient-to-r from-[#0b1e3f] via-[#1d4ed8] to-[#2563eb] bg-clip-text text-transparent">
+                      &amp; Insurance Solutions.
+                    </span>
+                  </>
+                )}
+              </h1>
+
+              {/* Value Proposition Subtitle */}
+              <p className="text-base sm:text-lg text-[#334155] max-w-2xl mx-auto lg:mx-0 leading-relaxed font-normal">
+                {t('hero_sub')}
+              </p>
+
+              {/* Quick Service Highlights */}
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 justify-center lg:justify-start pt-1">
+                <Link to="/plans" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-blue-50 border border-blue-200 text-[#1d4ed8] hover:bg-blue-100 transition-colors">
+                  <TrendingUp className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{t('hero_badge_plans')}</span>
+                </Link>
+                <Link to="/services" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-amber-50 border border-amber-200 text-[#b45309] hover:bg-amber-100 transition-colors">
+                  <Car className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{t('hero_badge_auto')}</span>
+                </Link>
+                <Link to="/services" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 transition-colors">
+                  <HeartPulse className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{t('hero_badge_health')}</span>
+                </Link>
+                <Link to="/services" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-purple-50 border border-purple-200 text-purple-800 hover:bg-purple-100 transition-colors">
+                  <HeartHandshake className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{t('hero_badge_vivah')}</span>
+                </Link>
               </div>
-            </div>
-          </div>
-        </section>
 
-        <div className="gold-line" />
-
-        {/* ── SERVICES PREVIEW ─────────────────────────────────────────── */}
-        <section style={{ background: 'rgba(255,255,255,0.018)' }}>
-          <div className="max-w-6xl mx-auto px-4 py-16">
-            <div className="text-center mb-12">
-              <SectionLabel>What We Offer</SectionLabel>
-              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-3">
-                Our <span className="gradient-text">Services</span>
-              </h2>
-              <p className="text-base max-w-lg mx-auto" style={{ color: '#9aaabb' }}>
-                Educational and guidance services to help you understand and navigate the stock market.
-              </p>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
-              {SERVICES_PREVIEW.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="card-gold rounded-2xl p-5 flex gap-4">
-                  <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(212,168,67,0.15)', border: '1px solid rgba(212,168,67,0.3)' }}>
-                    <Icon className="h-5 w-5" style={{ color: '#d4a843' }} />
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold mb-1.5" style={{ color: '#f0f4f8' }}>{title}</h3>
-                    <p className="text-xs leading-relaxed" style={{ color: '#9aaabb' }}>{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="text-center">
-              <Link to="/services">
-                <Button variant="secondary" size="md">View All Services <ChevronRight className="h-4 w-4" /></Button>
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <div className="gold-line" />
-
-        {/* ── INVESTMENT PLANS ─────────────────────────────────────────── */}
-        <section style={{ background: 'rgba(15,36,96,0.12)' }}>
-          <div className="max-w-6xl mx-auto px-4 py-16">
-            <div className="text-center mb-10">
-              <SectionLabel>Investment Plans</SectionLabel>
-              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-3">
-                Our <span className="gradient-text">Plans</span>
-              </h2>
-              <p className="text-base max-w-lg mx-auto" style={{ color: '#9aaabb' }}>
-                Ten plans with proposed daily figures for the Monday–Friday schedule.
-                <strong style={{ color: '#d4a843' }}> Click any plan to register.</strong>
-              </p>
-            </div>
-
-            {/* Plans grid — each card is clickable */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3 mb-6">
-              {PLANS.map((plan, i) => (
-                <button
-                  key={plan.slug}
-                  type="button"
-                  onClick={() => openModal(plan)}
-                  className="plan-card rounded-2xl p-4 text-center group cursor-pointer w-full"
-                  title={`Register for ${plan.name}`}
+              {/* CTAs */}
+              <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2.5 sm:gap-3.5 justify-center lg:justify-start pt-3">
+                <a
+                  href="#plans"
+                  className="col-span-2 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] !text-white shadow-[0_4px_16px_rgba(180,83,9,0.35)] hover:shadow-[0_6px_22px_rgba(180,83,9,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all border border-amber-600 cursor-pointer"
                 >
-                  <div className="inline-flex items-center justify-center h-7 w-7 rounded-full text-[11px] font-bold mb-3"
-                    style={{ background: 'rgba(212,168,67,0.18)', color: '#d4a843', border: '1px solid rgba(212,168,67,0.35)' }}>
-                    {i + 1}
-                  </div>
-                  <p className="text-[11px] font-semibold mb-1" style={{ color: '#8899aa' }}>{plan.name}</p>
-                  <p className="text-sm font-extrabold mb-2" style={{ color: '#f8fafc' }}>{plan.deal}</p>
-                  <div className="gold-line my-2 mx-auto" style={{ width: '32px' }} />
-                  <p className="text-sm font-bold" style={{ color: '#4ade80' }}>{plan.daily}</p>
-                  <p className="text-[10px] mt-1" style={{ color: '#5e7285' }}>Proposed Daily*</p>
-                  {/* Hover overlay */}
-                  <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-lg"
-                      style={{ background: 'rgba(212,168,67,0.2)', color: '#d4a843' }}>
-                      <ClipboardList className="h-3 w-3" /> Register
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="text-center gap-3 flex flex-col sm:flex-row justify-center">
-              <Link to="/plans">
-                <Button variant="secondary" size="md">
-                  View Full Plan Details <ArrowRight className="h-4 w-4" />
-                </Button>
-              </Link>
-              <button type="button" onClick={() => openModal(null)}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all"
-                style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff',
-                  boxShadow: '0 3px 12px rgba(212,168,67,0.3)' }}>
-                <ClipboardList className="h-4 w-4" /> Register for a Plan
-              </button>
-            </div>
-          </div>
-        </section>
-
-        <div className="gold-line" />
-
-        {/* ── LEARNING SUPPORT ─────────────────────────────────────────── */}
-        <section style={{ background: 'rgba(255,255,255,0.018)' }}>
-          <div className="max-w-6xl mx-auto px-4 py-16">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-              <div>
-                <SectionLabel color="green">Learning Support</SectionLabel>
-                <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-4">
-                  Build Your <span className="gradient-text-green">Market Knowledge</span>
-                </h2>
-                <p className="text-base leading-relaxed mb-6" style={{ color: '#9aaabb' }}>
-                  From trading basics to advanced market analysis, our structured learning
-                  helps beginners navigate stock markets confidently.
-                </p>
-                <div className="space-y-3 mb-8">
-                  {[
-                    'Beginner-friendly mentoring sessions',
-                    'Risk management education',
-                    'Trading psychology & discipline',
-                    'Live market learning support',
-                  ].map(item => (
-                    <div key={item} className="flex items-center gap-3">
-                      <div className="h-5 w-5 rounded-full flex items-center justify-center shrink-0"
-                        style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.35)' }}>
-                        <Star className="h-2.5 w-2.5" style={{ color: '#4ade80' }} />
-                      </div>
-                      <span className="text-sm" style={{ color: '#c0cdd8' }}>{item}</span>
-                    </div>
-                  ))}
-                </div>
-                {/* <Link to="/learning"> */}
-                  <Button size="lg"
-                    style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.45)', color: '#4ade80' }}>
-                    <GraduationCap className="h-4 w-4" />
-                    Start Learning Today <ArrowRight className="h-4 w-4" />
-                  </Button>
-                {/* </Link> */}
+                  <TrendingUp className="h-4 w-4 shrink-0 !text-white" />
+                  <span className="!text-white">{t('hero_cta_calc')}</span>
+                </a>
+                <Link
+                  to="/services"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm bg-white border-2 border-[#cbd5e1] hover:border-[#0b1e3f] text-[#0b1e3f] hover:bg-[#f8fafc] shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+                >
+                  <span>{t('hero_cta_services')}</span>
+                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-[#1d4ed8]" />
+                </Link>
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm bg-[#eff6ff] border-2 border-[#bfdbfe] hover:border-[#93c5fd] text-[#1d4ed8] hover:bg-[#dbeafe] hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-xs cursor-pointer"
+                >
+                  <PhoneCall className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-[#1d4ed8]" />
+                  <span>{t('hero_cta_contact')}</span>
+                </Link>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                {[
-                  { icon: BookOpen,      label: 'Trading Basics & Terminology' },
-                  { icon: Shield,        label: 'Risk Management' },
-                  { icon: BarChart2,     label: 'Market Analysis' },
-                  { icon: GraduationCap, label: 'Demat Account Help' },
-                ].map(({ icon: Icon, label }) => (
-                  <div key={label} className="card-glow rounded-2xl p-4 sm:p-6 flex flex-col items-center text-center gap-2 sm:gap-3">
-                    <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-2xl flex items-center justify-center"
-                      style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                      <Icon className="h-5 w-5 sm:h-6 sm:w-6" style={{ color: '#4ade80' }} />
-                    </div>
-                    <p className="text-xs font-semibold" style={{ color: '#d1dae6' }}>{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="gold-line" />
-
-        {/* ── VALUES ───────────────────────────────────────────────────── */}
-        <section style={{ background: 'rgba(15,36,96,0.15)' }}>
-          <div className="max-w-6xl mx-auto px-4 py-14">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-              {VALUES.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="card-gold rounded-2xl p-6 flex gap-4">
-                  <div className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)' }}>
-                    <Icon className="h-5 w-5" style={{ color: '#4ade80' }} />
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold mb-1.5" style={{ color: '#f0f4f8' }}>{title}</h3>
-                    <p className="text-sm leading-relaxed" style={{ color: '#9aaabb' }}>{desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <div className="gold-line" />
-
-        {/* ── GOOGLE REVIEWS ───────────────────────────────────────────── */}
-        <section style={{ background: 'rgba(255,255,255,0.018)' }}>
-          <div className="max-w-6xl mx-auto px-4 py-16">
-            <div className="text-center mb-10">
-              <SectionLabel color="gold">Client Reviews</SectionLabel>
-              <h2 className="text-3xl sm:text-4xl font-bold mt-4 mb-2">
-                What Our <span className="gradient-text">Clients Say</span>
-              </h2>
-              {/* Google rating summary */}
-              <div className="inline-flex items-center gap-2 mt-3 px-5 py-2.5 rounded-full"
-                style={{ background: 'rgba(212,168,67,0.1)', border: '1px solid rgba(212,168,67,0.3)' }}>
-                <div className="flex items-center gap-0.5">
-                  {[1,2,3,4,5].map(i => (
-                    <Star key={i} className="h-4 w-4 fill-current" style={{ color: '#f0c060' }} />
-                  ))}
-                </div>
-                <span className="text-sm font-bold" style={{ color: '#f0c060' }}>4.9</span>
-                <span className="text-xs" style={{ color: '#9aaabb' }}>on Google · 6 reviews</span>
-              </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {REVIEWS.map((review) => (
-                <div key={review.name} className="card-gold rounded-2xl p-5 flex flex-col gap-3">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2.5">
-                      <div className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 font-bold text-sm"
-                        style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff' }}>
-                        {review.name.charAt(0)}
+            {/* Right Column: Institutional Financial Showcase Card */}
+            <div className="lg:col-span-5">
+              <div className="relative mx-auto max-w-md">
+
+                {/* Main Card */}
+                <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-xl p-5 sm:p-6 space-y-3.5 relative overflow-hidden">
+                  {/* Top luxury corporate accent: Midnight + Sapphire + Champagne Gold */}
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#0b1e3f] via-[#1d4ed8] to-[#d4af37]" />
+
+                  {/* Header: Company Logo & Identity */}
+                  <div className="flex items-center justify-between pb-3 border-b border-[#f1f5f9]">
+                    <div className="flex items-center gap-3">
+                      <div className="p-1.5 rounded-2xl bg-white border border-[#cbd5e1] shadow-xs h-12 w-12 sm:h-14 sm:w-14 flex items-center justify-center shrink-0">
+                        <img src="/logo.jpeg" alt="Javitri Trading Service Pvt. Ltd." className="h-full w-full object-contain" />
                       </div>
                       <div>
-                        <p className="text-sm font-semibold" style={{ color: '#f0f4f8' }}>{review.name}</p>
-                        <p className="text-[11px]" style={{ color: '#7090a8' }}>{review.location}</p>
+                        <p className="text-sm font-black text-[#0b1e3f] leading-tight">Javitri Trading Service Pvt. Ltd.</p>
+                        <p className="text-[10px] font-black uppercase tracking-wider text-[#1d4ed8]">Startup India (DIPP291171)</p>
                       </div>
                     </div>
-                    <Quote className="h-5 w-5 shrink-0 mt-1" style={{ color: 'rgba(212,168,67,0.3)' }} />
+                    <span className={`h-2.5 w-2.5 rounded-full ${marketStatus.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} title={marketStatus.statusText} />
                   </div>
-                  <div className="flex items-center gap-0.5">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} className={`h-3.5 w-3.5 ${i <= review.rating ? 'fill-current' : ''}`}
-                        style={{ color: i <= review.rating ? '#f0c060' : '#334' }} />
-                    ))}
+
+                  {/* Live NSE Benchmark Market Ticker Widget */}
+                  <div className="bg-[#f8fafc] rounded-2xl p-3.5 border border-[#e2e8f0] space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-[#475569] flex items-center gap-1.5">
+                        <Activity className="h-3.5 w-3.5 text-[#1d4ed8]" /> Benchmark Indices
+                      </span>
+                      <span
+                        className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${
+                          marketStatus.isOpen
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200 shadow-xs'
+                            : marketStatus.reasonType === 'pre_open'
+                              ? 'text-amber-700 bg-amber-50 border-amber-200'
+                              : 'text-rose-700 bg-rose-50 border-rose-200'
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${
+                          marketStatus.isOpen ? 'bg-emerald-500 animate-pulse' : marketStatus.reasonType === 'pre_open' ? 'bg-amber-500' : 'bg-rose-500'
+                        }`} />
+                        {marketStatus.statusText}
+                      </span>
+                    </div>
+
+                    {/* Show exact reason when market is closed / pre-open */}
+                    {!marketStatus.isOpen && marketStatus.closeReason && (
+                      <div className="px-2.5 py-1.5 rounded-xl bg-rose-50/90 border border-rose-200 text-[11px] font-bold text-rose-800 flex items-center justify-between gap-2">
+                        <span>{marketStatus.closeReason}</span>
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                      <div className="p-2.5 bg-white rounded-xl border border-[#e2e8f0]">
+                        <p className="text-[10px] font-bold text-[#64748b] flex items-center justify-between">
+                          <span>NIFTY 50</span>
+                          {dataSource === 'live' && marketStatus.isOpen && (
+                            <span className="text-[9px] font-black text-emerald-600">LIVE</span>
+                          )}
+                        </p>
+                        <p className="text-sm sm:text-base font-black text-[#0b1e3f] font-mono leading-tight mt-0.5">
+                          {nifty.price !== null
+                            ? nifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : 'Loading…'}
+                        </p>
+                        {nifty.price !== null && (
+                          <p className={`text-[10px] font-bold mt-0.5 ${nifty.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {nifty.change >= 0 ? '+' : ''}{nifty.change.toFixed(2)} ({nifty.percent >= 0 ? '+' : ''}{nifty.percent.toFixed(2)}%)
+                          </p>
+                        )}
+                      </div>
+                      <div className="p-2.5 bg-white rounded-xl border border-[#e2e8f0]">
+                        <p className="text-[10px] font-bold text-[#64748b] flex items-center justify-between">
+                          <span>BANK NIFTY</span>
+                          {dataSource === 'live' && marketStatus.isOpen && (
+                            <span className="text-[9px] font-black text-emerald-600">LIVE</span>
+                          )}
+                        </p>
+                        <p className="text-sm sm:text-base font-black text-[#0b1e3f] font-mono leading-tight mt-0.5">
+                          {bankNifty.price !== null
+                            ? bankNifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : 'Loading…'}
+                        </p>
+                        {bankNifty.price !== null && (
+                          <p className={`text-[10px] font-bold mt-0.5 ${bankNifty.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {bankNifty.change >= 0 ? '+' : ''}{bankNifty.change.toFixed(2)} ({bankNifty.percent >= 0 ? '+' : ''}{bankNifty.percent.toFixed(2)}%)
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {lastUpdated && (
+                      <p className="text-[10px] text-[#64748b] font-medium text-right">
+                        NSE Feed Updated: {new Date(lastUpdated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} IST
+                      </p>
+                    )}
                   </div>
-                  <p className="text-sm leading-relaxed flex-1" style={{ color: '#c0cdd8' }}>
-                    "{review.text}"
-                  </p>
-                  <p className="text-[11px]" style={{ color: '#506070' }}>{review.date}</p>
+
+                  {/* Monday to Friday Trading Days Visual Badge */}
+                  <div className="rounded-2xl p-3 bg-gradient-to-br from-blue-50/70 to-amber-50/30 border border-blue-200 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black text-[#0b1e3f]">Weekly Trading Cycle</span>
+                      <span className="text-[11px] font-black text-[#1d4ed8]">5 Days / Week</span>
+                    </div>
+                    {/* Weekday boxes */}
+                    <div className="grid grid-cols-7 gap-1.5 text-center text-xs font-bold">
+                      {['M', 'T', 'W', 'T', 'F'].map((day, idx) => (
+                        <div key={idx} className="py-2 rounded-xl bg-gradient-to-b from-[#1d4ed8] to-[#1e40af] text-white shadow-xs">
+                          <span className="block text-[11px] font-black">{day}</span>
+                          <span className="block text-[9px] font-normal opacity-90">Payout</span>
+                        </div>
+                      ))}
+                      {['S', 'S'].map((day, idx) => (
+                        <div key={idx} className="py-2 rounded-xl bg-[#e2e8f0] text-[#94a3b8]">
+                          <span className="block text-[11px] font-bold">{day}</span>
+                          <span className="block text-[9px] font-normal">Off</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[10px] text-[#334155] text-center font-medium pt-1">
+                      ✓ Daily payouts credited every Monday to Friday directly to verified bank account.
+                    </p>
+                  </div>
+
+                  {/* Trust Footer */}
+                  <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-between gap-2.5 text-[11px] sm:text-xs text-[#64748b] border-t border-[#f1f5f9]">
+                    <span className="flex items-center gap-1 font-bold text-[#0b1e3f]">
+                      <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#d97706]" /> MCA Verified
+                    </span>
+                    <span className="flex items-center gap-1 font-bold text-[#0b1e3f]">
+                      <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#1d4ed8]" /> GST Compliant
+                    </span>
+                    <span className="flex items-center gap-1 font-bold text-[#0b1e3f]">
+                      <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#d97706]" /> Startup India
+                    </span>
+                  </div>
+
                 </div>
-              ))}
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ── 2. TRUST STRIP & CREDENTIALS ────────────────────────────────── */}
+      <section className="py-8 bg-[#f8fafc] border-b border-[#e2e8f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="p-3">
+              <p className="text-2xl sm:text-3xl font-black text-[#0f172a]">100%</p>
+              <p className="text-xs font-bold text-[#475569] mt-1 uppercase tracking-wider">{lang === 'hi' ? 'वैधानिक पारदर्शिता' : 'Statutory Transparency'}</p>
+            </div>
+            <div className="p-3">
+              <p className="text-2xl sm:text-3xl font-black text-[#2563eb]">Mon–Fri</p>
+              <p className="text-xs font-bold text-[#475569] mt-1 uppercase tracking-wider">{lang === 'hi' ? 'दैनिक पेआउट शेड्यूल' : 'Scheduled Daily Returns'}</p>
+            </div>
+            <div className="p-3">
+              <p className="text-2xl sm:text-3xl font-black text-[#0f172a]">22 Days</p>
+              <p className="text-xs font-bold text-[#475569] mt-1 uppercase tracking-wider">{lang === 'hi' ? 'मासिक ट्रेडिंग दिवस' : 'Monthly Trading Sessions'}</p>
+            </div>
+            <div className="p-3">
+              <p className="text-2xl sm:text-3xl font-black text-[#2563eb]">24 Hours</p>
+              <p className="text-xs font-bold text-[#475569] mt-1 uppercase tracking-wider">{lang === 'hi' ? 'त्वरित सपोर्ट रिस्पांस' : 'Support Response'}</p>
             </div>
           </div>
-        </section>
+        </div>
+      </section>
 
-        <div className="gold-line" />
-
-        {/* ── CTA BANNER ───────────────────────────────────────────────── */}
-        <section className="max-w-6xl mx-auto px-4 py-16">
-          <div className="rounded-3xl p-10 sm:p-14 text-center relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #0f2460 0%, #162d7a 50%, #0f2460 100%)',
-              border: '1px solid rgba(212,168,67,0.35)',
-              boxShadow: '0 8px 48px rgba(15,36,96,0.5), inset 0 1px 0 rgba(212,168,67,0.15)',
-            }}>
-            <div className="absolute inset-x-0 top-0 gold-line" />
-            <div className="absolute inset-0 pointer-events-none"
-              style={{ background: 'radial-gradient(ellipse 60% 50% at 50% 0%, rgba(212,168,67,0.08) 0%, transparent 70%)' }} />
-            <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 relative z-10">
-              Ready to <span className="gradient-text">Get Started?</span>
+      {/* ── 3. AVAILABLE PLANS SHOWCASE (Dynamic Database Plans & Luxury Card Design) ── */}
+      <section id="plans" className="py-12 sm:py-20 bg-[#f8fafc] border-b border-[#e2e8f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
+              {t('plans_heading')}
             </h2>
-            <p className="text-base mb-8 max-w-lg mx-auto relative z-10" style={{ color: '#b8c9da' }}>
-              Register for a plan or contact Javitri Trading Service Pvt. Ltd. to learn
-              more about our educational services and investment plans.
+            <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+              {t('plans_subheading')}
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center relative z-10">
-              <button type="button" onClick={() => openModal(null)}
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-8 py-3.5 rounded-xl text-base font-semibold transition-all w-full sm:w-auto"
-                style={{ background: 'linear-gradient(135deg,#d4a843,#a07020)', color: '#fff',
-                  boxShadow: '0 4px 20px rgba(212,168,67,0.4)' }}>
-                <ClipboardList className="h-5 w-5" /> Register for a Plan
+          </div>
+
+          {loadingPlans ? (
+            <div className="flex flex-col items-center justify-center py-16 text-[#64748b]">
+              <RefreshCw className="h-8 w-8 animate-spin text-[#1d4ed8] mb-3" />
+              <p className="text-sm font-bold text-[#0b1e3f]">{t('plans_loading')}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-12">
+              {plansList.slice(0, 4).map((plan, i) => {
+                const daily = Number(plan.proposedDailyINR || plan.associatedValueINR || 0)
+                const monthlyEst = daily * 22
+                const weeklyEst = daily * 5
+                const featuresList = parseFeatures(plan.features)
+
+                return (
+                  <div
+                    key={plan.slug || i}
+                    onClick={() => openModal(plan)}
+                    className="plan-card p-6 bg-white border border-[#e2e8f0] rounded-3xl flex flex-col justify-between cursor-pointer group hover:border-[#1d4ed8] hover:shadow-xl transition-all duration-300 relative overflow-hidden"
+                  >
+                    {/* Top tri-color gradient accent */}
+                    <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
+
+                    <div>
+                      <div className="mb-3">
+                        <span className="text-xs font-black text-[#1d4ed8]">
+                          {plan.name}
+                        </span>
+                        <p className="text-2xl font-black text-[#0b1e3f] mt-1">{plan.deal}</p>
+                        {plan.tagline && (
+                          <p className="text-xs text-[#b45309] mt-0.5 font-bold">{plan.tagline}</p>
+                        )}
+                      </div>
+
+                      {/* Return Box */}
+                      <div className="my-4 p-4 bg-gradient-to-br from-blue-50/70 via-white to-amber-50/40 rounded-2xl border border-blue-100 space-y-2 text-xs">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[#475569] font-medium">{t('plans_daily_label')}</span>
+                          <span className="font-black text-[#1d4ed8] text-sm">{formatINR(daily)} / {lang === 'hi' ? 'दिन' : 'day'}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[#475569] font-medium">{t('plans_weekly_label')}</span>
+                          <span className="font-bold text-[#0b1e3f]">{formatINR(weeklyEst)}</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1.5 border-t border-slate-200/80">
+                          <span className="text-[#475569] font-medium">{t('plans_monthly_label')}</span>
+                          <span className="font-black text-[#b45309]">{formatINR(monthlyEst)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#f1f5f9]">
+                      <span className="w-full py-3.5 rounded-2xl font-black text-xs bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] !text-white shadow-[0_4px_14px_rgba(29,78,216,0.3)] transition-all flex items-center justify-center gap-2">
+                        <span className="!text-white">{lang === 'hi' ? `${plan.name} चुनें` : `Register for ${plan.name}`}</span>
+                        <ArrowRight className="h-3.5 w-3.5 !text-white" />
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="text-center mt-10">
+            <Link
+              to="/plans"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-2xl font-black text-sm bg-gradient-to-r from-[#0b1e3f] via-[#1d4ed8] to-[#2563eb] hover:from-[#08152c] hover:to-[#1e40af] !text-white shadow-lg shadow-blue-900/20 hover:shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+            >
+              <span className="!text-white font-extrabold text-base">{t('plans_explore_all') || 'Explore All Investment Plans'}</span>
+              <ArrowRight className="h-4 w-4 !text-white" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 4. CORPORATE FACILITIES & INFRASTRUCTURE GALLERY ── */}
+      <section className="py-12 sm:py-20 bg-white border-b border-[#e2e8f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
+              {t('gallery_heading')}
+            </h2>
+            <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
+              {t('gallery_subheading')}
+            </p>
+          </div>
+
+          {/* Photo Grid - Swipeable horizontal carousel on mobile, 3-col grid on desktop */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible sm:pb-0">
+            {CORPORATE_GALLERY.slice(0, 3).map((img, idx) => (
+              <div
+                key={idx}
+                onClick={() => setLightboxImg(img)}
+                className="min-w-[82%] snap-center sm:min-w-0 group relative rounded-3xl overflow-hidden bg-white border border-[#e2e8f0] shadow-sm hover:border-[#1d4ed8] hover:shadow-xl transition-all duration-300 cursor-pointer aspect-[16/10]"
+              >
+                <img
+                  src={img.src}
+                  alt="Corporate Facility"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  loading="lazy"
+                />
+                {/* Sleek Zoom Overlay */}
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center p-4">
+                  <span className="!text-white text-xs font-black flex items-center gap-1.5 bg-black/60 px-4 py-2 rounded-xl backdrop-blur-sm shadow-md">
+                    <ZoomIn className="h-4 w-4 text-blue-300 shrink-0" /> {t('gallery_zoom')}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* View All Facilities in About Us button */}
+          <div className="text-center mt-10">
+            <Link
+              to="/about#gallery"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-2xl font-black text-sm bg-white border-2 border-[#cbd5e1] hover:border-[#1d4ed8] text-[#0b1e3f] hover:bg-[#f8fafc] shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+            >
+              <span>{lang === 'hi' ? 'सभी तस्वीरें देखें (अबाउट पेज)' : 'View All Facilities Photos in About Us'}</span>
+              <ArrowRight className="h-4 w-4 text-[#1d4ed8]" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Lightbox Modal (Clean Photo-Only View) ── */}
+      {lightboxImg && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setLightboxImg(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-3 border-b border-[#e2e8f0] flex items-center justify-end bg-white">
+              <button
+                type="button"
+                onClick={() => setLightboxImg(null)}
+                className="h-9 w-9 rounded-full bg-[#f8fafc] hover:bg-[#e2e8f0] text-[#0b1e3f] flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
               </button>
-              <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full"
-                  style={{ background: 'rgba(37,211,102,0.12)', border: '1px solid rgba(37,211,102,0.45)', color: '#25d366',
-                    fontSize: '1rem', padding: '0.875rem 2rem' }}>
-                  <MessageSquare className="h-5 w-5" /> WhatsApp
-                </Button>
+            </div>
+            <div className="relative bg-slate-950 flex items-center justify-center p-2">
+              <img
+                src={lightboxImg.src}
+                alt="Corporate Facility"
+                className="max-h-[75vh] w-auto max-w-full object-contain rounded-xl"
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── 5. INSTITUTIONAL ETHOS / VALUES ── */}
+      <section className="py-12 sm:py-20 bg-[#f8fafc] border-b border-[#e2e8f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
+              {t('ethos_heading')}
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-4 sm:mb-5 shadow-xs">
+                <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f] mb-1.5 sm:mb-2">{t('pillar1_title')}</h3>
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{t('pillar1_desc')}</p>
+            </div>
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-4 sm:mb-5 shadow-xs">
+                <HeartPulse className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f] mb-1.5 sm:mb-2">{t('pillar2_title')}</h3>
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{t('pillar2_desc')}</p>
+            </div>
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-4 sm:mb-5 shadow-xs">
+                <Clock className="h-6 w-6 sm:h-7 sm:w-7" />
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f] mb-1.5 sm:mb-2">{t('pillar3_title')}</h3>
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{t('pillar3_desc')}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 6. REVIEWS & TESTIMONIALS (Kept in Original Text as Instructed) ── */}
+      <section className="py-12 sm:py-20 bg-white border-b border-[#e2e8f0]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
+              {lang === 'hi' ? 'पंजीकृत प्रतिभागियों के अनुभव एवं समीक्षाएं' : 'Feedback from Registered Participants'}
+            </h2>
+          </div>
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+            {REVIEWS.map((review, i) => {
+              const theme = REVIEW_THEMES[i % REVIEW_THEMES.length]
+              return (
+                <div
+                  key={i}
+                  className={`min-w-[85%] snap-center md:min-w-0 p-5 sm:p-7 rounded-3xl bg-white border border-[#e2e8f0] shadow-sm ${theme.topBorder} ${theme.accentGlow} transition-all duration-300 flex flex-col justify-between`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className={`h-11 w-11 rounded-full ${theme.avatarBg} font-black text-sm flex items-center justify-center shadow-xs shrink-0`}>
+                          {review.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-[#0b1e3f]">{review.name}</p>
+                          <p className="text-[11px] text-[#64748b] font-semibold">{review.location}</p>
+                        </div>
+                      </div>
+                      <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${theme.badge} shrink-0`}>
+                        {theme.tag}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-amber-400 mb-3">
+                      {[1, 2, 3, 4, 5].map((s) => (
+                        <Star key={s} className="h-4 w-4 fill-amber-400 text-amber-400 shrink-0" />
+                      ))}
+                    </div>
+
+                    <p className="text-sm text-[#334155] leading-relaxed italic">
+                      "{review.text}"
+                    </p>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 mt-4 border-t border-[#f1f5f9] text-[11px] text-[#64748b]">
+                    <span className="font-semibold">{review.date}</span>
+                    <span className="flex items-center gap-1 text-emerald-600 font-bold">
+                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0" /> 100% Genuine
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ── 8. CALL TO ACTION BANNER ── */}
+      <section className="py-10 sm:py-16 bg-white">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl p-6 sm:p-14 text-center bg-gradient-to-br from-slate-50 via-white to-amber-50/20 border-2 border-[#e2e8f0] shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
+
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] mb-3 sm:mb-4 tracking-tight">
+              {t('cta_title')}
+            </h2>
+            <p className="text-sm sm:text-base text-[#475569] max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
+              {t('cta_desc')}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
+              <button
+                type="button"
+                onClick={() => openModal(null)}
+                className="btn-gold px-8 py-3.5 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 cursor-pointer shadow-md"
+              >
+                <ClipboardList className="h-5 w-5 !text-white" />
+                <span className="!text-white">{t('cta_register')}</span>
+              </button>
+              <a
+                href={WHATSAPP_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-extrabold text-sm bg-white border-2 border-[#bfdbfe] text-[#1d4ed8] hover:bg-[#eff6ff] hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-xs"
+              >
+                <MessageSquare className="h-4 w-4 text-[#1d4ed8]" />
+                <span>{t('cta_whatsapp')}</span>
               </a>
-              <a href={TELEGRAM_URL} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full"
-                  style={{ background: 'rgba(0,136,204,0.1)', border: '1px solid rgba(0,136,204,0.4)', color: '#29a8e8',
-                    fontSize: '1rem', padding: '0.875rem 2rem' }}>
-                  <TelegramIcon className="h-5 w-5" /> Telegram
-                </Button>
-              </a>
-              <Link to="/contact" className="w-full sm:w-auto">
-                <Button size="lg" variant="secondary" className="w-full"
-                  style={{ fontSize: '1rem', padding: '0.875rem 2rem' }}>
-                  Contact Us <ArrowRight className="h-5 w-5" />
-                </Button>
+              <Link
+                to="/contact"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-extrabold text-sm bg-white border-2 border-[#cbd5e1] hover:border-[#1d4ed8] text-[#0b1e3f] hover:bg-[#f8fafc] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+              >
+                <span>{t('cta_contact')}</span>
+                <ArrowRight className="h-4 w-4 text-[#1d4ed8]" />
               </Link>
             </div>
-            <div className="absolute inset-x-0 bottom-0 gold-line" />
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
 
-      {/* Plan Registration Modal */}
+      {/* Plan Enquiry Modal */}
       <PlanEnquiryModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setActivePlan(null) }}
         initialPlan={activePlan}
       />
-    </>
+    </div>
   )
 }

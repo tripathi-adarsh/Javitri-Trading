@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
   User, Mail, Phone, MapPin, CreditCard, Upload,
-  AlertCircle, CheckCircle2, Loader2, FileCheck, X, ArrowRight
+  AlertCircle, CheckCircle2, Loader2, FileCheck, X, ArrowRight, ShieldCheck
 } from 'lucide-react'
 import Input from '../components/ui/Input.jsx'
 import Select from '../components/ui/Select.jsx'
@@ -24,7 +24,7 @@ const INDIAN_STATES = [
 ].map(s => ({ value: s, label: s }))
 
 const schema = z.object({
-  fullName:    z.string().min(2).max(200),
+  fullName:    z.string().min(2, 'Full name required').max(200),
   mobile:      z.string().regex(/^[6-9]\d{9}$/, 'Valid 10-digit mobile required'),
   email:       z.string().email('Valid email required'),
   addressLine: z.string().max(500).optional().or(z.literal('')),
@@ -32,19 +32,19 @@ const schema = z.object({
   state:       z.string().min(1, 'State required'),
   postalCode:  z.string().regex(/^\d{6}$/, '6-digit PIN code required'),
   clientType:  z.enum(['individual', 'business']).default('individual'),
-  pan:         z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/).optional().or(z.literal('')),
+  pan:         z.string().regex(/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, 'Invalid PAN format').optional().or(z.literal('')),
 })
 
 /* ── File picker ── */
 function FilePicker({ label, file, onSelect, onRemove, inputId }) {
   return (
-    <div style={{ marginBottom: 16 }}>
-      <p style={{ color: '#9ab0c4', fontSize: 12, fontWeight: 600, marginBottom: 6 }}>{label}</p>
+    <div className="mb-4">
+      <p className="text-xs font-bold text-[#475569] mb-1.5 uppercase tracking-wider">{label}</p>
       <input
         id={inputId}
         type="file"
         accept="image/jpeg,image/png,image/webp,application/pdf"
-        style={{ display: 'none' }}
+        className="hidden"
         onChange={e => {
           const f = e.target.files && e.target.files[0]
           if (f) onSelect(f)
@@ -52,23 +52,15 @@ function FilePicker({ label, file, onSelect, onRemove, inputId }) {
         }}
       />
       {file ? (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '10px 14px', borderRadius: 12,
-          background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.3)',
-        }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4ade80', fontSize: 12, minWidth: 0 }}>
-            <FileCheck size={16} style={{ flexShrink: 0 }} />
-            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{file.name}</span>
+        <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+          <span className="flex items-center gap-2 text-xs font-semibold text-[#059669] min-w-0">
+            <FileCheck size={16} className="shrink-0" />
+            <span className="truncate">{file.name}</span>
           </span>
           <button
             type="button"
             onClick={onRemove}
-            style={{
-              marginLeft: 10, flexShrink: 0, background: 'rgba(239,68,68,0.15)',
-              border: 'none', borderRadius: 8, padding: '4px 6px', cursor: 'pointer', color: '#f87171',
-              display: 'flex', alignItems: 'center',
-            }}
+            className="ml-2 shrink-0 bg-red-100 hover:bg-red-200 rounded-lg p-1 text-red-600 cursor-pointer"
           >
             <X size={14} />
           </button>
@@ -76,15 +68,11 @@ function FilePicker({ label, file, onSelect, onRemove, inputId }) {
       ) : (
         <div
           onClick={() => document.getElementById(inputId).click()}
-          style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-            padding: '20px 10px', borderRadius: 12, cursor: 'pointer',
-            background: 'rgba(13,31,87,0.4)', border: '2px dashed rgba(200,152,58,0.4)',
-          }}
+          className="flex flex-col items-center gap-1.5 p-5 rounded-xl cursor-pointer bg-[#f8fafc] border-2 border-dashed border-[#cbd5e1] hover:border-[#059669] hover:bg-emerald-50/30 transition-all text-center"
         >
-          <Upload size={20} style={{ color: '#c8983a' }} />
-          <span style={{ color: '#94a3b8', fontSize: 12 }}>Click here to choose file</span>
-          <span style={{ color: '#475569', fontSize: 11 }}>JPEG · PNG · WebP · PDF · max 5 MB</span>
+          <Upload size={20} className="text-[#059669]" />
+          <span className="text-xs font-bold text-[#0f172a]">Click here to choose file</span>
+          <span className="text-[11px] text-[#64748b]">JPEG · PNG · WebP · PDF · max 5 MB</span>
         </div>
       )}
     </div>
@@ -99,127 +87,57 @@ function UploadStep({ clientId, registrationId, onDone }) {
   const [passbook,      setPassbook]     = useState(null)
   const [busy,         setBusy]         = useState(false)
   const [error,        setError]        = useState('')
-  const [done,         setDone]         = useState(false)
 
-  async function doUpload() {
-    if (!aadhaar)      { setError('Aadhaar Card (Front) is required.'); return }
-    if (!aadhaarBack)  { setError('Aadhaar Card (Back) is required.'); return }
-    if (!panFile)      { setError('PAN Card is required.'); return }
-    if (!passbook)     { setError('Bank Passbook / Statement is required.'); return }
-
+  const handleUpload = async () => {
+    if (!aadhaar || !aadhaarBack || !panFile || !passbook) {
+      setError('Please select all four required documents.')
+      return
+    }
     setBusy(true)
     setError('')
     try {
       const fd = new FormData()
-      fd.append('aadhaarImage',      aadhaar)
-      fd.append('aadhaarBackImage',  aadhaarBack)
-      fd.append('panImage',          panFile)
-      fd.append('passbookImage',     passbook)
+      fd.append('aadhaarImage',     aadhaar)
+      fd.append('aadhaarBackImage', aadhaarBack)
+      fd.append('panImage',         panFile)
+      fd.append('passbookImage',    passbook)
 
       const res = await fetch(`${API_BASE}/clients/${clientId}/kyc-documents`, {
         method: 'POST',
         body: fd,
       })
-      const json = await res.json().catch(() => ({}))
-      if (!res.ok) throw new Error(json.message || 'Upload failed: ' + res.status)
-      setDone(true)
-    } catch (e) {
-      setError(e.message || 'Upload failed. Please try again.')
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.message || `Upload failed (${res.status})`)
+      onDone()
+    } catch (err) {
+      setError(err.message || 'Failed to upload documents. Please try again.')
     } finally {
       setBusy(false)
     }
   }
 
-  if (done) return (
-    <div style={{ textAlign: 'center', padding: '24px 0' }}>
-      <div style={{
-        width: 56, height: 56, borderRadius: '50%', margin: '0 auto 16px',
-        background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.4)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <CheckCircle2 size={28} style={{ color: '#4ade80' }} />
-      </div>
-      <p style={{ color: '#fff', fontWeight: 600, marginBottom: 4 }}>All Documents Uploaded!</p>
-      <p style={{ color: '#64748b', fontSize: 12, marginBottom: 24 }}>Our team will verify your documents shortly.</p>
-      <button
-        onClick={onDone}
-        style={{
-          padding: '10px 32px', borderRadius: 12, border: 'none', cursor: 'pointer',
-          background: 'linear-gradient(135deg,#c8983a,#a07020)', color: '#fff', fontWeight: 600,
-        }}
-      >
-        Done
-      </button>
-    </div>
-  )
-
   return (
-    <div>
-      <p style={{ color: '#94a3b8', fontSize: 12, marginBottom: 20 }}>
-        Registration ID:{' '}
-        <span style={{ color: '#c8983a', fontFamily: 'monospace', fontWeight: 700 }}>{registrationId}</span>
-      </p>
-
-      <FilePicker
-        label="Aadhaar Card — Front *"
-        file={aadhaar}
-        onSelect={setAadhaar}
-        onRemove={() => setAadhaar(null)}
-        inputId="fp_aadhaar_front"
-      />
-      <FilePicker
-        label="Aadhaar Card — Back *"
-        file={aadhaarBack}
-        onSelect={setAadhaarBack}
-        onRemove={() => setAadhaarBack(null)}
-        inputId="fp_aadhaar_back"
-      />
-      <FilePicker
-        label="PAN Card *"
-        file={panFile}
-        onSelect={setPanFile}
-        onRemove={() => setPanFile(null)}
-        inputId="fp_pan"
-      />
-      <FilePicker
-        label="Bank Passbook / Statement *"
-        file={passbook}
-        onSelect={setPassbook}
-        onRemove={() => setPassbook(null)}
-        inputId="fp_passbook"
-      />
+    <div className="space-y-4">
+      <FilePicker label="Aadhaar Card (Front)" file={aadhaar} onSelect={setAadhaar} onRemove={() => setAadhaar(null)} inputId="reg-aadhaar-front" />
+      <FilePicker label="Aadhaar Card (Back)" file={aadhaarBack} onSelect={setAadhaarBack} onRemove={() => setAadhaarBack(null)} inputId="reg-aadhaar-back" />
+      <FilePicker label="PAN Card" file={panFile} onSelect={setPanFile} onRemove={() => setPanFile(null)} inputId="reg-pan" />
+      <FilePicker label="Bank Passbook / Cheque" file={passbook} onSelect={setPassbook} onRemove={() => setPassbook(null)} inputId="reg-passbook" />
 
       {error && (
-        <div style={{
-          display: 'flex', gap: 8, padding: '10px 14px', borderRadius: 12, marginBottom: 16,
-          background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)',
-        }}>
-          <AlertCircle size={16} style={{ color: '#f87171', flexShrink: 0, marginTop: 1 }} />
-          <p style={{ color: '#f87171', fontSize: 12, margin: 0 }}>{error}</p>
+        <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs font-semibold text-red-700 flex items-center gap-2">
+          <AlertCircle size={15} className="shrink-0" />
+          <span>{error}</span>
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={doUpload}
-        disabled={busy}
-        style={{
-          width: '100%', padding: '14px', borderRadius: 12, border: 'none',
-          background: busy ? 'rgba(200,152,58,0.3)' : 'linear-gradient(135deg,#c8983a,#a07020)',
-          color: '#fff', fontWeight: 600, fontSize: 14, cursor: busy ? 'not-allowed' : 'pointer',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        }}
-      >
-        {busy
-          ? <><Loader2 size={16} className="animate-spin" /> Uploading…</>
-          : <><Upload size={16} /> Upload All Documents</>
-        }
-      </button>
+      <Button size="xl" loading={busy} onClick={handleUpload} className="w-full">
+        Upload Documents & Finish Registration <ArrowRight className="h-4 w-4" />
+      </Button>
     </div>
   )
 }
 
-/* ── Main page — direct registration without token ── */
+/* ── Main page ── */
 export default function ClientRegisterPage() {
   const [step,       setStep]       = useState('form')
   const [regData,    setRegData]    = useState(null)
@@ -247,51 +165,49 @@ export default function ClientRegisterPage() {
 
   /* Done */
   if (step === 'done') return (
-    <div className="min-h-screen flex flex-col items-center justify-center gap-5 px-4 text-center">
-      <div className="h-16 w-16 rounded-full flex items-center justify-center"
-        style={{ background: 'rgba(26,102,69,0.15)', border: '1px solid rgba(26,102,69,0.4)' }}>
-        <CheckCircle2 className="h-8 w-8" style={{ color: '#4ade80' }} />
+    <div className="min-h-screen bg-[#f8fafc] flex flex-col items-center justify-center gap-6 px-4 text-center py-16">
+      <div className="h-20 w-20 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-sm">
+        <CheckCircle2 className="h-10 w-10 text-[#059669]" />
       </div>
       <div>
-        <h1 className="text-2xl font-bold mb-2" style={{ color: '#fff' }}>Registration Complete!</h1>
-        <p className="text-sm" style={{ color: '#94a3b8' }}>Your details have been submitted. Our team will contact you shortly.</p>
+        <h1 className="text-3xl font-extrabold text-[#0f172a] mb-2 tracking-tight">Registration Complete!</h1>
+        <p className="text-sm text-[#64748b] max-w-sm font-medium">Your investor profile and documents have been received. Our compliance desk will verify your details.</p>
       </div>
-      <div className="rounded-2xl p-5 w-full max-w-sm text-left"
-        style={{ background: 'rgba(13,31,87,0.5)', border: '1px solid rgba(200,152,58,0.2)' }}>
-        <p className="text-xs uppercase tracking-wider mb-3" style={{ color: '#64748b' }}>Registration Details</p>
-        <div className="flex justify-between text-sm mb-2">
-          <span style={{ color: '#64748b' }}>Registration ID</span>
-          <span className="font-mono font-bold" style={{ color: '#c8983a' }}>{regData?.registrationId}</span>
+      <div className="rounded-2xl p-6 w-full max-w-sm text-left bg-white border border-[#e2e8f0] shadow-sm">
+        <p className="text-xs uppercase font-bold tracking-wider mb-4 text-[#64748b]">Registration Summary</p>
+        <div className="flex justify-between text-sm mb-2.5 pb-2 border-b border-[#f1f5f9]">
+          <span className="text-[#64748b]">Registration ID</span>
+          <span className="font-mono font-bold text-[#059669]">{regData?.registrationId}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span style={{ color: '#64748b' }}>Status</span>
-          <span style={{ color: '#4ade80' }} className="capitalize">{regData?.status?.replace(/_/g, ' ')}</span>
+          <span className="text-[#64748b]">KYC Status</span>
+          <span className="text-[#059669] font-bold capitalize">{regData?.status?.replace(/_/g, ' ') || 'Submitted'}</span>
         </div>
       </div>
-      <p className="text-xs" style={{ color: '#475569' }}>Please save your Registration ID for future reference.</p>
+      <p className="text-xs text-[#94a3b8]">Please save your Registration ID for future reference and login.</p>
+      <Button onClick={() => window.location.href = '/'}>Return to Homepage</Button>
     </div>
   )
 
   /* Upload step */
   if (step === 'upload') return (
-    <div className="min-h-screen py-10 px-4" style={{ background: '#0a0f1e' }}>
+    <div className="min-h-screen bg-[#f8fafc] py-14 px-4">
       <div className="max-w-md mx-auto">
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-white rounded-2xl p-3 shadow-xl inline-block">
-              <img src="/logo.jpeg" alt="Javitri" className="h-14 w-auto object-contain" />
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#e2e8f0] inline-block">
+              <img src="/logo.jpeg" alt="Javitri" className="h-12 w-auto object-contain" />
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
-            <CheckCircle2 size={16} style={{ color: '#4ade80' }} />
-            <span style={{ color: '#4ade80', fontSize: 12, fontWeight: 600 }}>Registration successful!</span>
+          <div className="flex items-center justify-center gap-1.5 mb-2">
+            <CheckCircle2 size={16} className="text-[#059669]" />
+            <span className="text-xs font-bold text-[#059669]">Account registered successfully</span>
           </div>
-          <h2 className="text-lg font-bold" style={{ color: '#fff', marginBottom: 4 }}>Upload KYC Documents</h2>
-          <p style={{ color: '#64748b', fontSize: 12 }}>All four documents are required — Aadhaar (Front + Back), PAN, Passbook</p>
+          <h2 className="text-2xl font-extrabold text-[#0f172a] tracking-tight mb-1">Upload KYC Documents</h2>
+          <p className="text-xs text-[#64748b] font-medium">Mandatory regulatory compliance: Aadhaar (Front & Back), PAN, Passbook</p>
         </div>
 
-        <div className="rounded-2xl p-6"
-          style={{ background: 'rgba(13,31,87,0.3)', border: '1px solid rgba(200,152,58,0.2)' }}>
+        <div className="rounded-2xl p-7 bg-white border border-[#e2e8f0] shadow-sm">
           <UploadStep
             clientId={regData?.clientId}
             registrationId={regData?.registrationId}
@@ -299,7 +215,7 @@ export default function ClientRegisterPage() {
           />
         </div>
 
-        <p className="text-center text-xs mt-5" style={{ color: '#334155' }}>
+        <p className="text-center text-xs mt-6 text-[#94a3b8]">
           JAVITRI TRADING SERVICE PRIVATE LIMITED · CIN: U66190GJ2026PTC183862
         </p>
       </div>
@@ -308,38 +224,37 @@ export default function ClientRegisterPage() {
 
   /* Registration form */
   return (
-    <div className="min-h-screen py-10 px-4" style={{ background: '#0a0f1e' }}>
+    <div className="min-h-screen bg-[#f8fafc] py-14 px-4">
       <div className="max-w-2xl mx-auto">
 
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-5">
-            <div className="bg-white rounded-2xl p-3 shadow-xl inline-block">
-              <img src="/logo.jpeg" alt="Javitri Trading Service" className="h-16 w-auto object-contain" />
+        <div className="text-center mb-10">
+          <div className="flex justify-center mb-4">
+            <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#e2e8f0] inline-block">
+              <img src="/logo.jpeg" alt="Javitri Trading Service" className="h-14 w-auto object-contain" />
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold mb-2" style={{ color: '#fff' }}>Client Registration</h1>
-          <p className="text-sm" style={{ color: '#94a3b8' }}>
-            Register to get started with Javitri Trading Service
+          <h1 className="text-3xl font-extrabold text-[#0f172a] tracking-tight mb-2">Client Investor Registration</h1>
+          <p className="text-sm text-[#64748b] font-medium">
+            Open your secure portfolio management account with Javitri Trading Service
           </p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
-          <div className="rounded-2xl p-6 sm:p-8 space-y-7"
-            style={{ background: 'rgba(13,31,87,0.3)', border: '1px solid rgba(200,152,58,0.2)' }}>
+          <div className="rounded-2xl p-8 space-y-8 bg-white border border-[#e2e8f0] shadow-sm">
 
             {/* Personal Info */}
             <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: '#c8983a' }}>
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2 text-[#059669]">
                 <User className="h-4 w-4" /> Personal Information
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <Input label="Full Name" name="fullName" placeholder="Rahul Kumar Sharma"
+                  <Input label="Full Name (as per Aadhaar)" name="fullName" placeholder="Rahul Kumar Sharma"
                     required register={formRegister} error={errors.fullName?.message} />
                 </div>
                 <Input label="Mobile Number" name="mobile" type="tel" placeholder="9876543210"
                   required register={formRegister} error={errors.mobile?.message}
-                  icon={<Phone className="h-4 w-4" />} hint="10-digit Indian mobile" />
+                  icon={<Phone className="h-4 w-4" />} hint="10-digit Indian mobile number" />
                 <Input label="Email Address" name="email" type="email" placeholder="rahul@example.com"
                   required register={formRegister} error={errors.email?.message}
                   icon={<Mail className="h-4 w-4" />} />
@@ -347,9 +262,9 @@ export default function ClientRegisterPage() {
             </section>
 
             {/* Address */}
-            <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wider mb-4 flex items-center gap-2" style={{ color: '#c8983a' }}>
-                <MapPin className="h-4 w-4" /> Address
+            <section className="pt-4 border-t border-[#f1f5f9]">
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-4 flex items-center gap-2 text-[#059669]">
+                <MapPin className="h-4 w-4" /> Residential Address
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
@@ -361,20 +276,20 @@ export default function ClientRegisterPage() {
                 <Select label="State" name="state" options={INDIAN_STATES}
                   required register={formRegister} error={errors.state?.message} />
                 <Input label="PIN Code" name="postalCode" placeholder="395006"
-                  required register={formRegister} error={errors.postalCode?.message} hint="6-digit PIN" />
-                <Select label="Client Type" name="clientType"
-                  options={[{ value: 'individual', label: 'Individual' }, { value: 'business', label: 'Business' }]}
+                  required register={formRegister} error={errors.postalCode?.message} hint="6-digit Indian PIN code" />
+                <Select label="Account Classification" name="clientType"
+                  options={[{ value: 'individual', label: 'Individual Investor' }, { value: 'business', label: 'Corporate / Business Entity' }]}
                   register={formRegister} error={errors.clientType?.message} />
               </div>
             </section>
 
             {/* PAN */}
-            <section>
-              <h2 className="text-sm font-semibold uppercase tracking-wider mb-1 flex items-center gap-2" style={{ color: '#c8983a' }}>
-                <CreditCard className="h-4 w-4" /> KYC
+            <section className="pt-4 border-t border-[#f1f5f9]">
+              <h2 className="text-xs font-bold uppercase tracking-wider mb-1 flex items-center gap-2 text-[#059669]">
+                <CreditCard className="h-4 w-4" /> Tax Identification (PAN)
               </h2>
-              <p className="text-xs mb-4" style={{ color: '#475569' }}>
-                PAN optional. All four KYC images (Aadhaar front, Aadhaar back, PAN, Passbook) will be uploaded in the next step.
+              <p className="text-xs text-[#64748b] mb-4">
+                PAN input is optional here. All four KYC identity documents will be uploaded in the next step.
               </p>
               <div className="sm:max-w-xs">
                 <Input label="PAN Number (optional)" name="pan" placeholder="ABCDE1234F"
@@ -384,21 +299,19 @@ export default function ClientRegisterPage() {
             </section>
 
             {apiError && (
-              <div className="flex gap-2 rounded-xl p-3"
-                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.25)' }}>
-                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" style={{ color: '#f87171' }} />
-                <p className="text-sm" style={{ color: '#f87171' }}>{apiError}</p>
+              <div className="flex gap-2.5 rounded-xl p-4 bg-red-50 border border-red-200">
+                <AlertCircle className="h-5 w-5 shrink-0 text-red-600" />
+                <p className="text-sm font-semibold text-red-700">{apiError}</p>
               </div>
             )}
 
-            <Button type="submit" size="lg" loading={isSubmitting} className="w-full"
-              style={{ background: 'linear-gradient(135deg,#c8983a,#a07020)', border: 'none', color: '#fff' }}>
+            <Button type="submit" size="xl" loading={isSubmitting} className="w-full">
               Continue to Document Upload <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </form>
 
-        <p className="text-center text-xs mt-5" style={{ color: '#334155' }}>
+        <p className="text-center text-xs mt-6 text-[#94a3b8]">
           JAVITRI TRADING SERVICE PRIVATE LIMITED · CIN: U66190GJ2026PTC183862
         </p>
       </div>

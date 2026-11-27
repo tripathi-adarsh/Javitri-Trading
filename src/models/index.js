@@ -16,6 +16,7 @@ const LegalDocument      = require('./LegalDocument')
 const LegalConsent       = require('./LegalConsent')
 const AuditLog           = require('./AuditLog')
 const ContactMessage     = require('./ContactMessage')
+const PaymentRequest     = require('./PaymentRequest')
 
 // ── User ↔ Employee ───────────────────────────────────────────────────────────
 User.hasOne(Employee,     { foreignKey: 'user_id', as: 'employeeProfile' })
@@ -107,6 +108,18 @@ DailyPayout.belongsTo(ClientPlanRequest, { foreignKey: 'plan_request_id', as: 'p
 Client.hasMany(DailyPayout,   { foreignKey: 'client_id', as: 'dailyPayouts' })
 DailyPayout.belongsTo(Client, { foreignKey: 'client_id', as: 'client' })
 
+// ── Client ↔ PaymentRequest ──────────────────────────────────────────────────
+Client.hasMany(PaymentRequest,      { foreignKey: 'client_id', as: 'paymentRequests' })
+PaymentRequest.belongsTo(Client,    { foreignKey: 'client_id', as: 'client' })
+
+// ── ClientPlanRequest ↔ PaymentRequest ───────────────────────────────────────
+ClientPlanRequest.hasMany(PaymentRequest,      { foreignKey: 'plan_request_id', as: 'paymentRequests' })
+PaymentRequest.belongsTo(ClientPlanRequest,    { foreignKey: 'plan_request_id', as: 'planRequest' })
+
+// ── User (processor) ↔ PaymentRequest ────────────────────────────────────────
+User.hasMany(PaymentRequest,        { foreignKey: 'processed_by', as: 'processedPaymentRequests' })
+PaymentRequest.belongsTo(User,      { foreignKey: 'processed_by', as: 'processor' })
+
 module.exports = {
   sequelize,
   User,
@@ -125,4 +138,5 @@ module.exports = {
   LegalConsent,
   AuditLog,
   ContactMessage,
+  PaymentRequest,
 }

@@ -1,44 +1,44 @@
 import React from 'react'
 
-export default function StatCard({ icon: Icon, label, value, color = 'gold', loading = false }) {
+export default function StatCard({ icon: Icon, label, value, color = 'blue', loading = false, subtitle = '' }) {
   const colors = {
-    gold:    { icon:'#d4a843', bg:'rgba(212,168,67,0.12)', border:'rgba(212,168,67,0.3)' },
-    emerald: { icon:'#4ade80', bg:'rgba(34,197,94,0.1)',   border:'rgba(34,197,94,0.25)' },
-    amber:   { icon:'#fbbf24', bg:'rgba(251,191,36,0.1)',  border:'rgba(251,191,36,0.25)' },
-    red:     { icon:'#f87171', bg:'rgba(239,68,68,0.1)',   border:'rgba(239,68,68,0.25)' },
-    blue:    { icon:'#60a5fa', bg:'rgba(96,165,250,0.1)',  border:'rgba(96,165,250,0.25)' },
-    violet:  { icon:'#a78bfa', bg:'rgba(139,92,246,0.1)',  border:'rgba(139,92,246,0.25)' },
-    teal:    { icon:'#2dd4bf', bg:'rgba(45,212,191,0.1)',  border:'rgba(45,212,191,0.25)' },
+    blue:    { icon: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe', val: '#0b1e3f' },
+    gold:    { icon: '#b45309', bg: '#fffbeb', border: '#fde68a', val: '#0b1e3f' },
+    navy:    { icon: '#0b1e3f', bg: '#f1f5f9', border: '#cbd5e1', val: '#0b1e3f' },
+    emerald: { icon: '#059669', bg: '#ecfdf5', border: '#a7f3d0', val: '#0b1e3f' },
+    amber:   { icon: '#d97706', bg: '#fffbeb', border: '#fde68a', val: '#0b1e3f' },
+    red:     { icon: '#dc2626', bg: '#fef2f2', border: '#fecaca', val: '#0b1e3f' },
+    violet:  { icon: '#7c3aed', bg: '#f5f3ff', border: '#ddd6fe', val: '#0b1e3f' },
+    teal:    { icon: '#0891b2', bg: '#ecfeff', border: '#a5f3fc', val: '#0b1e3f' },
   }
-  const c = colors[color] || colors.gold
+  const c = colors[color] || colors.blue
 
   return (
-    <div style={{
-      background: 'rgba(15,36,96,0.38)',
-      border: '1px solid rgba(212,168,67,0.15)',
-      borderRadius: '14px',
-      padding: '16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '14px',
-    }}>
-      <div style={{
-        height: '42px', width: '42px', borderRadius: '12px',
-        background: c.bg, border: `1px solid ${c.border}`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-      }}>
-        <Icon style={{ width: '20px', height: '20px', color: c.icon }} />
+    <div className="bg-white border border-[#e2e8f0] rounded-2xl p-5 shadow-sm hover:shadow-md hover:border-[#cbd5e1] hover:-translate-y-0.5 transition-all">
+      <div className="flex items-center justify-between mb-3">
+        <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs"
+          style={{ background: c.bg, border: `1px solid ${c.border}` }}>
+          <Icon className="h-5 w-5" style={{ color: c.icon }} />
+        </div>
+        {subtitle && (
+          <span className="text-[11px] font-bold text-[#334155] bg-[#f8fafc] px-2.5 py-0.5 rounded-full border border-[#cbd5e1]">
+            {subtitle}
+          </span>
+        )}
       </div>
-      <div style={{ minWidth: 0 }}>
-        <p style={{ fontSize: '11px', color: '#7090a8', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+
+      <div>
+        <p className="text-xs font-bold text-[#64748b] uppercase tracking-wider mb-1">
           {label}
         </p>
-        {loading
-          ? <div style={{ height: '24px', width: '64px', background: 'rgba(212,168,67,0.1)', borderRadius: '6px', animation: 'pulse 1.5s ease-in-out infinite' }} />
-          : <p style={{ fontSize: '22px', fontWeight: 800, color: '#f0f4f8', lineHeight: 1 }}>{value ?? '—'}</p>
-        }
+        {loading ? (
+          <div className="h-7 w-20 bg-[#f1f5f9] animate-pulse rounded-md" />
+        ) : (
+          <p className="text-2xl font-black text-[#0b1e3f] tracking-tight">
+            {value ?? '0'}
+          </p>
+        )}
       </div>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
     </div>
   )
 }

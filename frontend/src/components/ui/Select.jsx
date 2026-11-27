@@ -17,9 +17,9 @@ export default function Select({
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       {label && (
-        <label htmlFor={name} className="text-sm font-medium text-gray-300">
+        <label htmlFor={name} className="text-sm font-bold text-[#0f172a]">
           {label}
-          {required && <span className="text-emerald-400 ml-1">*</span>}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </label>
       )}
 
@@ -27,31 +27,27 @@ export default function Select({
         <select
           id={name}
           aria-invalid={!!error}
-          className={`
-            w-full appearance-none rounded-lg bg-gray-800/80 border px-4 py-2.5 text-sm
-            transition-all duration-200 cursor-pointer
-            focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-offset-gray-900
-            ${error
-              ? 'border-red-500/60 text-gray-100 focus:border-red-500 focus:ring-red-500/30'
-              : 'border-gray-700 text-gray-100 focus:border-emerald-500 focus:ring-emerald-500/20 hover:border-gray-600'
-            }
-          `}
+          className="w-full appearance-none rounded-xl px-4 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer focus:outline-none bg-white"
+          style={{
+            border: error ? '1.5px solid #dc2626' : '1.5px solid #cbd5e1',
+            color: '#0f172a',
+          }}
+          onFocus={e => { e.target.style.borderColor = '#059669'; e.target.style.boxShadow = '0 0 0 3px rgba(5,150,105,0.15)' }}
+          onBlur={e => { e.target.style.borderColor = error ? '#dc2626' : '#cbd5e1'; e.target.style.boxShadow = 'none' }}
           {...inputProps}
           {...props}
         >
-          <option value="" className="bg-gray-800">{placeholder}</option>
+          <option value="">{placeholder}</option>
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="bg-gray-800">
-              {opt.label}
-            </option>
+            <option key={opt.value} value={opt.value}>{opt.label}</option>
           ))}
         </select>
 
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none" style={{ color: '#5a6e85' }} />
       </div>
 
       {error && (
-        <p role="alert" className="text-xs text-red-400 flex items-center gap-1">
+        <p role="alert" className="text-xs flex items-center gap-1" style={{ color: '#dc2626' }}>
           <svg className="h-3.5 w-3.5 shrink-0" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
           </svg>

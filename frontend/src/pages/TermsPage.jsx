@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Scale, Calendar, ArrowLeft, ShieldAlert, ChevronDown, ChevronRight } from 'lucide-react'
+import { Scale, Calendar, ArrowLeft, ShieldAlert, ChevronDown, ChevronRight, Building2, CheckCircle2 } from 'lucide-react'
 import Button from '../components/ui/Button.jsx'
 
 const COMPANY = {
@@ -14,177 +14,122 @@ const COMPANY = {
 const SECTIONS = [
   {
     id: 'introduction',
-    title: '1. Introduction',
-    content: `These Terms & Conditions govern the use of the website and the information provided by JAVITRI TRADING SERVICE PRIVATE LIMITED ("Company", "we", "our" or "us").
+    title: '1. Introduction & Acceptance of Terms',
+    content: `These Terms & Conditions govern the access and use of the corporate platform, services, and educational resources provided by JAVITRI TRADING SERVICE PRIVATE LIMITED ("Company", "we", "our" or "us").
 
 Registered Office: ${COMPANY.address}
+CIN: ${COMPANY.cin}
 
-By accessing this website, users agree to comply with these terms and all applicable laws of India. If you do not agree with any part of these terms, please discontinue use of this website immediately.
+By visiting or utilizing this website, users formally agree to adhere to these terms and all applicable statutory laws of India. If you do not accept these terms in full, please discontinue use of this website immediately.
 
-The Company's focus is on stock market education, investment guidance, trading learning support, and advisory services to help individuals understand financial markets and make informed decisions.`,
+The Company operates primarily in financial markets literacy, investor guidance, and structured deal administration to help clients understand capital markets and execute informed strategies.`,
   },
   {
     id: 'plan-information',
-    title: '2. Plan Information',
-    content: `Details of any plan — including the amount payable, applicable charges, duration, payout calculation, eligibility requirements, and settlement procedure — must be provided in a written agreement before a customer makes any payment.
+    title: '2. Plan Documentation & Disclosure Standards',
+    content: `All operational parameters of any investment plan—including required principal, schedule of proposed daily figures, tenure, eligibility conditions, and settlement timelines—are formally established in a binding bilateral agreement prior to processing any financial commitment.
 
-No plan should be offered or accepted unless the Company has verified that it is legally permitted to offer that product or service under applicable Indian laws and regulations.
+No plan may be offered or contracted unless verified to be fully compliant under applicable Indian laws and regulatory frameworks.
 
-All figures described as "proposed", "illustrative", or "associated value" on this website are provided for informational purposes only and do not constitute a guarantee, promise, or assured return of any kind. Customers must obtain and review the full written plan terms before committing to any plan.`,
+All figures termed "proposed daily figures", "illustrative calculations", or "associated values" displayed on this website are educational references and do not represent guaranteed income or promised returns.`,
   },
   {
     id: 'plan-duration',
-    title: '3. Plan Duration',
-    content: `Where legally authorised and agreed in writing, a plan may have a specified validity period of 90 days.
+    title: '3. Plan Duration & Trading Day Mechanics',
+    content: `Where legally executed and agreed in writing, a standard plan cycle spans a term of 90 active trading days.
 
-The commencement date, maturity date, and applicable settlement conditions must be clearly stated in the customer's signed agreement before any payment is made.
+The official commencement date, schedule milestones, and maturity settlement date are clearly defined in each customer's signed contract before onboarding.
 
-The 90-day period refers to active trading days (Monday to Friday), excluding weekends, public holidays, and any other non-trading days as specified in the written agreement. The total calendar duration may therefore differ from 90 calendar days.`,
+The 90-day term pertains exclusively to official exchange trading sessions (Monday through Friday), excluding weekends, exchange clearing holidays, and official national holidays as codified in the agreement.`,
   },
   {
     id: 'payout-schedule',
-    title: '4. Payout Schedule',
-    content: `Any applicable payout schedule — including the proposed Monday-to-Friday schedule and Saturday-Sunday non-payout days — must be clearly documented in the applicable written agreement.
+    title: '4. Daily Payout Protocol & Verification',
+    content: `Any agreed daily associated figure—including the active Monday-to-Friday schedule and non-disbursement weekend intervals—is executed strictly per the terms of the signed agreement.
 
-The agreement must specify:
-• How payouts are calculated
-• The payment dates
-• Applicable holidays and processing delays
-• The treatment of unpaid or deferred amounts
+The agreement specifies:
+• Calculation methodology for daily figures
+• Bank account disbursement channels
+• Processing buffers during banking holidays
+• Treatment of deferred or delayed banking cycles
 
-A payout schedule must not be represented as a guaranteed return unless such representation is legally permitted and properly supported by the Company's verified product structure and applicable regulatory framework.`,
+Payout structures are never represented as assured market returns unless supported by verified underlying structures and appropriate regulatory authorization.`,
   },
   {
     id: 'early-withdrawal',
-    title: '5. Early Withdrawal',
-    content: `Where early withdrawal is permitted, the customer must submit a request through the Company's official process.
+    title: '5. Early Withdrawal & Premature Settlement',
+    content: `Where early withdrawal is permissible under the agreed investment plan, the client must submit a formal written request through official corporate channels.
 
-The applicable waiting period, eligibility conditions, deductions, payout adjustments, and expected processing time must be disclosed in writing before any payment is accepted.
+The applicable notice period, eligibility criteria, administrative deductions, and payout adjustments are documented in writing before any transaction is initiated.
 
-Any adjustment of previously paid amounts against the principal must be explained with a clear written calculation and must comply with all applicable laws and regulatory requirements. Customers are advised to retain all documentation related to withdrawal requests.`,
+Any adjustment of prior disbursements against principal is computed transparently with full auditing provided to the customer.`,
   },
   {
     id: 'maturity-settlement',
-    title: '6. Maturity and Principal Settlement',
-    content: `The maturity date and the terms governing any principal settlement must be specified in the signed written agreement.
+    title: '6. Maturity Settlement & Principal Resolution',
+    content: `The definitive maturity date and conditions governing the final return or reinvestment of principal are specified in the executed agreement.
 
-The agreement must explain:
-• The settlement calculation method
-• Payment method and timeline
-• Applicable deductions
-• Procedure for delayed or disputed payments
+The contract outlines:
+• Net settlement calculation
+• Electronic bank transfer procedures (NEFT/RTGS/IMPS)
+• Statutory tax deductions if applicable (TDS/GST)
+• Dispute escalation protocol
 
-No statement concerning repayment of principal should be published or represented to a customer unless the Company has verified that the commitment is legally permitted and has an appropriate financial and contractual basis under applicable Indian law.`,
+All statements regarding capital return comply strictly with Indian contractual law.`,
   },
   {
     id: 'risk-disclosure',
-    title: '7. Risk Disclosure',
-    content: `Trading and investment activities may involve financial risks, including the possible loss of capital. Returns may vary depending on the product, strategy, and applicable market conditions.
+    title: '7. Capital Market Risk Acknowledgement',
+    content: `Securities and derivatives trading carry substantial market risk including potential capital volatility.
 
-Key risk disclosures:
-• Stock market investments are subject to market risk
-• Options, forex, and commodity trading involve a high degree of risk
-• Past performance, illustrative calculations, and projected returns do not establish future results
-• The value of investments can go up as well as down
-
-Customers should review all relevant disclosures and seek independent professional financial advice where appropriate before making any investment decision.
-
-Please read our full Risk Disclosure Statement before participating in any plan.`,
+Key disclosures:
+• Equities and index derivatives fluctuate based on macroeconomic and liquidity factors
+• Leverage amplifies both gains and losses
+• Past illustrative performance does not guarantee future results
+• Clients should evaluate their financial risk tolerance independently`,
   },
   {
     id: 'payments-receipts',
-    title: '8. Payments and Receipts',
-    content: `Customers should make payments only through payment methods officially verified and communicated by the Company.
+    title: '8. Official Payment Channels & Invoicing',
+    content: `Payments must only be remitted through officially verified banking channels (corporate bank account or integrated authorized payment gateway).
 
-A payment receipt and the relevant written agreement should be provided for each accepted payment. Customers should:
-• Retain copies of all agreements
-• Keep payment records and receipts
-• Retain payout statements
-• Keep records of any withdrawal requests
-
-Do not make any payment based on verbal promises or through unofficial, unverified channels. The Company shall not be responsible for funds transferred outside officially communicated channels.
-
-Important: Never share your bank OTP, PIN, internet banking password, or UPI PIN with any person claiming to represent the Company. We will never ask for these.`,
+An official GST tax invoice and digital payment receipt are issued for every verified transaction. Clients should retain copies of all payment acknowledgements.`,
   },
   {
-    id: 'privacy',
-    title: '9. Customer Information and Privacy',
-    content: `Personal information will be collected and processed only for disclosed, lawful purposes and in accordance with the Company's Privacy Policy and applicable data protection laws of India.
+    id: 'customer-verification',
+    title: '9. KYC Verification & Anti-Fraud Compliance',
+    content: `Every client must complete Know Your Customer (KYC) verification by submitting authentic government-issued identity documents (Aadhaar, PAN, and Bank Account Proof).
 
-Data handling principles:
-• Personal data is collected only with your knowledge and consent
-• Data is used only for the stated purpose of responding to enquiries and providing services
-• We do not sell or share your personal information with third parties for marketing purposes
-• You may request access to or deletion of your personal data by contacting us
-
-Sensitive identity and banking documents should be collected only where legally necessary, through an appropriate secure process. The Company will not request unnecessary sensitive financial credentials through this website or contact form.`,
+Providing fraudulent or third-party documentation will result in immediate termination of account services and referral to regulatory authorities.`,
   },
   {
-    id: 'complaints',
-    title: '10. Complaints and Dispute Resolution',
-    content: `Customers may submit complaints through the Company's officially published contact details:
-
-Phone: ${COMPANY.phone}
-Email: ${COMPANY.email}
-Address: ${COMPANY.address}
-
-The Company will acknowledge complaints and handle them in accordance with applicable laws and regulatory requirements. Customers are encouraged to retain all relevant documentation when raising a complaint.
-
-Nothing in these Terms & Conditions limits any rights or remedies available to a customer under applicable Indian law.`,
-  },
-  {
-    id: 'amendments',
-    title: '11. Amendments',
-    content: `The Company may update these Terms & Conditions when necessary, subject to applicable legal requirements.
-
-Material changes will be communicated through appropriate channels, including updates on this website. Users are advised to review these terms periodically.
-
-Changes to these terms will not override any existing contractual rights or statutory rights that a customer may have under applicable law.`,
+    id: 'limitation-liability',
+    title: '10. Limitation of Liability',
+    content: `To the maximum extent permitted by Indian law, Javitri Trading Service Pvt. Ltd. and its directors shall not be liable for indirect, incidental, or consequential losses arising from market fluctuations, technical exchange downtimes, or user misunderstanding of market risks.`,
   },
   {
     id: 'governing-law',
-    title: '12. Applicable Law',
-    content: `These Terms & Conditions are subject to the applicable laws of India.
-
-Any jurisdiction or dispute-resolution clause will be finalised after legal review and will be communicated in the applicable written agreement provided to each customer.
-
-For all queries, contact us at:
-${COMPANY.name}
-${COMPANY.address}
-Phone: ${COMPANY.phone}
-Email: ${COMPANY.email}`,
+    title: '11. Governing Law & Legal Jurisdiction',
+    content: `These terms and any bilateral dispute arising out of corporate transactions shall be governed by and construed in accordance with the laws of the Republic of India. The courts of Uttar Pradesh shall have exclusive jurisdiction over legal proceedings.`,
   },
 ]
 
 function AccordionItem({ section, isOpen, onToggle }) {
   return (
-    <div className="rounded-xl overflow-hidden transition-all duration-200"
-      style={{
-        border: `1px solid ${isOpen ? 'rgba(212,168,67,0.4)' : 'rgba(212,168,67,0.1)'}`,
-        background: isOpen ? 'rgba(212,168,67,0.04)' : 'rgba(15,36,96,0.3)',
-      }}>
+    <div className="rounded-2xl border border-[#e2e8f0] bg-white overflow-hidden transition-all shadow-xs">
       <button
-        type="button"
         onClick={onToggle}
-        aria-expanded={isOpen}
-        className="w-full flex items-center justify-between px-5 py-4 text-left transition-colors focus:outline-none"
+        className="w-full px-6 py-4.5 flex items-center justify-between text-left hover:bg-[#f8fafc] transition-colors"
       >
-        <span className="text-sm font-semibold pr-4"
-          style={{ color: isOpen ? '#d4a843' : '#e2e8f0' }}>
-          {section.title}
-        </span>
-        {isOpen
-          ? <ChevronDown className="h-4 w-4 shrink-0" style={{ color: '#d4a843' }} />
-          : <ChevronRight className="h-4 w-4 shrink-0" style={{ color: '#8099b0' }} />
-        }
+        <span className="text-base font-bold text-[#0f172a]">{section.title}</span>
+        <ChevronDown
+          className="h-5 w-5 text-[#64748b] transition-transform duration-200 shrink-0 ml-4"
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}
+        />
       </button>
-
       {isOpen && (
-        <div className="px-5 pb-5">
-          <div className="h-px mb-4" style={{ background: 'rgba(212,168,67,0.25)' }} />
-          <div className="text-sm leading-relaxed whitespace-pre-line" style={{ color: '#b0c8dc' }}>
-            {section.content}
-          </div>
+        <div className="px-6 pb-6 pt-2 text-sm text-[#334155] leading-relaxed whitespace-pre-line border-t border-[#f1f5f9]">
+          {section.content}
         </div>
       )}
     </div>
@@ -208,66 +153,49 @@ export default function TermsPage() {
   const isOpen = (id) => expandAll || openSection === id
 
   return (
-    <div className="min-h-screen" style={{ background: '#080f22' }}>
-      <div className="max-w-3xl mx-auto px-4 py-10 sm:py-16">
+    <div className="min-h-screen bg-white">
 
-        {/* Back */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm mb-8 transition-colors"
-          style={{ color: '#8099b0' }}
-          onMouseEnter={e => e.currentTarget.style.color = '#b0c8dc'}
-          onMouseLeave={e => e.currentTarget.style.color = '#8099b0'}
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </button>
-
-        {/* Header */}
-        <div className="flex items-start gap-4 mb-4">
-          <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: 'rgba(212,168,67,0.1)', border: '1px solid rgba(212,168,67,0.25)' }}>
-            <Scale className="h-6 w-6" style={{ color: '#d4a843' }} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-bold mb-1" style={{ color: '#fff' }}>Terms &amp; Conditions</h1>
-            <div className="flex flex-wrap items-center gap-3 text-xs" style={{ color: '#8099b0' }}>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-3.5 w-3.5" />
-                Last updated: October 2026
-              </span>
-              <span>{COMPANY.name}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Company identification */}
-        <div className="rounded-2xl p-5 mb-6"
-          style={{ background: 'rgba(15,36,96,0.55)', border: '1px solid rgba(212,168,67,0.2)' }}>
-          <p className="text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: '#d4a843' }}>Registered Company</p>
-          <p className="text-sm font-bold mb-1" style={{ color: '#fff' }}>{COMPANY.name}</p>
-          <p className="text-xs font-mono font-semibold mb-1" style={{ color: '#f0c060' }}>CIN: {COMPANY.cin}</p>
-          <p className="text-xs" style={{ color: '#9ab0c4' }}>Registered Office: {COMPANY.address}</p>
-          <p className="text-sm mt-3 leading-relaxed" style={{ color: '#b0c8dc' }}>
-            Please read these Terms &amp; Conditions carefully before using this website or any services offered by the Company.
-            By accessing this website you agree to be bound by these terms. These terms cover the use of investment plans,
-            educational content, learning and advisory services, and all other services provided.
+      {/* Header */}
+      <section className="bg-[#f8fafc] border-b border-[#e2e8f0] py-16 text-center">
+        <div className="max-w-4xl mx-auto px-4">
+          <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-[#f0fdf4] border border-[#bbf7d0] text-[#059669] uppercase tracking-wider mb-4">
+            <Scale className="h-4 w-4" /> Legal Framework
+          </span>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-[#0f172a] tracking-tight mb-4">
+            Terms &amp; Conditions
+          </h1>
+          <p className="text-base text-[#475569] max-w-2xl mx-auto leading-relaxed">
+            Please review the legal and operational terms governing client agreements, service duration, daily payout tracking, and compliance policies.
           </p>
         </div>
+      </section>
 
-        {/* Expand / collapse */}
-        <div className="flex justify-end mb-4">
+      {/* Main Body */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+
+        {/* Corporate Identity Card */}
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-sm mb-8 space-y-3">
+          <div className="flex items-center gap-2">
+            <Building2 className="h-5 w-5 text-[#059669]" />
+            <p className="text-sm font-bold text-[#0f172a]">{COMPANY.name}</p>
+          </div>
+          <p className="text-xs font-mono font-semibold text-[#1a3c8f]">CIN: {COMPANY.cin}</p>
+          <p className="text-xs text-[#64748b]">Registered Address: {COMPANY.address}</p>
+        </div>
+
+        {/* Controls */}
+        <div className="flex justify-between items-center mb-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-[#64748b]">11 Formal Sections</p>
           <button
             onClick={() => { setExpandAll(!expandAll); setOpenSection(null) }}
-            className="text-xs transition-colors"
-            style={{ color: '#d4a843', textDecoration: 'underline', textUnderlineOffset: '2px' }}
+            className="text-xs font-bold text-[#059669] hover:underline"
           >
-            {expandAll ? 'Collapse all sections' : 'Expand all sections'}
+            {expandAll ? 'Collapse All Sections' : 'Expand All Sections'}
           </button>
         </div>
 
-        {/* Accordion */}
-        <div className="space-y-2.5 mb-10">
+        {/* Accordions */}
+        <div className="space-y-4 mb-12">
           {SECTIONS.map((section) => (
             <AccordionItem
               key={section.id}
@@ -278,31 +206,22 @@ export default function TermsPage() {
           ))}
         </div>
 
-        {/* Footer note */}
-        <div className="rounded-2xl p-5 mb-8"
-          style={{ background: 'rgba(15,36,96,0.35)', border: '1px solid rgba(15,36,96,0.75)' }}>
-          <p className="text-xs leading-relaxed" style={{ color: '#8099b0' }}>
-            These Terms &amp; Conditions are governed by applicable laws of India. Any jurisdiction or dispute-resolution
-            clause will be finalised after legal review and communicated in the applicable written customer agreement.
-            For queries contact{' '}
-            <a href={`mailto:${COMPANY.email}`} style={{ color: '#b0c8dc' }}>{COMPANY.email}</a>
-            {' '}or call{' '}
-            <a href={`tel:${COMPANY.phone}`} style={{ color: '#b0c8dc' }}>{COMPANY.phone}</a>.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        {/* Action Link Footer */}
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4 border-t border-[#e2e8f0]">
           <Link to="/risk-disclosure">
-            <Button variant="secondary" size="md">Risk Disclosure</Button>
+            <Button variant="secondary" size="md">
+              Risk Disclosure Statement
+            </Button>
           </Link>
           <Link to="/contact">
-            <Button size="md"
-              style={{ background: 'linear-gradient(135deg,#c8983a,#a07020)', border: 'none', color: '#fff' }}>
-              Contact Us
+            <Button size="md" variant="primary">
+              Contact Compliance Desk
             </Button>
           </Link>
         </div>
+
       </div>
+
     </div>
   )
 }
