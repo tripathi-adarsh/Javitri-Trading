@@ -17,6 +17,7 @@ const LegalConsent       = require('./LegalConsent')
 const AuditLog           = require('./AuditLog')
 const ContactMessage     = require('./ContactMessage')
 const PaymentRequest     = require('./PaymentRequest')
+const KycDocumentFile    = require('./KycDocumentFile')
 
 // ── User ↔ Employee ───────────────────────────────────────────────────────────
 User.hasOne(Employee,     { foreignKey: 'user_id', as: 'employeeProfile' })
@@ -139,4 +140,5 @@ module.exports = {
   AuditLog,
   ContactMessage,
   PaymentRequest,
+  KycDocumentFile,
 }
