@@ -17,10 +17,11 @@ function signRefresh (userId) {
   })
 }
 
+const isHttps = (process.env.FRONTEND_URL || '').startsWith('https://')
 const COOKIE_OPTS = {
   httpOnly: true,
-  secure:   process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure:   process.env.NODE_ENV === 'production' && isHttps,
+  sameSite: 'lax',
   maxAge:   7 * 24 * 60 * 60 * 1000,   // 7 days ms
 }
 
@@ -186,6 +187,28 @@ exports.me = async (req, res, next) => {
     const user = await User.findByPk(req.userId)
     if (!user) return res.status(404).json({ success: false, message: 'User not found' })
     res.json({ success: true, data: { user: user.toSafeJSON() } })
+  } catch (err) {
+    next(err)
+  }
+}
+
+// ── Change password (authenticated user) ──────────────────────────────────────
+
+exports.changePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body
+    const user = await User.findByPk(req.userId)
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' })
+
+    const valid = await user.verifyPassword(currentPassword)
+    if (!valid) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' })
+    }
+
+    user.password_hash = newPassword
+    await user.save()
+
+    res.json({ success: true, message: 'Password updated successfully' })
   } catch (err) {
     next(err)
   }

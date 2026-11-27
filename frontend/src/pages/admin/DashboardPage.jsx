@@ -129,6 +129,7 @@ export default function DashboardPage() {
           <StatCard icon={XCircle}      label="Payment Failed"      value={stats?.failedPayments}    color="red"     loading={loading} subtitle="Declined" />
           <StatCard icon={FileSearch}   label="Pending KYC"         value={stats?.pendingKyc}        color="amber"   loading={loading} subtitle="Requires Review" />
           <StatCard icon={Wallet}       label="Daily Payouts"       value={stats?.totalDailyPayouts} color="emerald" loading={loading} subtitle="Disbursed" />
+          <StatCard icon={Clock}        label="Client Pay Requests" value={stats?.pendingClientPaymentRequests} color="amber" loading={loading} subtitle="Pending Approval" />
           {!isEmployee && (
             <StatCard icon={Users}      label="Active Employees"    value={stats?.activeEmployees}   color="blue"    loading={loading} subtitle="Staff" />
           )}
@@ -407,6 +408,13 @@ export default function DashboardPage() {
             desc="Manage client investment requests, verify payment status, and track daily payout logs."
             color="blue"
             icon={TrendingUp}
+          />
+          <QuickAction
+            to="/admin/payment-requests"
+            title="Client Payment Requests"
+            desc="Review and process payout or deposit requests submitted by clients from their portal."
+            color="amber"
+            icon={Wallet}
           />
           <QuickAction
             to="/admin/payout-reports"

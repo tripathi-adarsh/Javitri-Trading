@@ -15,7 +15,8 @@ const NAV_ITEMS = [
   { to: '/admin/clients',          icon: UserCheck,       label: 'Clients',              roles: ['admin','super_admin','employee'] },
   { to: '/admin/kyc-review',       icon: FileSearch,      label: 'KYC Review',           roles: ['admin','super_admin'] },
   { to: '/admin/plan-requests',    icon: TrendingUp,      label: 'Plan Requests',        roles: ['admin','super_admin','employee'] },
-  { to: '/admin/payout-reports',   icon: Wallet,          label: 'Payout Reports',       roles: ['admin','super_admin','employee'] },
+  { to: '/admin/payment-requests', icon: Wallet,          label: 'Payment Requests',     roles: ['admin','super_admin','employee'] },
+  { to: '/admin/payout-reports',   icon: BarChart3,       label: 'Payout Reports',       roles: ['admin','super_admin','employee'] },
   { to: '/admin/contact-messages', icon: MessageSquare,   label: 'Contact Messages',     roles: ['admin','super_admin'] },
   { to: '/admin/plans',            icon: BarChart3,       label: 'Plans Configuration',  roles: ['admin','super_admin'] },
   { to: '/admin/audit-logs',       icon: FileText,        label: 'Audit Logs',           roles: ['admin','super_admin'] },
@@ -26,7 +27,7 @@ export default function AdminLayout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const location  = useLocation()
   const navigate  = useNavigate()
-  const { user, logout } = useTrading()
+  const { user, token, logout } = useTrading()
 
   const role = user?.role || 'employee'
   const visibleItems = NAV_ITEMS.filter(item => item.roles.includes(role))
@@ -36,7 +37,7 @@ export default function AdminLayout({ children }) {
   const pageTitle = currentItem?.label || 'Administration'
 
   const handleLogout = async () => {
-    try { await api.auth.logout() } catch { /* ignore */ }
+    try { await api.auth.logout(token) } catch { /* ignore */ }
     logout()
     navigate('/admin/login')
   }

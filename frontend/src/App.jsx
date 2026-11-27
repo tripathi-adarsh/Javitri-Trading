@@ -19,11 +19,12 @@ import RiskDisclosurePage from './pages/RiskDisclosurePage.jsx'
 import GenerateInvoicePage from './pages/GenerateInvoicePage.jsx'
 
 // Client flow
-import RegisterPage       from './pages/RegisterPage.jsx'
-import PlansPage          from './pages/PlansPage.jsx'
-import DealSummaryPage    from './pages/DealSummaryPage.jsx'
-import ConsentPage        from './pages/ConsentPage.jsx'
-import PaymentPage        from './pages/PaymentPage.jsx'
+import RegisterPage        from './pages/RegisterPage.jsx'
+import PlansPage           from './pages/PlansPage.jsx'
+import DealSummaryPage     from './pages/DealSummaryPage.jsx'
+import ConsentPage         from './pages/ConsentPage.jsx'
+import PaymentPage         from './pages/PaymentPage.jsx'
+import ClientDashboardPage from './pages/ClientDashboardPage.jsx'
 
 // Admin
 import AdminLoginPage        from './pages/AdminLoginPage.jsx'
@@ -34,14 +35,35 @@ import KycReviewPage         from './pages/admin/KycReviewPage.jsx'
 import AdminPlansPage        from './pages/admin/PlansPage.jsx'
 import AuditLogsPage         from './pages/admin/AuditLogsPage.jsx'
 import PlanRequestsPage      from './pages/admin/PlanRequestsPage.jsx'
+import PaymentRequestsPage   from './pages/admin/PaymentRequestsPage.jsx'
 import PayoutReportsPage     from './pages/admin/PayoutReportsPage.jsx'
 import ContactMessagesPage   from './pages/admin/ContactMessagesPage.jsx'
 
 // ── Guards & stubs ────────────────────────────────────────────────────────────
+function AuthLoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+      <div className="text-center space-y-3">
+        <div className="h-9 w-9 border-4 border-[#1d4ed8] border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-xs font-bold text-[#64748b]">Restoring session…</p>
+      </div>
+    </div>
+  )
+}
+
 function AdminRoute({ children, allowedRoles = ['admin', 'super_admin', 'employee'] }) {
-  const { user, token } = useTrading()
+  const { user, token, authLoading } = useTrading()
+  if (authLoading) return <AuthLoadingScreen />
   if (!token || !user) return <Navigate to="/admin/login" replace />
   if (!allowedRoles.includes(user.role)) return <Navigate to="/admin/login" replace />
+  return children
+}
+
+function ClientRoute({ children }) {
+  const { user, token, authLoading } = useTrading()
+  if (authLoading) return <AuthLoadingScreen />
+  if (!token || !user) return <Navigate to="/admin/login" replace />
+  if (user.role !== 'client') return <Navigate to="/admin/login" replace />
   return children
 }
 
@@ -64,6 +86,13 @@ function AppRoutes() {
         <Route path="/deal-summary"    element={<DealSummaryPage />} />
         <Route path="/consent"         element={<ConsentPage />} />
         <Route path="/payment"         element={<PaymentPage />} />
+        <Route path="/login"           element={<Navigate to="/admin/login" replace />} />
+        <Route path="/client/login"    element={<Navigate to="/admin/login" replace />} />
+        <Route path="/client/dashboard" element={
+          <ClientRoute>
+            <ClientDashboardPage />
+          </ClientRoute>
+        } />
       </Route>
 
       {/* Invoice generator — standalone, no navbar */}
@@ -85,6 +114,7 @@ function AppRoutes() {
               <Route path="employees"          element={<EmployeesPage />} />
               <Route path="clients"            element={<ClientsPage />} />
               <Route path="plan-requests"      element={<PlanRequestsPage />} />
+              <Route path="payment-requests"   element={<PaymentRequestsPage />} />
               <Route path="payout-reports"     element={<PayoutReportsPage />} />
               <Route path="contact-messages"   element={<ContactMessagesPage />} />
               <Route path="kyc-review"         element={<KycReviewPage />} />
@@ -147,8 +177,8 @@ function PublicFooter() {
       {/* Decorative luxury corporate top border accent */}
       <div style={{ height: '3px', background: 'linear-gradient(90deg, #0b1e3f 0%, #1d4ed8 45%, #d4af37 80%, #f59e0b 100%)' }} />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
 
           {/* Column 1: Brand & Registration */}
           <div>
@@ -229,7 +259,7 @@ function PublicFooter() {
                 to="/admin/login"
                 className="block text-sm text-[#64748b] hover:text-[#0b1e3f] font-semibold transition-colors pt-2"
               >
-                Admin Portal →
+                Admin / Client Login →
               </Link>
             </div>
           </div>

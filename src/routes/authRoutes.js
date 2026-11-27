@@ -58,6 +58,16 @@ router.post('/logout', authenticate, ctrl.logout)
 // GET /api/v1/auth/me
 router.get('/me', authenticate, ctrl.me)
 
+// POST /api/v1/auth/change-password
+router.post('/change-password', authenticate, [
+  body('currentPassword').notEmpty().withMessage('Current password required'),
+  body('newPassword')
+    .isLength({ min: 8 }).withMessage('New password must be at least 8 characters')
+    .matches(/[A-Z]/).withMessage('Must contain uppercase letter')
+    .matches(/[0-9]/).withMessage('Must contain a number')
+    .matches(/[^A-Za-z0-9]/).withMessage('Must contain a special character'),
+], validate, ctrl.changePassword)
+
 // POST /api/v1/auth/admin/register  (requires X-Admin-Token header)
 router.post('/admin/register', registerRules, validate, ctrl.adminRegister)
 

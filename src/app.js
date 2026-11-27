@@ -24,6 +24,8 @@ const auditLogRoutes          = require('./routes/auditLogRoutes')
 const userRoutes              = require('./routes/userRoutes')
 const planRequestRoutes       = require('./routes/planRequestRoutes')
 const contactRoutes           = require('./routes/contactRoutes')
+const paymentRequestRoutes    = require('./routes/paymentRequestRoutes')
+const marketRoutes            = require('./routes/marketRoutes')
 
 const app = express()
 
@@ -102,6 +104,15 @@ const authLimiter = rateLimit({
   message:          { success: false, message: 'Too many login attempts. Please try again in 15 minutes.' },
 })
 
+const marketLimiter = rateLimit({
+  windowMs:        15 * 60 * 1000,
+  max:             process.env.NODE_ENV === 'test' ? 10000 : 5000,
+  standardHeaders: true,
+  legacyHeaders:   false,
+  message:         { success: false, message: 'Too many market feed requests' },
+})
+
+app.use('/api/v1/market',            marketLimiter, marketRoutes)
 app.use('/api/', globalLimiter)
 app.use('/api/v1/auth/login',    authLimiter)
 app.use('/api/v1/auth/register', authLimiter)
@@ -119,6 +130,7 @@ app.use('/api/v1/audit-logs',        auditLogRoutes)
 app.use('/api/v1/users',             userRoutes)
 app.use('/api/v1/plan-requests',     planRequestRoutes)
 app.use('/api/v1/contact',           contactRoutes)
+app.use('/api/v1/payment-requests',  paymentRequestRoutes)
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

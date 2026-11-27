@@ -6,6 +6,7 @@ const { Op }  = require('sequelize')
 const { sequelize, Client, ClientKYC, ClientBankAccount, Employee, User } = require('../models/index')
 const { encrypt, maskPan, maskAccountNumber } = require('../utils/encryption')
 const { audit } = require('../utils/auditLogger')
+const { ensureClientUserAccount } = require('../utils/clientAccount')
 
 /**
  * Generate a human-readable registration ID.
@@ -94,7 +95,8 @@ exports.registerClient = async (req, res, next) => {
     // and return existing clientId so documents/plans can still be added
     const existingClient = byEmail || byMobile
     if (existingClient) {
-      await t.rollback()
+      const credentials = await ensureClientUserAccount(existingClient, { pan, transaction: t })
+      await t.commit()
       return res.status(200).json({
         success:  true,
         message:  'Client already registered — returning existing record',
@@ -103,6 +105,11 @@ exports.registerClient = async (req, res, next) => {
           registrationId: existingClient.registration_id,
           clientId:       existingClient.id,
           status:         existingClient.status,
+          credentials: {
+            email:        credentials.email,
+            password:     credentials.password,
+            isNewAccount: credentials.isNewAccount,
+          },
         },
       })
     }
@@ -202,9 +209,9 @@ exports.registerClient = async (req, res, next) => {
     }
 
     // ── 6. Auto-create plan request if plan slug is provided ───────────────
+    let createdPlanRequest = null
     if (req.body.selectedPlanSlug) {
       const { ClientPlanRequest } = require('../models/index')
-      const crypto = require('crypto')
 
       // Generate unique request number
       function genReqNum() {
@@ -214,18 +221,21 @@ exports.registerClient = async (req, res, next) => {
       }
 
       // Round-robin assignment is already done above — re-use same employee
-      await ClientPlanRequest.create({
+      createdPlanRequest = await ClientPlanRequest.create({
         request_number:       genReqNum(),
         client_id:            client.id,
         assigned_employee_id: employeeId,
         plan_slug:            req.body.selectedPlanSlug,
         plan_name:            req.body.selectedPlanName || req.body.selectedPlanSlug,
-        deal_amount:          req.body.intendedDealAmount ? req.body.intendedDealAmount * 100 : null,
-        daily_amount:         req.body.intendedDailyAmount ? req.body.intendedDailyAmount * 100 : null,
+        deal_amount:          req.body.intendedDealAmount ? Math.round(Number(req.body.intendedDealAmount) * 100) : null,
+        daily_amount:         req.body.intendedDailyAmount ? Math.round(Number(req.body.intendedDailyAmount) * 100) : null,
         payment_status:       'pending',
         status:               'pending',
       }, { transaction: t })
     }
+
+    // ── 7. Create client portal login credentials (email + generated password) ──
+    const credentials = await ensureClientUserAccount(client, { pan, transaction: t })
 
     await t.commit()
 
@@ -234,7 +244,7 @@ exports.registerClient = async (req, res, next) => {
       action:      'CLIENT_REGISTERED',
       entityType:  'client',
       entityId:    client.id,
-      metadata:    { registrationId, employeeId },
+      metadata:    { registrationId, employeeId, requestNumber: createdPlanRequest?.request_number || null },
       req,
     })
 
@@ -245,7 +255,14 @@ exports.registerClient = async (req, res, next) => {
         registrationId:  client.registration_id,
         clientId:        client.id,
         status:          client.status,
-        // Safe to display: name, registrationId
+        requestId:       createdPlanRequest?.id || null,
+        requestNumber:   createdPlanRequest?.request_number || null,
+        credentials: {
+          email:        credentials.email,
+          password:     credentials.password,
+          isNewAccount: credentials.isNewAccount,
+        },
+        // Safe to display: name, registrationId, generated portal credentials
         // Do NOT include PAN, bank details, encrypted values
       },
     })

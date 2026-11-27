@@ -28,9 +28,14 @@ const CORPORATE_GALLERY = [
   { src: '/gallery/img2.jpeg' },
   { src: '/gallery/img3.jpeg' },
   { src: '/gallery/img4.jpeg' },
+  { src: '/gallery/img5.jpeg' },
   { src: '/gallery/img6.jpeg' },
   { src: '/gallery/img7.jpeg' },
   { src: '/gallery/img8.jpeg' },
+  { src: '/gallery/img9.jpeg' },
+  { src: '/gallery/img10.jpeg' },
+  { src: '/gallery/img11.jpeg' },
+  { src: '/gallery/img12.jpeg' },
 ]
 
 const VALUES = [
@@ -95,7 +100,7 @@ const REVIEW_THEMES = [
 
 export default function HomePage() {
   const { t, lang } = useLang()
-  const { marketStatus, nifty, bankNifty } = useMarket()
+  const { marketStatus, nifty, bankNifty, dataSource, lastUpdated } = useMarket()
   const [modalOpen, setModalOpen]         = useState(false)
   const [activePlan, setActivePlan]       = useState(null)
   const [lightboxImg, setLightboxImg]     = useState(null)
@@ -188,46 +193,46 @@ export default function HomePage() {
               </p>
 
               {/* Quick Service Highlights */}
-              <div className="flex flex-wrap gap-2 justify-center lg:justify-start pt-1">
-                <Link to="/plans" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-blue-50 border border-blue-200 text-[#1d4ed8] hover:bg-blue-100 transition-colors">
+              <div className="grid grid-cols-2 sm:flex sm:flex-wrap gap-2 justify-center lg:justify-start pt-1">
+                <Link to="/plans" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-blue-50 border border-blue-200 text-[#1d4ed8] hover:bg-blue-100 transition-colors">
                   <TrendingUp className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t('hero_badge_plans')}</span>
+                  <span className="truncate">{t('hero_badge_plans')}</span>
                 </Link>
-                <Link to="/services" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-amber-50 border border-amber-200 text-[#b45309] hover:bg-amber-100 transition-colors">
+                <Link to="/services" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-amber-50 border border-amber-200 text-[#b45309] hover:bg-amber-100 transition-colors">
                   <Car className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t('hero_badge_auto')}</span>
+                  <span className="truncate">{t('hero_badge_auto')}</span>
                 </Link>
-                <Link to="/services" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 transition-colors">
+                <Link to="/services" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-emerald-50 border border-emerald-200 text-emerald-800 hover:bg-emerald-100 transition-colors">
                   <HeartPulse className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t('hero_badge_health')}</span>
+                  <span className="truncate">{t('hero_badge_health')}</span>
                 </Link>
-                <Link to="/services" className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-extrabold bg-purple-50 border border-purple-200 text-purple-800 hover:bg-purple-100 transition-colors">
+                <Link to="/services" className="inline-flex items-center justify-center sm:justify-start gap-1.5 px-3 py-2 sm:py-1.5 rounded-xl sm:rounded-full text-[11px] sm:text-xs font-extrabold bg-purple-50 border border-purple-200 text-purple-800 hover:bg-purple-100 transition-colors">
                   <HeartHandshake className="h-3.5 w-3.5 shrink-0" />
-                  <span>{t('hero_badge_vivah')}</span>
+                  <span className="truncate">{t('hero_badge_vivah')}</span>
                 </Link>
               </div>
 
               {/* CTAs */}
-              <div className="flex flex-col sm:flex-row gap-3.5 justify-center lg:justify-start pt-3">
+              <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2.5 sm:gap-3.5 justify-center lg:justify-start pt-3">
                 <a
                   href="#plans"
-                  className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] !text-white shadow-[0_4px_16px_rgba(180,83,9,0.35)] hover:shadow-[0_6px_22px_rgba(180,83,9,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all border border-amber-600 cursor-pointer"
+                  className="col-span-2 inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] hover:from-[#92400e] hover:to-[#d97706] !text-white shadow-[0_4px_16px_rgba(180,83,9,0.35)] hover:shadow-[0_6px_22px_rgba(180,83,9,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all border border-amber-600 cursor-pointer"
                 >
                   <TrendingUp className="h-4 w-4 shrink-0 !text-white" />
                   <span className="!text-white">{t('hero_cta_calc')}</span>
                 </a>
                 <Link
                   to="/services"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-black text-sm bg-white border-2 border-[#cbd5e1] hover:border-[#0b1e3f] text-[#0b1e3f] hover:bg-[#f8fafc] shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm bg-white border-2 border-[#cbd5e1] hover:border-[#0b1e3f] text-[#0b1e3f] hover:bg-[#f8fafc] shadow-xs hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer"
                 >
                   <span>{t('hero_cta_services')}</span>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-[#1d4ed8]" />
+                  <ArrowRight className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-[#1d4ed8]" />
                 </Link>
                 <Link
                   to="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-black text-sm bg-[#eff6ff] border-2 border-[#bfdbfe] hover:border-[#93c5fd] text-[#1d4ed8] hover:bg-[#dbeafe] hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-xs cursor-pointer"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 sm:px-6 py-3 sm:py-3.5 rounded-xl font-black text-xs sm:text-sm bg-[#eff6ff] border-2 border-[#bfdbfe] hover:border-[#93c5fd] text-[#1d4ed8] hover:bg-[#dbeafe] hover:-translate-y-0.5 active:translate-y-0 transition-all shadow-xs cursor-pointer"
                 >
-                  <PhoneCall className="h-4 w-4 shrink-0 text-[#1d4ed8]" />
+                  <PhoneCall className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 text-[#1d4ed8]" />
                   <span>{t('hero_cta_contact')}</span>
                 </Link>
               </div>
@@ -257,44 +262,79 @@ export default function HomePage() {
                     <span className={`h-2.5 w-2.5 rounded-full ${marketStatus.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} title={marketStatus.statusText} />
                   </div>
 
-                  {/* Live Simulation Market Ticker Widget */}
+                  {/* Live NSE Benchmark Market Ticker Widget */}
                   <div className="bg-[#f8fafc] rounded-2xl p-3.5 border border-[#e2e8f0] space-y-2.5">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-bold uppercase tracking-wider text-[#475569] flex items-center gap-1.5">
                         <Activity className="h-3.5 w-3.5 text-[#1d4ed8]" /> Benchmark Indices
                       </span>
                       <span
-                        className={`text-[10px] font-black px-2 py-0.5 rounded-full border flex items-center gap-1.5 ${
+                        className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border flex items-center gap-1.5 ${
                           marketStatus.isOpen
                             ? 'text-emerald-700 bg-emerald-50 border-emerald-200 shadow-xs'
-                            : 'text-rose-700 bg-rose-50 border-rose-200'
+                            : marketStatus.reasonType === 'pre_open'
+                              ? 'text-amber-700 bg-amber-50 border-amber-200'
+                              : 'text-rose-700 bg-rose-50 border-rose-200'
                         }`}
                       >
-                        <span className={`h-1.5 w-1.5 rounded-full ${marketStatus.isOpen ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`} />
+                        <span className={`h-1.5 w-1.5 rounded-full ${
+                          marketStatus.isOpen ? 'bg-emerald-500 animate-pulse' : marketStatus.reasonType === 'pre_open' ? 'bg-amber-500' : 'bg-rose-500'
+                        }`} />
                         {marketStatus.statusText}
                       </span>
                     </div>
 
+                    {/* Show exact reason when market is closed / pre-open */}
+                    {!marketStatus.isOpen && marketStatus.closeReason && (
+                      <div className="px-2.5 py-1.5 rounded-xl bg-rose-50/90 border border-rose-200 text-[11px] font-bold text-rose-800 flex items-center justify-between gap-2">
+                        <span>{marketStatus.closeReason}</span>
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-2 gap-2.5 pt-0.5">
                       <div className="p-2.5 bg-white rounded-xl border border-[#e2e8f0]">
-                        <p className="text-[10px] font-bold text-[#64748b]">NIFTY 50</p>
-                        <p className="text-sm sm:text-base font-black text-[#0b1e3f] font-mono leading-tight">
-                          {nifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <p className="text-[10px] font-bold text-[#64748b] flex items-center justify-between">
+                          <span>NIFTY 50</span>
+                          {dataSource === 'live' && marketStatus.isOpen && (
+                            <span className="text-[9px] font-black text-emerald-600">LIVE</span>
+                          )}
                         </p>
-                        <p className={`text-[10px] font-bold mt-0.5 ${nifty.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {nifty.change >= 0 ? '+' : ''}{nifty.change.toFixed(2)} ({nifty.percent >= 0 ? '+' : ''}{nifty.percent.toFixed(2)}%)
+                        <p className="text-sm sm:text-base font-black text-[#0b1e3f] font-mono leading-tight mt-0.5">
+                          {nifty.price !== null
+                            ? nifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : 'Loading…'}
                         </p>
+                        {nifty.price !== null && (
+                          <p className={`text-[10px] font-bold mt-0.5 ${nifty.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {nifty.change >= 0 ? '+' : ''}{nifty.change.toFixed(2)} ({nifty.percent >= 0 ? '+' : ''}{nifty.percent.toFixed(2)}%)
+                          </p>
+                        )}
                       </div>
                       <div className="p-2.5 bg-white rounded-xl border border-[#e2e8f0]">
-                        <p className="text-[10px] font-bold text-[#64748b]">BANK NIFTY</p>
-                        <p className="text-sm sm:text-base font-black text-[#0b1e3f] font-mono leading-tight">
-                          {bankNifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        <p className="text-[10px] font-bold text-[#64748b] flex items-center justify-between">
+                          <span>BANK NIFTY</span>
+                          {dataSource === 'live' && marketStatus.isOpen && (
+                            <span className="text-[9px] font-black text-emerald-600">LIVE</span>
+                          )}
                         </p>
-                        <p className={`text-[10px] font-bold mt-0.5 ${bankNifty.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-                          {bankNifty.change >= 0 ? '+' : ''}{bankNifty.change.toFixed(2)} ({bankNifty.percent >= 0 ? '+' : ''}{bankNifty.percent.toFixed(2)}%)
+                        <p className="text-sm sm:text-base font-black text-[#0b1e3f] font-mono leading-tight mt-0.5">
+                          {bankNifty.price !== null
+                            ? bankNifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : 'Loading…'}
                         </p>
+                        {bankNifty.price !== null && (
+                          <p className={`text-[10px] font-bold mt-0.5 ${bankNifty.change >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                            {bankNifty.change >= 0 ? '+' : ''}{bankNifty.change.toFixed(2)} ({bankNifty.percent >= 0 ? '+' : ''}{bankNifty.percent.toFixed(2)}%)
+                          </p>
+                        )}
                       </div>
                     </div>
+
+                    {lastUpdated && (
+                      <p className="text-[10px] text-[#64748b] font-medium text-right">
+                        NSE Feed Updated: {new Date(lastUpdated).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })} IST
+                      </p>
+                    )}
                   </div>
 
                   {/* Monday to Friday Trading Days Visual Badge */}
@@ -324,15 +364,15 @@ export default function HomePage() {
                   </div>
 
                   {/* Trust Footer */}
-                  <div className="pt-2 flex items-center justify-between text-xs text-[#64748b] border-t border-[#f1f5f9]">
+                  <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-between gap-2.5 text-[11px] sm:text-xs text-[#64748b] border-t border-[#f1f5f9]">
                     <span className="flex items-center gap-1 font-bold text-[#0b1e3f]">
-                      <ShieldCheck className="h-4 w-4 text-[#d97706]" /> MCA Verified
+                      <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#d97706]" /> MCA Verified
                     </span>
                     <span className="flex items-center gap-1 font-bold text-[#0b1e3f]">
-                      <CheckCircle2 className="h-4 w-4 text-[#1d4ed8]" /> GST Compliant
+                      <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#1d4ed8]" /> GST Compliant
                     </span>
                     <span className="flex items-center gap-1 font-bold text-[#0b1e3f]">
-                      <Award className="h-4 w-4 text-[#d97706]" /> Startup India
+                      <Award className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#d97706]" /> Startup India
                     </span>
                   </div>
 
@@ -370,13 +410,13 @@ export default function HomePage() {
       </section>
 
       {/* ── 3. AVAILABLE PLANS SHOWCASE (Dynamic Database Plans & Luxury Card Design) ── */}
-      <section id="plans" className="py-20 bg-[#f8fafc] border-b border-[#e2e8f0]">
+      <section id="plans" className="py-12 sm:py-20 bg-[#f8fafc] border-b border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-4">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
               {t('plans_heading')}
             </h2>
-            <p className="text-base text-[#475569] leading-relaxed">
+            <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
               {t('plans_subheading')}
             </p>
           </div>
@@ -387,7 +427,7 @@ export default function HomePage() {
               <p className="text-sm font-bold text-[#0b1e3f]">{t('plans_loading')}</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10 sm:mb-12">
               {plansList.slice(0, 4).map((plan, i) => {
                 const daily = Number(plan.proposedDailyINR || plan.associatedValueINR || 0)
                 const monthlyEst = daily * 22
@@ -456,24 +496,24 @@ export default function HomePage() {
       </section>
 
       {/* ── 4. CORPORATE FACILITIES & INFRASTRUCTURE GALLERY ── */}
-      <section className="py-20 bg-white border-b border-[#e2e8f0]">
+      <section className="py-12 sm:py-20 bg-white border-b border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-4">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
               {t('gallery_heading')}
             </h2>
-            <p className="text-base text-[#475569] leading-relaxed">
+            <p className="text-sm sm:text-base text-[#475569] leading-relaxed">
               {t('gallery_subheading')}
             </p>
           </div>
 
-          {/* Photo Grid - Clean 3-image preview with Zoom */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Photo Grid - Swipeable horizontal carousel on mobile, 3-col grid on desktop */}
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 no-scrollbar sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:gap-6 sm:overflow-visible sm:pb-0">
             {CORPORATE_GALLERY.slice(0, 3).map((img, idx) => (
               <div
                 key={idx}
                 onClick={() => setLightboxImg(img)}
-                className="group relative rounded-3xl overflow-hidden bg-white border border-[#e2e8f0] shadow-sm hover:border-[#1d4ed8] hover:shadow-xl transition-all duration-300 cursor-pointer aspect-[16/10]"
+                className="min-w-[82%] snap-center sm:min-w-0 group relative rounded-3xl overflow-hidden bg-white border border-[#e2e8f0] shadow-sm hover:border-[#1d4ed8] hover:shadow-xl transition-all duration-300 cursor-pointer aspect-[16/10]"
               >
                 <img
                   src={img.src}
@@ -537,54 +577,54 @@ export default function HomePage() {
       )}
 
       {/* ── 5. INSTITUTIONAL ETHOS / VALUES ── */}
-      <section className="py-20 bg-[#f8fafc] border-b border-[#e2e8f0]">
+      <section className="py-12 sm:py-20 bg-[#f8fafc] border-b border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-4">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
               {t('ethos_heading')}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-5 shadow-xs">
-                <ShieldCheck className="h-7 w-7" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-4 sm:mb-5 shadow-xs">
+                <ShieldCheck className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <h3 className="text-lg font-black text-[#0b1e3f] mb-2">{t('pillar1_title')}</h3>
-              <p className="text-sm text-[#475569] leading-relaxed">{t('pillar1_desc')}</p>
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f] mb-1.5 sm:mb-2">{t('pillar1_title')}</h3>
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{t('pillar1_desc')}</p>
             </div>
-            <div className="p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-5 shadow-xs">
-                <HeartPulse className="h-7 w-7" />
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-4 sm:mb-5 shadow-xs">
+                <HeartPulse className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <h3 className="text-lg font-black text-[#0b1e3f] mb-2">{t('pillar2_title')}</h3>
-              <p className="text-sm text-[#475569] leading-relaxed">{t('pillar2_desc')}</p>
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f] mb-1.5 sm:mb-2">{t('pillar2_title')}</h3>
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{t('pillar2_desc')}</p>
             </div>
-            <div className="p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
-              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-5 shadow-xs">
-                <Clock className="h-7 w-7" />
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#e2e8f0] shadow-xs hover:border-[#1d4ed8] hover:shadow-lg transition-all">
+              <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-2xl bg-gradient-to-br from-blue-50 to-amber-50/40 border border-blue-200/80 flex items-center justify-center text-[#1d4ed8] mb-4 sm:mb-5 shadow-xs">
+                <Clock className="h-6 w-6 sm:h-7 sm:w-7" />
               </div>
-              <h3 className="text-lg font-black text-[#0b1e3f] mb-2">{t('pillar3_title')}</h3>
-              <p className="text-sm text-[#475569] leading-relaxed">{t('pillar3_desc')}</p>
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f] mb-1.5 sm:mb-2">{t('pillar3_title')}</h3>
+              <p className="text-xs sm:text-sm text-[#475569] leading-relaxed">{t('pillar3_desc')}</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── 6. REVIEWS & TESTIMONIALS (Kept in Original Text as Instructed) ── */}
-      <section className="py-20 bg-white border-b border-[#e2e8f0]">
+      <section className="py-12 sm:py-20 bg-white border-b border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-4">
+          <div className="text-center max-w-3xl mx-auto mb-8 sm:mb-14">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] tracking-tight mb-3 sm:mb-4">
               {lang === 'hi' ? 'पंजीकृत प्रतिभागियों के अनुभव एवं समीक्षाएं' : 'Feedback from Registered Participants'}
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-2 no-scrollbar md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
             {REVIEWS.map((review, i) => {
               const theme = REVIEW_THEMES[i % REVIEW_THEMES.length]
               return (
                 <div
                   key={i}
-                  className={`p-7 rounded-3xl bg-white border border-[#e2e8f0] shadow-sm ${theme.topBorder} ${theme.accentGlow} transition-all duration-300 flex flex-col justify-between`}
+                  className={`min-w-[85%] snap-center md:min-w-0 p-5 sm:p-7 rounded-3xl bg-white border border-[#e2e8f0] shadow-sm ${theme.topBorder} ${theme.accentGlow} transition-all duration-300 flex flex-col justify-between`}
                 >
                   <div>
                     <div className="flex items-center justify-between mb-4">
@@ -627,15 +667,15 @@ export default function HomePage() {
       </section>
 
       {/* ── 8. CALL TO ACTION BANNER ── */}
-      <section className="py-16 bg-white">
+      <section className="py-10 sm:py-16 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl p-8 sm:p-14 text-center bg-gradient-to-br from-slate-50 via-white to-amber-50/20 border-2 border-[#e2e8f0] shadow-xl relative overflow-hidden">
+          <div className="rounded-3xl p-6 sm:p-14 text-center bg-gradient-to-br from-slate-50 via-white to-amber-50/20 border-2 border-[#e2e8f0] shadow-xl relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
 
-            <h2 className="text-3xl sm:text-4xl font-black text-[#0b1e3f] mb-4 tracking-tight">
+            <h2 className="text-2xl sm:text-4xl font-black text-[#0b1e3f] mb-3 sm:mb-4 tracking-tight">
               {t('cta_title')}
             </h2>
-            <p className="text-base text-[#475569] max-w-xl mx-auto mb-8 leading-relaxed">
+            <p className="text-sm sm:text-base text-[#475569] max-w-xl mx-auto mb-6 sm:mb-8 leading-relaxed">
               {t('cta_desc')}
             </p>
 

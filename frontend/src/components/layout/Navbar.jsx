@@ -1,8 +1,9 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, Shield, MessageCircle, Globe, ChevronDown, PhoneCall, Send, Activity } from 'lucide-react'
+import { Menu, X, Shield, MessageCircle, Globe, ChevronDown, PhoneCall, Send, Activity, UserCheck } from 'lucide-react'
 import { useLang, LANGUAGES } from '../../context/LanguageContext.jsx'
 import { useMarket } from '../../context/MarketContext.jsx'
+import { useTrading } from '../../context/TradingContext.jsx'
 
 const WHATSAPP_URL = 'https://wa.me/919022487800'
 const TELEGRAM_URL = 'https://t.me/Javitritradingservice'
@@ -17,6 +18,8 @@ export default function Navbar() {
   const location = useLocation()
   const { lang, setLang, t } = useLang()
   const { marketStatus, nifty, bankNifty } = useMarket()
+  const { user, token } = useTrading()
+  const isClientLoggedIn = Boolean(token && user?.role === 'client')
 
   const isActive = (to) => to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
@@ -62,40 +65,59 @@ export default function Navbar() {
 
       {/* ── Institutional Top Bar: Live NIFTY / BANK NIFTY + Market Status ── */}
       <div className="bg-[#0b1e3f] text-white text-[11px] py-1.5 px-3 sm:px-4 border-b border-[#1e3a8a]/40 shadow-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1.5 sm:gap-4">
           
-          {/* Left: Market Status condition badge */}
-          <div className="flex items-center gap-2">
+          {/* Row 1 / Left: Market Status condition badge + closure reason */}
+          <div className="flex items-center justify-between sm:justify-start gap-2 min-w-0">
             <span
-              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider ${
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0 ${
                 marketStatus.isOpen
                   ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-xs'
-                  : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                  : marketStatus.reasonType === 'pre_open'
+                    ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                    : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
               }`}
+              title={marketStatus.closeReason}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${marketStatus.isOpen ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${
+                marketStatus.isOpen ? 'bg-emerald-400 animate-pulse' : marketStatus.reasonType === 'pre_open' ? 'bg-amber-400' : 'bg-rose-400'
+              }`} />
               {marketStatus.statusText}
             </span>
-            <span className="hidden sm:inline text-slate-300 text-[10px] font-medium">
-              (Mon–Fri 09:00 - 15:30 IST)
+            <span className="text-slate-300 text-[10px] font-semibold truncate">
+              {marketStatus.isOpen
+                ? '(NSE Live · 09:15 - 15:30 IST)'
+                : `(${marketStatus.closeReason})`}
             </span>
           </div>
 
-          {/* Center / Right: Live NIFTY & BANK NIFTY Prices (Real-time live updates) */}
-          <div className="flex items-center gap-3 sm:gap-5 font-mono text-[10px] sm:text-xs">
+          {/* Row 2 / Right: Live NIFTY & BANK NIFTY Prices (both visible on mobile!) */}
+          <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-5 font-mono text-[10px] sm:text-xs shrink-0 border-t border-white/10 pt-1 sm:border-t-0 sm:pt-0">
             <div className="flex items-center gap-1">
-              <span className="text-slate-300 font-sans font-bold text-[10px]">NIFTY 50:</span>
-              <span className="font-extrabold text-white">{nifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className={`font-bold text-[10px] ${nifty.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {nifty.change >= 0 ? '+' : ''}{nifty.change.toFixed(2)} ({nifty.percent >= 0 ? '+' : ''}{nifty.percent.toFixed(2)}%)
-              </span>
+              <span className="text-slate-300 font-sans font-bold text-[10px]">NIFTY:</span>
+              {nifty.price !== null ? (
+                <>
+                  <span className="font-extrabold text-white">{nifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className={`font-bold text-[10px] ${nifty.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {nifty.percent >= 0 ? '+' : ''}{nifty.percent.toFixed(2)}%
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-400 text-[10px]">Live…</span>
+              )}
             </div>
-            <div className="hidden sm:flex items-center gap-1">
-              <span className="text-slate-300 font-sans font-bold text-[10px]">BANK NIFTY:</span>
-              <span className="font-extrabold text-white">{bankNifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className={`font-bold text-[10px] ${bankNifty.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {bankNifty.change >= 0 ? '+' : ''}{bankNifty.change.toFixed(2)} ({bankNifty.percent >= 0 ? '+' : ''}{bankNifty.percent.toFixed(2)}%)
-              </span>
+            <div className="flex items-center gap-1">
+              <span className="text-slate-300 font-sans font-bold text-[10px]">BANKNIFTY:</span>
+              {bankNifty.price !== null ? (
+                <>
+                  <span className="font-extrabold text-white">{bankNifty.price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                  <span className={`font-bold text-[10px] ${bankNifty.change >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {bankNifty.percent >= 0 ? '+' : ''}{bankNifty.percent.toFixed(2)}%
+                  </span>
+                </>
+              ) : (
+                <span className="text-slate-400 text-[10px]">Live…</span>
+              )}
             </div>
             <div className="hidden md:inline text-amber-300 font-sans font-extrabold text-[10px] bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
               Startup India: DIPP291171
@@ -108,19 +130,19 @@ export default function Navbar() {
       {/* Corporate top micro-accent line */}
       <div style={{ height: '3px', background: 'linear-gradient(90deg, #0b1e3f 0%, #1d4ed8 45%, #d4af37 80%, #f59e0b 100%)' }} />
 
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+      <nav className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-15 sm:h-20">
 
           {/* ── Logo ── */}
-          <Link to="/" className="flex items-center gap-2.5 sm:gap-3.5 group shrink-0 py-1" aria-label="Javitri Trading Service Pvt. Ltd.">
-            <div className="h-12 sm:h-14 w-12 sm:w-14 rounded-2xl p-1 shadow-xs border-2 border-slate-200/90 bg-white group-hover:border-blue-400 transition-all flex items-center justify-center shrink-0">
+          <Link to="/" className="flex items-center gap-2 sm:gap-3.5 group shrink-0 py-1 min-w-0" aria-label="Javitri Trading Service Pvt. Ltd.">
+            <div className="h-10 sm:h-14 w-10 sm:w-14 rounded-xl sm:rounded-2xl p-1 shadow-xs border-2 border-slate-200/90 bg-white group-hover:border-blue-400 transition-all flex items-center justify-center shrink-0">
               <img src="/logo.jpeg" alt="Javitri Trading Service Pvt. Ltd." className="h-full w-full object-contain" />
             </div>
-            <div>
-              <p className="text-base sm:text-lg font-black leading-tight text-[#0f172a] tracking-tight whitespace-nowrap">
+            <div className="min-w-0">
+              <p className="text-sm sm:text-lg font-black leading-tight text-[#0f172a] tracking-tight truncate">
                 Javitri Trading <span className="text-[#1d4ed8]">Service</span>
               </p>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#b45309]">Pvt. Ltd.</p>
+              <p className="text-[9px] sm:text-xs font-black uppercase tracking-wider text-[#b45309]">Pvt. Ltd.</p>
             </div>
           </Link>
 
@@ -214,14 +236,24 @@ export default function Navbar() {
               <span>{t('nav_telegram')}</span>
             </a>
 
-            {/* Admin Login */}
-            <Link
-              to="/admin/login"
-              className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-extrabold transition-all bg-[#0b1e3f] !text-white hover:bg-[#1d4ed8] shadow-xs hover:-translate-y-0.5"
-            >
-              <Shield className="h-3.5 w-3.5 text-blue-300 shrink-0" />
-              <span>{t('nav_admin')}</span>
-            </Link>
+            {/* Single Portal Login (or My Profile when client is signed in) */}
+            {isClientLoggedIn ? (
+              <Link
+                to="/client/dashboard"
+                className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-extrabold transition-all bg-[#1d4ed8] !text-white hover:bg-[#1e40af] shadow-xs hover:-translate-y-0.5"
+              >
+                <UserCheck className="h-3.5 w-3.5 shrink-0" />
+                <span>My Profile</span>
+              </Link>
+            ) : (
+              <Link
+                to="/admin/login"
+                className="flex items-center gap-1.5 px-2.5 xl:px-3 py-1.5 xl:py-2 rounded-xl text-xs font-extrabold transition-all bg-[#0b1e3f] !text-white hover:bg-[#1d4ed8] shadow-xs hover:-translate-y-0.5"
+              >
+                <Shield className="h-3.5 w-3.5 text-blue-300 shrink-0" />
+                <span>{t('nav_admin')}</span>
+              </Link>
+            )}
           </div>
 
           {/* ── Mobile Right Actions ── */}
@@ -273,52 +305,68 @@ export default function Navbar() {
 
         {/* ── Mobile Nav Drawer ── */}
         {mobileOpen && (
-          <div className="lg:hidden py-4 border-t border-[#e2e8f0] space-y-1">
-            {navLinks.map(({ to, labelKey }) => {
-              const active = isActive(to)
-              const label = t(labelKey) || labelKey
-              return (
-                <Link
-                  key={to}
-                  to={to}
+          <div className="lg:hidden py-4 px-1 border-t border-[#e2e8f0] space-y-2 bg-white">
+            <div className="grid grid-cols-1 gap-1">
+              {navLinks.map(({ to, labelKey }) => {
+                const active = isActive(to)
+                const label = t(labelKey) || labelKey
+                return (
+                  <Link
+                    key={to}
+                    to={to}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center justify-between px-4 py-3 text-sm rounded-2xl transition-all ${
+                      active ? 'bg-[#0b1e3f] !text-white font-black shadow-sm' : 'text-[#334155] font-bold hover:bg-[#f8fafc]'
+                    }`}
+                  >
+                    <span>{label}</span>
+                    <span className={`text-xs ${active ? 'text-blue-300' : 'text-[#94a3b8]'}`}>→</span>
+                  </Link>
+                )
+              })}
+            </div>
+            <div className="pt-3 mt-2 border-t border-[#e2e8f0] space-y-2.5">
+              <div className="grid grid-cols-2 gap-2">
+                <a
+                  href={WHATSAPP_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => setMobileOpen(false)}
-                  className={`block px-4 py-2.5 text-sm rounded-xl transition-all ${
-                    active ? 'bg-[#0b1e3f] !text-white font-black shadow-xs' : 'text-[#334155] font-semibold hover:bg-[#f8fafc]'
-                  }`}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-extrabold rounded-xl bg-[#eff6ff] border border-[#bfdbfe] text-[#1d4ed8]"
                 >
-                  {label}
+                  <MessageCircle className="h-4 w-4 shrink-0" />
+                  <span>{t('nav_whatsapp')}</span>
+                </a>
+                <a
+                  href={TELEGRAM_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-extrabold rounded-xl bg-sky-50 border border-sky-200 text-sky-800"
+                >
+                  <Send className="h-4 w-4 shrink-0 text-sky-600" />
+                  <span>{t('nav_telegram')}</span>
+                </a>
+              </div>
+              {isClientLoggedIn ? (
+                <Link
+                  to="/client/dashboard"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-black rounded-xl bg-[#1d4ed8] !text-white shadow-sm"
+                >
+                  <UserCheck className="h-4 w-4 shrink-0" />
+                  <span>My Profile</span>
                 </Link>
-              )
-            })}
-            <div className="pt-3 mt-2 border-t border-[#e2e8f0] flex flex-col gap-2">
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl bg-[#eff6ff] border border-[#bfdbfe] text-[#1d4ed8]"
-              >
-                <MessageCircle className="h-4 w-4 shrink-0" />
-                <span>{t('nav_whatsapp')}</span>
-              </a>
-              <a
-                href={TELEGRAM_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl bg-sky-50 border border-sky-200 text-sky-800"
-              >
-                <Send className="h-4 w-4 shrink-0 text-sky-600" />
-                <span>{t('nav_telegram')}</span>
-              </a>
-              <Link
-                to="/admin/login"
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl bg-[#0b1e3f] !text-white"
-              >
-                <Shield className="h-4 w-4 shrink-0" />
-                <span>{t('nav_admin')}</span>
-              </Link>
+              ) : (
+                <Link
+                  to="/admin/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-black rounded-xl bg-[#0b1e3f] !text-white shadow-sm"
+                >
+                  <Shield className="h-4 w-4 shrink-0" />
+                  <span>{t('nav_admin')}</span>
+                </Link>
+              )}
             </div>
           </div>
         )}

@@ -3,6 +3,7 @@ const crypto  = require('crypto')
 const { Op }  = require('sequelize')
 const { sequelize, Client, ClientKYC, ClientPlanRequest, DailyPayout, Employee, User } = require('../models/index')
 const { audit } = require('../utils/auditLogger')
+const { ensureClientUserAccount } = require('../utils/clientAccount')
 
 // ── Generate a unique request number (REQ-YYYYMMDD-XXXXXX) ───────────────────
 function generateRequestNumber() {
@@ -120,6 +121,8 @@ exports.createPlanRequest = async (req, res, next) => {
       }
     }
 
+    const credentials = await ensureClientUserAccount(client, { transaction: t })
+
     await t.commit()
 
     await audit({
@@ -138,6 +141,11 @@ exports.createPlanRequest = async (req, res, next) => {
         requestId:          planRequest.id,
         requestNumber:      planRequest.request_number,
         assignedEmployeeId: employee?.id || null,
+        credentials: {
+          email:        credentials.email,
+          password:     credentials.password,
+          isNewAccount: credentials.isNewAccount,
+        },
       },
     })
   } catch (err) {

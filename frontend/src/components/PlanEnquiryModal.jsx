@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { X, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Loader2, Upload, User, Phone, Mail, CreditCard, Building2, FileText, Users, Check } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { X, ChevronRight, ChevronLeft, CheckCircle2, AlertCircle, Loader2, Upload, User, Building2, FileText, Users, Download, Share2, Copy, Check, KeyRound, LogIn } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { api } from '../utils/api.js'
+import { PlanRequestPdf, generatePlanRequestPdfBlob } from './PlanRequestPdf.jsx'
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api/v1'
 
@@ -55,16 +57,25 @@ function Field({ label, required, error, children }) {
   )
 }
 
-function TextInput({ register, name, placeholder, type = 'text', error, className = '', ...rest }) {
+function TextInput({ register, name, placeholder, type = 'text', error, className = '', onChange, onBlur, ...rest }) {
+  const reg = register(name)
   return (
     <input
       type={type}
       placeholder={placeholder}
-      {...register(name)}
+      {...reg}
+      {...rest}
+      onChange={(e) => {
+        if (onChange) onChange(e)
+        reg.onChange(e)
+      }}
+      onBlur={(e) => {
+        if (onBlur) onBlur(e)
+        reg.onBlur(e)
+      }}
       className={`w-full rounded-xl px-4 py-2.5 text-sm bg-white border border-[#cbd5e1] text-[#0f172a] placeholder-[#94a3b8] focus:border-[#2563eb] focus:ring-3 focus:ring-[#2563eb]/10 focus:outline-none transition-all ${
         error ? 'border-red-500' : ''
       } ${className}`}
-      {...rest}
     />
   )
 }
@@ -82,6 +93,9 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
   const [checkingClient, setCheckingClient] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [regId, setRegId]             = useState('')
+  const [submittedSummary, setSubmittedSummary] = useState(null)
+  const [pdfBusy, setPdfBusy]         = useState(false)
+  const [copiedCreds, setCopiedCreds] = useState(false)
   const overlayRef = useRef(null)
 
   const [docs, setDocs] = useState({
@@ -128,11 +142,14 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
       setCheckingClient(false)
       setSubmitError('')
       setRegId('')
+      setSubmittedSummary(null)
+      setPdfBusy(false)
+      setCopiedCreds(false)
       setDocs({ aadhaarFront: null, aadhaarBack: null, pan: null, bankProof: null })
       setConsentChecked(false)
       reset()
     }
-  }, [isOpen, initialPlan, plansList])
+  }, [isOpen, initialPlan])
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose() }
@@ -149,7 +166,7 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
   if (!isOpen) return null
 
   const stepFields = {
-    1: ['fullName', 'mobile', 'email', 'city', 'state', 'postalCode'],
+    1: ['fullName', 'mobile', 'email', 'aadhaar', 'pan', 'city', 'state', 'postalCode'],
     2: ['nomineeName', 'nomineeRelation', 'nomineeMobile'],
     3: ['accountHolderName', 'bankName', 'accountNumber', 'ifscCode'],
     4: [],
@@ -222,6 +239,16 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     setStep(s => Math.max(0, s - 1))
   }
 
+  const onInvalid = (formErrors) => {
+    const entries = Object.entries(formErrors || {})
+    if (entries.length > 0) {
+      const [field, errObj] = entries[0]
+      setSubmitError(`Please check "${field}": ${errObj?.message || 'Invalid value'}`)
+    } else {
+      setSubmitError('Please check all required fields and try again.')
+    }
+  }
+
   const onSubmit = async (data) => {
     if (!selectedPlan) { setSubmitError('Please select a plan'); return }
     if (!consentChecked) { setSubmitError('Please confirm the agreement to proceed.'); return }
@@ -229,12 +256,28 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     setSubmitError('')
     try {
       if (isExisting && existingClientId) {
-        await api.planRequests.create({
+        const reqRes = await api.planRequests.create({
           clientId:    existingClientId,
           planSlug:    selectedPlan.slug,
           planName:    selectedPlan.name,
           dealAmount:  selectedPlan.dealAmountINR * 100,
           dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
+        })
+        setSubmittedSummary({
+          regId,
+          requestNumber: reqRes?.data?.requestNumber || '',
+          plan: selectedPlan,
+          clientName: data.fullName,
+          mobile: data.mobile,
+          email: data.email,
+          city: data.city,
+          state: data.state,
+          postalCode: data.postalCode,
+          nomineeName: data.nomineeName,
+          nomineeRelation: data.nomineeRelation,
+          bankName: data.bankName,
+          credentials: reqRes?.data?.credentials || { email: data.email, password: null, isNewAccount: false },
+          submittedDate: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
         })
         setSubmitted(true)
         return
@@ -283,7 +326,10 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
 
       const res = await api.public.registerClient(payload)
       const clientId = res.data?.clientId
-      setRegId(res.data?.registrationId || '')
+      const finalRegId = res.data?.registrationId || ''
+      let requestNumber = res.data?.requestNumber || ''
+      let credentials = res.data?.credentials || { email: data.email, password: null, isNewAccount: false }
+      setRegId(finalRegId)
 
       const hasFiles = docs.aadhaarFront || docs.aadhaarBack || docs.pan || docs.bankProof
       if (hasFiles && clientId) {
@@ -299,18 +345,35 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
         } catch (upErr) { console.warn('Document upload error:', upErr.message) }
       }
 
-      if (clientId) {
-        try {
-          await api.planRequests.create({
-            clientId,
-            planSlug:    selectedPlan.slug,
-            planName:    selectedPlan.name,
-            dealAmount:  selectedPlan.dealAmountINR * 100,
-            dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
-          })
-        } catch (e) { console.warn('Plan request create failed:', e.message) }
+      // Only create plan request separately if registerClient returned an existing client without auto-creating it
+      if (clientId && !requestNumber) {
+        const reqRes = await api.planRequests.create({
+          clientId,
+          planSlug:    selectedPlan.slug,
+          planName:    selectedPlan.name,
+          dealAmount:  selectedPlan.dealAmountINR * 100,
+          dailyAmount: selectedPlan.proposedDailyINR ? selectedPlan.proposedDailyINR * 100 : null,
+        })
+        requestNumber = reqRes?.data?.requestNumber || requestNumber
+        if (reqRes?.data?.credentials) credentials = reqRes.data.credentials
       }
 
+      setSubmittedSummary({
+        regId: finalRegId,
+        requestNumber,
+        plan: selectedPlan,
+        clientName: data.fullName,
+        mobile: data.mobile,
+        email: data.email,
+        city: data.city,
+        state: data.state,
+        postalCode: data.postalCode,
+        nomineeName: data.nomineeName,
+        nomineeRelation: data.nomineeRelation,
+        bankName: data.bankName,
+        credentials,
+        submittedDate: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
+      })
       setSubmitted(true)
     } catch (err) {
       setSubmitError(err.message || 'Submission failed. Please try again or contact us directly.')
@@ -319,36 +382,214 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
     }
   }
 
+  const handleDownloadPdf = async () => {
+    if (!submittedSummary || pdfBusy) return
+    setPdfBusy(true)
+    try {
+      await new Promise(r => setTimeout(r, 120))
+      const { blob, filename } = await generatePlanRequestPdfBlob(submittedSummary.regId)
+      const url = URL.createObjectURL(blob)
+      const a   = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.click()
+      setTimeout(() => URL.revokeObjectURL(url), 4000)
+    } catch (e) {
+      alert('PDF download could not be generated. Please try again.')
+      console.error(e)
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  const handleShareWhatsApp = async () => {
+    if (!submittedSummary || pdfBusy) return
+    setPdfBusy(true)
+    try {
+      await new Promise(r => setTimeout(r, 120))
+      const { blob, filename } = await generatePlanRequestPdfBlob(submittedSummary.regId)
+      const file = new File([blob], filename, { type: 'application/pdf' })
+
+      const loginUrl = `${window.location.origin}/admin/login`
+      const creds = submittedSummary.credentials
+      const summaryLines = [
+        `*Javitri Trading Service Pvt. Ltd.*`,
+        `Plan Registration Confirmation`,
+        ``,
+        `*Client:* ${submittedSummary.clientName || 'Client'}`,
+        `*Registration ID:* ${submittedSummary.regId || '—'}`,
+        submittedSummary.requestNumber ? `*Request No:* ${submittedSummary.requestNumber}` : null,
+        `*Selected Plan:* ${submittedSummary.plan?.name} (${submittedSummary.plan?.deal})`,
+        `*Daily Estimate:* ${submittedSummary.plan?.daily} / day (Mon-Fri)`,
+        ``,
+        `*Client Portal Login:* ${loginUrl}`,
+        `*Email:* ${creds?.email || submittedSummary.email}`,
+        creds?.password ? `*Password:* ${creds.password}` : `*Password:* Use your existing portal password`,
+        ``,
+        `हमारी टीम आपसे 24 घंटे के अंदर संपर्क करेगी।`,
+        `Support: +91 9022487800 | info@javitritrading.com`,
+      ].filter(Boolean).join('\n')
+
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: `Javitri Plan Confirmation - ${submittedSummary.regId || ''}`,
+          text: summaryLines,
+        })
+      } else {
+        // Desktop fallback: download the PDF and open WhatsApp Web with pre-filled details
+        const url = URL.createObjectURL(blob)
+        const a   = document.createElement('a')
+        a.href = url
+        a.download = filename
+        a.click()
+        setTimeout(() => URL.revokeObjectURL(url), 4000)
+
+        window.open(`https://wa.me/?text=${encodeURIComponent(summaryLines)}`, '_blank', 'noopener,noreferrer')
+      }
+    } catch (e) {
+      if (e?.name !== 'AbortError') {
+        alert('Could not share on WhatsApp. Please download the PDF instead.')
+        console.error(e)
+      }
+    } finally {
+      setPdfBusy(false)
+    }
+  }
+
+  const handleCopyCreds = () => {
+    const creds = submittedSummary?.credentials
+    if (!creds?.email) return
+    const txt = creds.password
+      ? `Portal: ${window.location.origin}/admin/login\nEmail: ${creds.email}\nPassword: ${creds.password}`
+      : `Portal: ${window.location.origin}/admin/login\nEmail: ${creds.email}`
+    navigator.clipboard?.writeText(txt).then(() => {
+      setCopiedCreds(true)
+      setTimeout(() => setCopiedCreds(false), 2500)
+    }).catch(() => {})
+  }
+
   /* ── Success Screen ── */
   if (submitted) {
+    const creds = submittedSummary?.credentials
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={onClose}>
-        <div className="relative w-full max-w-md rounded-3xl p-8 text-center bg-white border border-[#e2e8f0] shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
-          <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
-          <div className="h-16 w-16 rounded-2xl flex items-center justify-center mx-auto mb-4 bg-gradient-to-br from-blue-50 to-amber-50 border border-blue-200">
-            <CheckCircle2 className="h-8 w-8 text-[#1d4ed8]" />
-          </div>
-          <h2 className="text-2xl font-black mb-2 text-[#0b1e3f]">Registration Submitted!</h2>
-          {regId && (
-            <div className="inline-block px-4 py-2 rounded-xl mb-3 bg-[#f8fafc] border border-amber-200">
-              <p className="text-xs uppercase tracking-wider text-[#b45309] font-bold mb-0.5">Registration ID</p>
-              <p className="text-lg font-mono font-black text-[#1d4ed8]">{regId}</p>
+      <>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm" onClick={onClose}>
+          <div className="relative w-full max-w-lg rounded-3xl p-6 sm:p-8 text-center bg-white border border-[#e2e8f0] shadow-2xl overflow-y-auto max-h-[92vh]" onClick={e => e.stopPropagation()}>
+            <div className="absolute top-0 left-0 right-0 h-1.5 royal-gold-line" />
+            <button
+              type="button"
+              onClick={onClose}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center text-[#64748b] hover:text-[#0b1e3f] hover:bg-[#f1f5f9] transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="h-14 w-14 rounded-2xl flex items-center justify-center mx-auto mb-3 bg-gradient-to-br from-blue-50 to-amber-50 border border-blue-200">
+              <CheckCircle2 className="h-7 w-7 text-[#1d4ed8]" />
             </div>
-          )}
-          <p className="text-sm font-bold mb-2 text-[#0b1e3f]">
-            हमारी टीम आपसे 24 घंटे के अंदर संपर्क करेगी।
-          </p>
-          <p className="text-xs text-[#475569] mb-6 leading-relaxed">
-            Our corporate support team will contact you within 24 business hours to confirm your plan registration and assist you with the onboarding process.
-          </p>
-          <button
-            onClick={onClose}
-            className="w-full py-3.5 rounded-xl font-extrabold text-sm bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] !text-white shadow-[0_4px_14px_rgba(29,78,216,0.35)] transition-all cursor-pointer"
-          >
-            Done
-          </button>
+            <h2 className="text-2xl font-black mb-1.5 text-[#0b1e3f]">Registration Submitted!</h2>
+            <p className="text-sm font-bold mb-1.5 text-[#0b1e3f]">
+              हमारी टीम आपसे 24 घंटे के अंदर संपर्क करेगी।
+            </p>
+            <p className="text-xs text-[#475569] mb-4 leading-relaxed">
+              Our corporate support team will contact you within 24 business hours to confirm your plan registration and assist you with onboarding.
+            </p>
+
+            {/* Registration & Plan Summary Pills */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4 text-left">
+              {regId && (
+                <div className="px-3.5 py-2.5 rounded-xl bg-[#f8fafc] border border-amber-200">
+                  <p className="text-[10px] uppercase tracking-wider text-[#b45309] font-bold">Registration ID</p>
+                  <p className="text-sm font-mono font-black text-[#1d4ed8]">{regId}</p>
+                </div>
+              )}
+              {submittedSummary?.plan && (
+                <div className="px-3.5 py-2.5 rounded-xl bg-[#eff6ff] border border-blue-200">
+                  <p className="text-[10px] uppercase tracking-wider text-[#1d4ed8] font-bold">Requested Plan</p>
+                  <p className="text-sm font-black text-[#0b1e3f]">
+                    {submittedSummary.plan.name} · {submittedSummary.plan.deal}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Client Portal Credentials Box */}
+            {creds?.email && (
+              <div className="rounded-2xl p-4 mb-5 bg-gradient-to-br from-amber-50/80 via-white to-blue-50/50 border border-amber-300/80 text-left">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <KeyRound className="h-4 w-4 text-[#b45309]" />
+                    <span className="text-xs font-black uppercase tracking-wider text-[#92400e]">
+                      Client Login Credentials
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopyCreds}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-200 text-[#0b1e3f] hover:bg-amber-50 cursor-pointer"
+                  >
+                    {copiedCreds ? <><Check className="h-3 w-3 text-emerald-600" /> Copied</> : <><Copy className="h-3 w-3" /> Copy</>}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex justify-between items-center bg-white px-3 py-2 rounded-xl border border-[#e2e8f0]">
+                    <span className="text-[#64748b] font-semibold">Email</span>
+                    <span className="font-bold text-[#0b1e3f] break-all">{creds.email}</span>
+                  </div>
+                  <div className="flex justify-between items-center bg-white px-3 py-2 rounded-xl border border-[#e2e8f0]">
+                    <span className="text-[#64748b] font-semibold">Password</span>
+                    <span className="font-mono font-black text-[#1d4ed8]">
+                      {creds.password || 'Use your existing password'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex items-center justify-between gap-2 text-[11px]">
+                  <span className="text-[#475569] font-medium">Login to request payments &amp; view plan status</span>
+                  <Link
+                    to="/admin/login"
+                    onClick={onClose}
+                    className="inline-flex items-center gap-1 font-extrabold text-[#1d4ed8] hover:underline shrink-0"
+                  >
+                    <LogIn className="h-3.5 w-3.5" /> Login Now
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {/* Two Primary Buttons: Share on WhatsApp & Download PDF */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={handleShareWhatsApp}
+                disabled={pdfBusy}
+                className="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm bg-[#16a34a] hover:bg-[#15803d] !text-white shadow-[0_4px_14px_rgba(22,163,74,0.3)] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+              >
+                {pdfBusy ? <Loader2 className="h-4 w-4 animate-spin !text-white" /> : <Share2 className="h-4 w-4 !text-white" />}
+                <span className="!text-white">Share on WhatsApp</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleDownloadPdf}
+                disabled={pdfBusy}
+                className="w-full py-3.5 px-4 rounded-xl font-extrabold text-sm bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#3b82f6] hover:from-[#1e40af] hover:to-[#2563eb] !text-white shadow-[0_4px_14px_rgba(29,78,216,0.35)] flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+              >
+                {pdfBusy ? <Loader2 className="h-4 w-4 animate-spin !text-white" /> : <Download className="h-4 w-4 !text-white" />}
+                <span className="!text-white">Download PDF</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
+
+        {/* Off-screen PDF Print DOM */}
+        <div style={{ position: 'fixed', top: 0, left: '-9999px', zIndex: -1, backgroundColor: '#ffffff' }}>
+          <PlanRequestPdf data={submittedSummary} />
+        </div>
+      </>
     )
   }
 
@@ -408,7 +649,7 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+        <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
 
           {/* STEP 0: Select Plan */}
           {step === 0 && (
@@ -471,11 +712,12 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Aadhaar Number" error={errors.aadhaar?.message}>
-                  <TextInput register={register} name="aadhaar" placeholder="12-digit Aadhaar number" error={errors.aadhaar} />
+                  <TextInput register={register} name="aadhaar" placeholder="12-digit Aadhaar number" error={errors.aadhaar}
+                    onChange={e => { e.target.value = e.target.value.replace(/\s+/g, '') }} />
                 </Field>
                 <Field label="PAN Number" error={errors.pan?.message}>
                   <TextInput register={register} name="pan" placeholder="ABCDE1234F" error={errors.pan}
-                    onChange={e => { e.target.value = e.target.value.toUpperCase() }} />
+                    onChange={e => { e.target.value = e.target.value.toUpperCase().trim() }} />
                 </Field>
               </div>
               <div className="pt-2 border-t border-[#e2e8f0]">
@@ -737,7 +979,7 @@ export default function PlanEnquiryModal({ isOpen, onClose, initialPlan = null }
           ) : (
             <button
               type="button"
-              onClick={handleSubmit(onSubmit)}
+              onClick={handleSubmit(onSubmit, onInvalid)}
               disabled={submitting || !consentChecked}
               className="flex items-center gap-2 px-7 py-3 rounded-xl text-xs font-extrabold !text-white btn-gold disabled:opacity-50 transition-all cursor-pointer"
             >

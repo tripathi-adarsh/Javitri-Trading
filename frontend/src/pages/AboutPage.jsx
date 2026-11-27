@@ -94,9 +94,14 @@ const CORPORATE_GALLERY = [
   { src: '/gallery/img2.jpeg' },
   { src: '/gallery/img3.jpeg' },
   { src: '/gallery/img4.jpeg' },
+  { src: '/gallery/img5.jpeg' },
   { src: '/gallery/img6.jpeg' },
   { src: '/gallery/img7.jpeg' },
   { src: '/gallery/img8.jpeg' },
+  { src: '/gallery/img9.jpeg' },
+  { src: '/gallery/img10.jpeg' },
+  { src: '/gallery/img11.jpeg' },
+  { src: '/gallery/img12.jpeg' },
 ]
 
 export default function AboutPage() {

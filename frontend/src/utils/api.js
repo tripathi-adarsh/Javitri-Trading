@@ -8,11 +8,12 @@ const BASE = import.meta.env.VITE_API_URL || '/api/v1'
 async function request(path, options = {}) {
   let res
   try {
+    const { headers: customHeaders, body, ...restOptions } = options
     res = await fetch(`${BASE}${path}`, {
       credentials: 'include',
-      headers: { 'Content-Type': 'application/json', ...options.headers },
-      ...options,
-      body: options.body ? JSON.stringify(options.body) : undefined,
+      ...restOptions,
+      headers: { 'Content-Type': 'application/json', ...customHeaders },
+      body: body !== undefined ? JSON.stringify(body) : undefined,
     })
   } catch (networkErr) {
     // Server unreachable / CORS / network error
@@ -44,10 +45,11 @@ function authHeader(token) {
 // ── Auth ──────────────────────────────────────────────────────────────────────
 export const api = {
   auth: {
-    login:  (body)  => request('/auth/login',  { method: 'POST', body }),
-    logout: (token) => request('/auth/logout', { method: 'POST', headers: authHeader(token) }),
-    me:     (token) => request('/auth/me',     { headers: authHeader(token) }),
-    refresh:()      => request('/auth/refresh',{ method: 'POST' }),
+    login:          (body)        => request('/auth/login',           { method: 'POST', body }),
+    logout:         (token)       => request('/auth/logout',          { method: 'POST', headers: authHeader(token) }),
+    me:             (token)       => request('/auth/me',              { headers: authHeader(token) }),
+    refresh:        ()            => request('/auth/refresh',         { method: 'POST' }),
+    changePassword: (body, token) => request('/auth/change-password', { method: 'POST', body, headers: authHeader(token) }),
   },
 
   // ── Public routes ─────────────────────────────────────────────────────────
@@ -179,6 +181,18 @@ export const api = {
       delete: (id, token)          => request(`/contact/${id}`,       { method: 'DELETE', headers: authHeader(token) }),
       stats:  (token)              => request('/contact/stats',       { headers: authHeader(token) }),
     },
+
+    paymentRequests: {
+      list:         (token, qs = '')    => request(`/payment-requests?${qs}`,            { headers: authHeader(token) }),
+      updateStatus: (id, body, token)   => request(`/payment-requests/${id}/status`,     { method: 'PATCH', body, headers: authHeader(token) }),
+    },
+  },
+
+  // ── Client portal routes (authenticated client) ───────────────────────────
+  clientPortal: {
+    profile:              (token)           => request('/payment-requests/my-profile',     { headers: authHeader(token) }),
+    createPaymentRequest: (body, token)     => request('/payment-requests/my',             { method: 'POST', body, headers: authHeader(token) }),
+    reportIssue:          (id, body, token) => request(`/payment-requests/my/${id}/issue`, { method: 'POST', body, headers: authHeader(token) }),
   },
 
   // ── Public plan request creation (no auth — called from public registration flow) ──
@@ -189,5 +203,10 @@ export const api = {
   // ── Public contact form submission ────────────────────────────────────────
   contact: {
     submit: (body) => request('/contact', { method: 'POST', body }),
+  },
+
+  // ── Live NSE Market Indices ───────────────────────────────────────────────
+  market: {
+    indices: () => request(`/market/indices?_=${Date.now()}`, { cache: 'no-store' }),
   },
 }

@@ -199,13 +199,42 @@ export default function PlansPage() {
           )}
 
           {/* ── Schedule Comparison Matrix ── */}
-          <div className="mt-16 bg-white rounded-3xl border border-[#e2e8f0] overflow-hidden shadow-xs">
-            <div className="p-6 sm:p-8 bg-[#f8fafc] border-b border-[#e2e8f0]">
-              <h3 className="text-lg font-black text-[#0b1e3f]">Complete Schedule Comparison Matrix</h3>
-              <p className="text-xs text-[#64748b] mt-0.5">Quick reference table across all database investment plans</p>
+          <div className="mt-12 sm:mt-16 bg-white rounded-3xl border border-[#e2e8f0] overflow-hidden shadow-xs">
+            <div className="p-5 sm:p-8 bg-[#f8fafc] border-b border-[#e2e8f0]">
+              <h3 className="text-base sm:text-lg font-black text-[#0b1e3f]">Complete Schedule Comparison Matrix</h3>
+              <p className="text-xs text-[#64748b] mt-0.5">Quick reference across all investment plans</p>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile Card Matrix */}
+            <div className="sm:hidden divide-y divide-[#e2e8f0]">
+              {activePlanList.map((p) => {
+                const d = Number(p.proposedDailyINR || p.associatedValueINR || 0)
+                const w = d * TRADING_DAYS_PER_WEEK
+                const m = d * TRADING_DAYS_PER_MONTH
+                return (
+                  <div key={p.slug || p.name} className="p-4 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-xs font-black text-[#1d4ed8]">{p.name}</p>
+                      <p className="text-base font-black text-[#0b1e3f]">{formatINR(p.dealAmountINR)}</p>
+                      <p className="text-[11px] text-[#475569] font-semibold mt-0.5">
+                        Daily: <strong className="text-[#1d4ed8]">{formatINR(d)}</strong> · Monthly: <strong className="text-[#b45309]">{formatINR(m)}</strong>
+                      </p>
+                      <p className="text-[10px] text-[#64748b]">Weekly: {formatINR(w)} · Mon–Fri</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleEnquire(p)}
+                      className="px-3.5 py-2 rounded-xl text-xs font-extrabold bg-[#1d4ed8] !text-white shrink-0 cursor-pointer"
+                    >
+                      Register
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Desktop Table Matrix */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="border-b border-[#e2e8f0] bg-white text-[#0b1e3f] uppercase font-black text-[10px] tracking-wider">

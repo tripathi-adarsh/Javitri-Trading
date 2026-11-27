@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -16,9 +16,18 @@ const loginSchema = z.object({
 
 export default function AdminLoginPage() {
   const navigate = useNavigate()
-  const { saveToken, setUser } = useTrading()
+  const { user, token, saveToken, setUser } = useTrading()
   const [showPassword, setShowPassword] = useState(false)
   const [apiError, setApiError]         = useState('')
+
+  useEffect(() => {
+    if (!token || !user) return
+    if (user.role === 'client') {
+      navigate('/client/dashboard', { replace: true })
+    } else if (['admin', 'super_admin', 'employee'].includes(user.role)) {
+      navigate('/admin/dashboard', { replace: true })
+    }
+  }, [token, user, navigate])
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
     resolver: zodResolver(loginSchema),
@@ -29,20 +38,19 @@ export default function AdminLoginPage() {
     setApiError('')
     try {
       const res  = await api.auth.login(data)
-      const user = res.data.user
-
-      if (!['admin', 'super_admin', 'employee'].includes(user.role)) {
-        setApiError('This login is for admin and employee accounts only.')
-        return
-      }
+      const loggedUser = res.data.user
 
       saveToken(res.data.accessToken)
-      setUser(user)
+      setUser(loggedUser)
 
-      if (user.role === 'employee') {
-        navigate('/admin/employee-dashboard')
-      } else {
+      if (loggedUser.role === 'client') {
+        navigate('/client/dashboard')
+      } else if (loggedUser.role === 'employee') {
         navigate('/admin/dashboard')
+      } else if (['admin', 'super_admin'].includes(loggedUser.role)) {
+        navigate('/admin/dashboard')
+      } else {
+        setApiError('Unsupported account role.')
       }
     } catch (err) {
       setApiError(err.message || 'Invalid credentials. Please try again.')
@@ -101,11 +109,11 @@ export default function AdminLoginPage() {
                 <Shield className="h-4 w-4 text-[#1d4ed8]" />
               </div>
               <span className="text-xs font-black tracking-widest uppercase text-[#b45309]">
-                Admin Portal
+                Account Portal
               </span>
             </div>
-            <h1 className="text-3xl font-black text-[#0b1e3f] mb-2 tracking-tight">Administrator Sign In</h1>
-            <p className="text-sm text-[#64748b] font-medium">Access your enterprise dashboard and operational controls</p>
+            <h1 className="text-3xl font-black text-[#0b1e3f] mb-2 tracking-tight">Sign In to Your Account</h1>
+            <p className="text-sm text-[#64748b] font-medium">Enter your Email &amp; Password to access your Admin or Client dashboard</p>
           </div>
 
           {/* Form card */}
@@ -172,7 +180,7 @@ export default function AdminLoginPage() {
           </div>
 
           <p className="text-center text-xs mt-6 text-[#94a3b8] font-medium">
-            🔒 Authorized corporate personnel only · All IP sessions are logged & monitored
+            🔒 Secured corporate authentication · Admin, Staff &amp; Client accounts supported
           </p>
         </div>
       </div>
