@@ -13,6 +13,9 @@ dist/
 frontend/dist/
 build/
 
+# Uploaded runtime files (never overwrite production uploads on deploy)
+uploads/
+
 # Logs
 *.log
 npm-debug.log*

@@ -15,18 +15,19 @@ exports.uploadUserKycDocuments = async (req, res, next) => {
     const user = await User.findByPk(req.userId)
     if (!user) return res.status(404).json({ success: false, message: 'User not found' })
 
+    const { persistUploadedFile, removeStoredKycFile } = require('../middleware/upload')
     const updates = {}
     if (files.aadhaarImage?.[0]) {
-      if (user.aadhaar_image_path) { try { fs.unlinkSync(user.aadhaar_image_path) } catch {} }
-      updates.aadhaar_image_path = files.aadhaarImage[0].path
+      await removeStoredKycFile(user.aadhaar_image_path)
+      updates.aadhaar_image_path = await persistUploadedFile(files.aadhaarImage[0])
     }
     if (files.panImage?.[0]) {
-      if (user.pan_image_path) { try { fs.unlinkSync(user.pan_image_path) } catch {} }
-      updates.pan_image_path = files.panImage[0].path
+      await removeStoredKycFile(user.pan_image_path)
+      updates.pan_image_path = await persistUploadedFile(files.panImage[0])
     }
     if (files.passbookImage?.[0]) {
-      if (user.passbook_image_path) { try { fs.unlinkSync(user.passbook_image_path) } catch {} }
-      updates.passbook_image_path = files.passbookImage[0].path
+      await removeStoredKycFile(user.passbook_image_path)
+      updates.passbook_image_path = await persistUploadedFile(files.passbookImage[0])
     }
 
     await user.update(updates)
@@ -81,16 +82,8 @@ exports.getUserKycDocumentImage = async (req, res, next) => {
       return res.status(404).json({ success: false, message: `No ${docType} document uploaded` })
     }
 
-    const { KYC_UPLOAD_DIR } = require('../middleware/upload')
-    const resolved = path.resolve(filePath)
-    if (!resolved.startsWith(path.resolve(KYC_UPLOAD_DIR))) {
-      return res.status(403).json({ success: false, message: 'Access denied' })
-    }
-    if (!fs.existsSync(resolved)) {
-      return res.status(404).json({ success: false, message: 'File not found on server' })
-    }
-
-    res.sendFile(resolved)
+    const { resolveAndServeKycFile } = require('../middleware/upload')
+    return resolveAndServeKycFile(filePath, res)
   } catch (err) {
     next(err)
   }

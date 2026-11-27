@@ -5,7 +5,7 @@ require('dotenv').config();
 
 const validateEnv = require('./utils/validateEnv');
 const app = require('./app');
-const { sequelize, PaymentRequest } = require('./models/index');
+const { sequelize, PaymentRequest, KycDocumentFile } = require('./models/index');
 
 // Validate required environment variables
 validateEnv();
@@ -39,6 +39,7 @@ async function start() {
       }
     }
     await PaymentRequest.sync();
+    await KycDocumentFile.sync();
 
     if (process.env.NODE_ENV === 'development') {
       await sequelize.query('SELECT 1');

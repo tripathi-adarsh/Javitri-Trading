@@ -488,32 +488,24 @@ exports.uploadKycDocuments = async (req, res, next) => {
     const kyc = await ClientKYC.findOne({ where: { client_id: id } })
     if (!kyc) return res.status(404).json({ success: false, message: 'KYC record not found' })
 
+    const { persistUploadedFile, removeStoredKycFile } = require('../middleware/upload')
     const updates = {}
 
     if (files.aadhaarImage?.[0]) {
-      // Remove old file if exists
-      if (kyc.aadhaar_image_path) {
-        try { fs.unlinkSync(kyc.aadhaar_image_path) } catch {}
-      }
-      updates.aadhaar_image_path = files.aadhaarImage[0].path
+      await removeStoredKycFile(kyc.aadhaar_image_path)
+      updates.aadhaar_image_path = await persistUploadedFile(files.aadhaarImage[0])
     }
     if (files.aadhaarBackImage?.[0]) {
-      if (kyc.aadhaar_back_image_path) {
-        try { fs.unlinkSync(kyc.aadhaar_back_image_path) } catch {}
-      }
-      updates.aadhaar_back_image_path = files.aadhaarBackImage[0].path
+      await removeStoredKycFile(kyc.aadhaar_back_image_path)
+      updates.aadhaar_back_image_path = await persistUploadedFile(files.aadhaarBackImage[0])
     }
     if (files.panImage?.[0]) {
-      if (kyc.pan_image_path) {
-        try { fs.unlinkSync(kyc.pan_image_path) } catch {}
-      }
-      updates.pan_image_path = files.panImage[0].path
+      await removeStoredKycFile(kyc.pan_image_path)
+      updates.pan_image_path = await persistUploadedFile(files.panImage[0])
     }
     if (files.passbookImage?.[0]) {
-      if (kyc.passbook_image_path) {
-        try { fs.unlinkSync(kyc.passbook_image_path) } catch {}
-      }
-      updates.passbook_image_path = files.passbookImage[0].path
+      await removeStoredKycFile(kyc.passbook_image_path)
+      updates.passbook_image_path = await persistUploadedFile(files.passbookImage[0])
     }
 
     if (Object.keys(updates).length === 0) {
@@ -590,19 +582,9 @@ exports.getKycDocumentImage = async (req, res, next) => {
       return res.status(404).json({ success: false, message: `No ${docType} document uploaded` })
     }
 
-    // Security: ensure the path is inside the uploads/kyc directory
-    const { KYC_UPLOAD_DIR } = require('../middleware/upload')
-    const resolvedPath = path.resolve(filePath)
-    const resolvedDir  = path.resolve(KYC_UPLOAD_DIR)
-    if (!resolvedPath.startsWith(resolvedDir)) {
-      return res.status(403).json({ success: false, message: 'Access denied' })
-    }
-
-    if (!fs.existsSync(resolvedPath)) {
-      return res.status(404).json({ success: false, message: 'File not found on server' })
-    }
-
-    res.sendFile(resolvedPath)
+    // Resolve from disk or persistent DB backup (survives Hostinger/Git redeployments)
+    const { resolveAndServeKycFile } = require('../middleware/upload')
+    return resolveAndServeKycFile(filePath, res)
   } catch (err) {
     next(err)
   }
